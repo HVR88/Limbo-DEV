@@ -1,0 +1,9 @@
+{
+  "include": [
+    "overlay/bridge",
+    "upstream/lidarr-metadata"
+  ],
+  "extraPaths": [
+    "upstream/lidarr-metadata"
+  ]
+}

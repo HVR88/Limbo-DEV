@@ -97,3 +97,9 @@ curl http://host-ip:5001/artist/1921c28c-ec61-4725-8e35-38dd656f7923
 ```
 
 If the bridge is configured correctly, you should see JSON metadata from your mirror.
+
+If it fails, check logs:
+
+```bash
+docker logs -f lmd
+```
