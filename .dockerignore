@@ -7,9 +7,7 @@
 .git/
 .github/
 assets/
-docker-compose.yml
 overlay/deploy/
 scripts/*
 !scripts/init-mbdb.sh
-README.md
 research/
