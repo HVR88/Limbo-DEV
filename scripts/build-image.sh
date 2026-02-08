@@ -5,6 +5,8 @@ cd "$(dirname "$0")/.."
 # Default to amd64; override with PLATFORMS=linux/amd64,linux/arm64
 PLATFORMS="${PLATFORMS:-linux/amd64}"
 IMAGE="${IMAGE:-hvr88/lidarr.metadata:dev}"
+INIT_IMAGE="${INIT_IMAGE:-hvr88/lidarr.metadata-init:dev}"
+BUILD_INIT="${BUILD_INIT:-1}"
 PUSH="${PUSH:-0}"
 
 load_flag=(--load)
@@ -26,3 +28,13 @@ docker buildx build \
   -f Dockerfile \
   -t "$IMAGE" \
   .
+
+if [[ "$BUILD_INIT" == "1" ]]; then
+  docker buildx build \
+    --platform "$PLATFORMS" \
+    "${load_flag[@]}" \
+    "${push_flag[@]}" \
+    -f Dockerfile.init \
+    -t "$INIT_IMAGE" \
+    .
+fi

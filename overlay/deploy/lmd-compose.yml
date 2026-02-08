@@ -1,6 +1,21 @@
 services:
+  lmd-init:
+    image: ${LMD_INIT_IMAGE:-hvr88/lidarr.metadata-init:dev}
+    environment:
+      MB_DB_HOST: ${MB_DB_HOST:-db}
+      MB_DB_PORT: ${MB_DB_PORT:-5432}
+      MB_DB_USER: ${MB_DB_USER:-musicbrainz}
+      MB_DB_PASSWORD: ${MB_DB_PASSWORD:-musicbrainz}
+      MB_DB_NAME: ${MB_DB_NAME:-musicbrainz_db}
+      LMD_CACHE_DB: ${LMD_CACHE_DB:-lm_cache_db}
+      LMD_CACHE_USER: ${LMD_CACHE_USER:-abc}
+      LMD_CACHE_PASSWORD: ${LMD_CACHE_PASSWORD:-abc}
+    restart: "no"
+    networks:
+      - musicbrainz
+
   lmd:
-    image: hvr88/lidarr.metadata:dev
+    image: ${LMD_IMAGE:-hvr88/lidarr.metadata:dev}
     ports:
       - "5001:5001"
     environment:
@@ -13,21 +28,21 @@ services:
       ROOT_PATH: ""
 
       # --- Redis ---
-      REDIS_HOST: "redis"
-      REDIS_PORT: "6379"
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
 
       # --- Solr mirror ---
-      PROVIDERS__SOLRSEARCHPROVIDER__1__SEARCH_SERVER: "http://search:8983/solr"
+      PROVIDERS__SOLRSEARCHPROVIDER__1__SEARCH_SERVER: ${SOLR_URL:-http://search:8983/solr}
 
       # --- MusicBrainz DB creds (set these to match your mirror) ---
-      PROVIDERS__MUSICBRAINZDBPROVIDER__1__DB_HOST: "db"
-      PROVIDERS__MUSICBRAINZDBPROVIDER__1__DB_PORT: "5432"
-      PROVIDERS__MUSICBRAINZDBPROVIDER__1__DB_USER: "musicbrainz"
-      PROVIDERS__MUSICBRAINZDBPROVIDER__1__DB_PASSWORD: "musicbrainz"
+      PROVIDERS__MUSICBRAINZDBPROVIDER__1__DB_HOST: ${MB_DB_HOST:-db}
+      PROVIDERS__MUSICBRAINZDBPROVIDER__1__DB_PORT: ${MB_DB_PORT:-5432}
+      PROVIDERS__MUSICBRAINZDBPROVIDER__1__DB_USER: ${MB_DB_USER:-musicbrainz}
+      PROVIDERS__MUSICBRAINZDBPROVIDER__1__DB_PASSWORD: ${MB_DB_PASSWORD:-musicbrainz}
 
       # --- Postgres cache (lm_cache_db) ---
-      POSTGRES_CACHE_HOST: "db"
-      POSTGRES_CACHE_PORT: "5432"
+      POSTGRES_CACHE_HOST: ${LMD_CACHE_HOST:-db}
+      POSTGRES_CACHE_PORT: ${LMD_CACHE_PORT:-5432}
 
       # --- External providers (fill in later) ---
       FANART_KEY: ""
@@ -38,6 +53,9 @@ services:
       SPOTIFY_SECRET: ""
       SPOTIFY_REDIRECT_URL: "http://HOST_IP:5001"
     restart: unless-stopped
+    depends_on:
+      lmd-init:
+        condition: service_completed_successfully
     networks:
       - musicbrainz
 

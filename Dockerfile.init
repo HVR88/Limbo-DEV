@@ -1,0 +1,11 @@
+FROM postgres:14-alpine
+
+RUN apk add --no-cache bash
+
+WORKDIR /init
+COPY scripts/init-mbdb.sh /init/init-mbdb.sh
+COPY upstream/lidarr-metadata/lidarrmetadata/sql/CreateIndices.sql /init/CreateIndices.sql
+
+ENV SQL_FILE=/init/CreateIndices.sql
+
+ENTRYPOINT ["bash", "/init/init-mbdb.sh"]

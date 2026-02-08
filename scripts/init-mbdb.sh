@@ -2,7 +2,8 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SQL_FILE="$ROOT_DIR/upstream/lidarr-metadata/lidarrmetadata/sql/CreateIndices.sql"
+SQL_FILE_DEFAULT="$ROOT_DIR/upstream/lidarr-metadata/lidarrmetadata/sql/CreateIndices.sql"
+SQL_FILE="${SQL_FILE:-$SQL_FILE_DEFAULT}"
 
 if [[ ! -f "$SQL_FILE" ]]; then
   echo "Missing SQL file: $SQL_FILE" >&2
