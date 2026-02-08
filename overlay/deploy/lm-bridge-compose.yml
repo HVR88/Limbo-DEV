@@ -1,9 +1,6 @@
 services:
   init:
     image: ${LMBRIDGE_IMAGE:-lm-bridge:latest}
-    build:
-      context: ../..
-      dockerfile: Dockerfile
     entrypoint: ["/bin/bash", "/metadata/init/init-mbdb.sh"]
     environment:
       MB_DB_HOST: ${MB_DB_HOST:-db}
