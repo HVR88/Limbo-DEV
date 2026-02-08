@@ -6,7 +6,6 @@
 **/.venv/
 .git/
 .github/
-assets/
 scripts/*
 !scripts/init-mbdb.sh
 research/
