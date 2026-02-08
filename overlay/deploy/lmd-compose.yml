@@ -1,5 +1,5 @@
 services:
-  lmd-init:
+  lm-bridge-init:
     image: ${LMD_INIT_IMAGE:-hvr88/lidarr.metadata-init:dev}
     environment:
       MB_DB_HOST: ${MB_DB_HOST:-db}
@@ -14,7 +14,7 @@ services:
     networks:
       - musicbrainz
 
-  lmd:
+  lm-bridge:
     image: ${LMD_IMAGE:-hvr88/lidarr.metadata:dev}
     ports:
       - "5001:5001"
@@ -54,7 +54,7 @@ services:
       SPOTIFY_REDIRECT_URL: "http://HOST_IP:5001"
     restart: unless-stopped
     depends_on:
-      lmd-init:
+      lm-bridge-init:
         condition: service_completed_successfully
     networks:
       - musicbrainz

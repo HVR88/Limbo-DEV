@@ -1,5 +1,5 @@
 services:
-  lmd:
+  lm-bridge:
     # Replace tag when you publish (or set via env)
     image: hvr88/lidarr.metadata:dev
     ports:

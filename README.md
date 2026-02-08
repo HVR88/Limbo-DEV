@@ -18,7 +18,7 @@ This repo builds a standalone Lidarr Metadata Server image that bridges to a sep
 
 ## Configuration
 
-Edit `overlay/deploy/lmd-settings.yml` to match your environment. This file is a standalone Compose file for the LMD container.
+Edit `overlay/deploy/lmd-settings.yml` to match your environment. This file is a standalone Compose file for the LM-Bridge container.
 
 Important fields:
 - `PROVIDERS__MUSICBRAINZDBPROVIDER__1__DB_HOST` should point to your MusicBrainz DB host or service name.
@@ -91,7 +91,7 @@ If you want to run it on the **same Docker network** as your MusicBrainz mirror,
 MB_NETWORK=musicbrainz_default docker compose up -d
 ```
 
-The `lmd-init` container will exit after completing setup. That is expected.
+The `lm-bridge-init` container will exit after completing setup. That is expected.
 
 If you use custom image tags, set them via environment:
 
@@ -123,5 +123,5 @@ If the bridge is configured correctly, you should see JSON metadata from your mi
 If it fails, check logs:
 
 ```bash
-docker logs -f lmd
+docker compose logs -f lm-bridge
 ```
