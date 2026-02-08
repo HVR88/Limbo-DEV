@@ -1,4 +1,4 @@
-name: lidarr-metadata-distro
+name: lm-bridge
 
 include:
   - overlay/deploy/lm-bridge-compose.yml
