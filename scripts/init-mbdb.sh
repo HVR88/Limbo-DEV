@@ -27,7 +27,12 @@ trap 'rm -f "$TMP_SQL"' EXIT
 # Make CreateIndices.sql idempotent
 sed -E 's/^CREATE INDEX /CREATE INDEX IF NOT EXISTS /I' "$SQL_FILE" > "$TMP_SQL"
 
-if command -v psql >/dev/null 2>&1; then
+use_docker=0
+if [[ -n "$MB_DB_NETWORK" ]]; then
+  use_docker=1
+fi
+
+if [[ "$use_docker" -eq 0 ]] && command -v psql >/dev/null 2>&1; then
   psql_run() {
     PGPASSWORD="$MB_DB_PASSWORD" psql -h "$MB_DB_HOST" -p "$MB_DB_PORT" -U "$MB_DB_USER" -d "$1" "${@:2}"
   }
