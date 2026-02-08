@@ -56,6 +56,8 @@ LMD_CACHE_PASSWORD=abc \
 scripts/init-mbdb.sh
 ```
 
+The script also creates the cache tables (`fanart`, `tadb`, `wikipedia`, `artist`, `album`, `spotify`) inside `lm_cache_db` to avoid runtime errors like `relation "tadb" does not exist`.
+
 ## Build And Run
 
 Use the helper script (defaults to `linux/amd64`):
