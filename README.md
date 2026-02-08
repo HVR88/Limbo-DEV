@@ -22,7 +22,7 @@ This repo builds a standalone Lidarr Metadata Server image that bridges to a sep
 
 ## Configuration
 
-Edit `overlay/deploy/lmd-settings.yml` to match your environment. This file is a standalone Compose file for the LM-Bridge container.
+Edit `overlay/deploy/lm-bridge-settings.yml` to match your environment. This file is a standalone Compose file for the LM-Bridge container.
 
 Important fields:
 - `PROVIDERS__MUSICBRAINZDBPROVIDER__1__DB_HOST` should point to your MusicBrainz DB host or service name.
@@ -86,7 +86,7 @@ PLATFORMS=linux/amd64,linux/arm64 PUSH=1 IMAGE=hvr88/lidarr.metadata:dev scripts
 Start the container using the provided settings file:
 
 ```bash
-docker compose -f overlay/deploy/lmd-settings.yml up -d
+docker compose -f overlay/deploy/lm-bridge-settings.yml up -d
 ```
 
 If you want to run it on the **same Docker network** as your MusicBrainz mirror, just run from the repo root. This also runs the **init container** automatically on startup:
@@ -110,7 +110,7 @@ Note: `MB_DB_USER` must have permission to create roles and databases (the mirro
 If your Docker Compose version does not support `include`, you can still run the underlying file directly:
 
 ```bash
-MB_NETWORK=musicbrainz_default docker compose -f overlay/deploy/lmd-compose.yml up -d
+MB_NETWORK=musicbrainz_default docker compose -f overlay/deploy/lm-bridge-compose.yml up -d
 ```
 
 ## Verify
