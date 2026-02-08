@@ -2,7 +2,7 @@
   <img src="https://raw.githubusercontent.com/HVR88/lm-bridge/main/assets/lmbridge-icon.png" alt="LM Bridge" width="500" />
 </p>
 
-# Lidarr Metadata Distro
+# Lidarr/MusiBrainz Bridge
 
 This repo builds a standalone Lidarr Metadata Server image that bridges to a separately-run MusicBrainz mirror. It overlays the fork `HVR88/LidarrAPI.Metadata` without modifying the upstream code.
 
@@ -102,7 +102,7 @@ Multi-arch build (push required):
 PLATFORMS=linux/amd64,linux/arm64 PUSH=1 LMBRIDGE_IMAGE=lm-bridge:dev scripts/build-image.sh
 ```
 
-Start the container using the provided settings file:
+Start the container using the provided settings file (Compose will build the image if it doesn't exist locally):
 
 ```bash
 docker compose -f overlay/deploy/lm-bridge-settings.yml up -d

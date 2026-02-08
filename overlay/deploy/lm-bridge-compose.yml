@@ -1,6 +1,9 @@
 services:
   init:
     image: ${LMBRIDGE_IMAGE:-lm-bridge:dev}
+    build:
+      context: .
+      dockerfile: Dockerfile
     entrypoint: ["/bin/bash", "/metadata/init/init-mbdb.sh"]
     environment:
       MB_DB_HOST: ${MB_DB_HOST:-db}
@@ -17,6 +20,9 @@ services:
 
   api:
     image: ${LMBRIDGE_IMAGE:-lm-bridge:dev}
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
       - "5001:5001"
     environment:
