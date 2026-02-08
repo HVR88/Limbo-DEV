@@ -8,6 +8,7 @@ services:
       # --- General ---
       DEBUG: "false"
       PRODUCTION: "false"
+      LIDARR_METADATA_CONFIG: "BRIDGE"
       USE_CACHE: "true"
       ENABLE_STATS: "false"
       ROOT_PATH: ""

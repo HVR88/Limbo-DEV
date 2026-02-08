@@ -1,12 +1,12 @@
-# Use official Python 3.9 slim image as base
+# Use official Python 3.9 image for AMD64
 FROM --platform=linux/amd64 python:3.9-bullseye
 
-# Set working directory inside the container
+# Set working directory
 WORKDIR /metadata
 
-# Copy the bridge_launcher.py directly
-COPY overlay/bridge/bridge_launcher.py /metadata/lidarrmetadata/
-RUN chmod +x /metadata/lidarrmetadata/bridge_launcher.py
+# Runtime hygiene
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
 
 # Copy upstream source (submodule)
 COPY upstream/lidarr-metadata /metadata
@@ -14,13 +14,13 @@ COPY upstream/lidarr-metadata /metadata
 # Copy overlay bridge (patches, config)
 COPY overlay/bridge/lidarrmetadata /metadata/lidarrmetadata
 
-# Upgrade pip and install dependencies from requirements.txt
+# Copy bridge launcher
+COPY overlay/bridge/bridge_launcher.py /metadata/bridge_launcher.py
+RUN chmod +x /metadata/bridge_launcher.py
+
+# Install Python dependencies
 RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt
 
-# Ensure bridge launcher is executable
-RUN chmod +x /metadata/lidarrmetadata/bridge_launcher.py
-
-# Set entrypoint to bridge launcher
-ENTRYPOINT ["/metadata/lidarrmetadata/bridge_launcher.py"]
-
+# Set entrypoint to Python bridge launcher
+ENTRYPOINT ["python3", "/metadata/bridge_launcher.py"]
