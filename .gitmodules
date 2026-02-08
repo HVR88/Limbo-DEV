@@ -1,0 +1,4 @@
+[submodule "upstream/lidarr-metadata"]
+	path = upstream/lidarr-metadata
+	url = https://github.com/Lidarr/LidarrAPI.Metadata.git
+	branch = develop
