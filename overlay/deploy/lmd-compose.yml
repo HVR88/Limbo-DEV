@@ -1,6 +1,7 @@
 services:
   lm-bridge-init:
-    image: ${LMD_INIT_IMAGE:-hvr88/lidarr.metadata-init:dev}
+    image: ${LMD_IMAGE:-hvr88/lidarr.metadata:dev}
+    entrypoint: ["/bin/bash", "/metadata/init/init-mbdb.sh"]
     environment:
       MB_DB_HOST: ${MB_DB_HOST:-db}
       MB_DB_PORT: ${MB_DB_PORT:-5432}

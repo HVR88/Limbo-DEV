@@ -6,7 +6,7 @@ This repo builds a standalone Lidarr Metadata Server image that bridges to a sep
 1. Builds an AMD64-focused container image for Lidarr Metadata Server.
 2. Adds a bridge config layer so you can point at your MusicBrainz mirror and Solr.
 3. Keeps the project outside the MusicBrainz mirror stack.
-4. Provides an **init container** that prepares the cache DB and indexes on first start.
+4. Provides an **init service** that prepares the cache DB and indexes on first start (using the same image).
 
 **What This Repo Does Not Do**
 1. It does not build or run the MusicBrainz mirror stack.
@@ -97,7 +97,6 @@ If you use custom image tags, set them via environment:
 
 ```bash
 LMD_IMAGE=hvr88/lidarr.metadata:dev \
-LMD_INIT_IMAGE=hvr88/lidarr.metadata-init:dev \
 MB_NETWORK=musicbrainz_default \
 docker compose up -d
 ```
