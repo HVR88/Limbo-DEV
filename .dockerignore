@@ -7,7 +7,6 @@
 .git/
 .github/
 assets/
-overlay/deploy/
 scripts/*
 !scripts/init-mbdb.sh
 research/
