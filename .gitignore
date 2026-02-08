@@ -6,3 +6,6 @@ research/
 
 # Local noise
 **/.DS_Store
+
+# never commit upstream working-tree artifacts
+upstream/lidarr-metadata/lmd-settings.yml
