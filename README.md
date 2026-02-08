@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/HVR88/lm-bridge/main/assets/lm-bridge-icon.png" alt="LM Bridge" width="400" />
+  <img src="https://raw.githubusercontent.com/HVR88/lm-bridge/main/assets/lm-bridge-icon.png" alt="LM Bridge" width="500" />
 </p>
 
 # Lidarr Metadata Distro
