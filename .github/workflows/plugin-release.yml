@@ -1,0 +1,63 @@
+name: Plugin Release
+
+on:
+  push:
+    tags:
+      - "plugin-v*"
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Plugin version (e.g. 1.2.3.4)"
+        required: true
+      tag:
+        description: "Tag to create (default: plugin-v{version})"
+        required: false
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Resolve version
+        id: version
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            ver="${{ inputs.version }}"
+            tag="${{ inputs.tag }}"
+            if [ -z "$tag" ]; then
+              tag="plugin-v$ver"
+            fi
+          else
+            tag="${GITHUB_REF_NAME}"
+            ver="$tag"
+            ver="${ver#plugin-v}"
+            ver="${ver#v}"
+          fi
+          echo "version=$ver" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Build plugin ZIP
+        run: |
+          chmod +x lm-bridge-plugin/build.sh
+          VERSION_OVERRIDE="${{ steps.version.outputs.version }}" lm-bridge-plugin/build.sh
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: ${{ steps.version.outputs.tag }}
+          files: lm-bridge-plugin/dist/*.zip
+          generate_release_notes: true

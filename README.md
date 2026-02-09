@@ -12,6 +12,7 @@ This repo builds a standalone Lidarr Metadata Server image that bridges to a sep
 2. Adds a bridge config layer so you can point at your MusicBrainz mirror and Solr.
 3. Keeps the project outside the MusicBrainz mirror stack.
 4. Provides an **init service** that prepares the cache DB and indexes on first start (using the same image).
+5. Includes the required Lidarr plugin (source + build output). Releases will also publish a plugin ZIP.
 
 **What This Repo Does Not Do**
 
@@ -22,6 +23,19 @@ This repo builds a standalone Lidarr Metadata Server image that bridges to a sep
 
 1. MusicBrainz DB defaults to `musicbrainz:musicbrainz` unless you override.
 2. LMBRIDGE cache DB defaults to `lm_cache_db` with user `abc` / password `abc`.
+
+## Lidarr API Plugin (Required)
+
+This repo includes the LM Bridge plugin. Lidarr must have this plugin installed to talk to the bridge on your network.
+
+**Install From The Lidarr UI (Recommended)**
+
+1. In Lidarr, open **Settings → Plugins** (some builds show this under **System → Plugins**).
+2. Click **Add Plugin**.
+3. Paste this repo URL (`https://github.com/HVR88/lm-bridge`) and click **Install**.
+4. Restart Lidarr.
+
+If you do not see a Plugins page, switch to the `nightly` (or `plugins`, depending on your build) branch in **Settings/System → General → Updates → Branch**, then restart.
 
 ## Configuration
 
