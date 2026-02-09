@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/HVR88/lm-bridge/main/assets/lmbridge-icon.png" alt="LM Bridge" width="500" />
+  <img src="https://raw.githubusercontent.com/HVR88/LM-Bridge/main/assets/lmbridge-icon.png" alt="LM Bridge" width="500" />
 </p>
 
 # Lidarr/MusicBrainz Bridge
@@ -32,7 +32,7 @@ This repo includes the LM Bridge plugin. Lidarr must have this plugin installed 
 
 1. In Lidarr, open **Settings → Plugins** (some builds show this under **System → Plugins**).
 2. Click **Add Plugin**.
-3. Paste this repo URL (`https://github.com/HVR88/lm-bridge`) and click **Install**.
+3. Paste this `LM-Bridge/HVR88` and click **Install**.
 4. Restart Lidarr.
 
 If you do not see a Plugins page, switch to the `nightly` (or `plugins`, depending on your build) branch in **Settings/System → General → Updates → Branch**, then restart.
@@ -90,7 +90,7 @@ The script also creates the cache tables (`fanart`, `tadb`, `wikipedia`, `artist
 Recommended (pulls the upstream submodule automatically):
 
 ```bash
-git clone --recurse-submodules https://github.com/HVR88/lm-bridge.git
+git clone --recurse-submodules https://github.com/HVR88/LM-Bridge.git
 ```
 
 If you already cloned without submodules:

@@ -6,6 +6,6 @@ namespace LMBridgePlugin
     {
         public override string Name => "Lidarr/MusicBrainz Bridge";
         public override string Owner => PluginInfo.Author;
-        public override string GithubUrl => "https://github.com/HVR88/LMBridge_Plugin";
+        public override string GithubUrl => "https://github.com/HVR88/LM-Bridge";
     }
 }

@@ -9,7 +9,7 @@
     <Version>1.0.1.22</Version>
     <Branch></Branch>
     <Author>HVR88</Author>
-    <RepoUrl>https://github.com/HVR88/LMBridge_Plugin</RepoUrl>
+    <RepoUrl>https://github.com/HVR88/LM-Bridge</RepoUrl>
     <MinimumLidarrVersion></MinimumLidarrVersion>
     <CI>false</CI>
     <InformationalVersion>$(AssemblyVersion)-$(Branch)</InformationalVersion>
