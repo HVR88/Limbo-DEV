@@ -11,14 +11,6 @@ on:
         description: "Target platforms"
         required: true
         default: "linux/amd64"
-      push_latest:
-        description: "Also tag latest"
-        required: true
-        default: "false"
-        type: choice
-        options:
-          - "false"
-          - "true"
 
 env:
   IMAGE_NAME: espressomatic/lm-bridge
@@ -60,9 +52,7 @@ jobs:
           if [ "$tag" != "$norm" ]; then
             tags="$tags,${IMAGE_NAME}:${tag}"
           fi
-          if [ "${{ inputs.push_latest }}" = "true" ]; then
-            tags="$tags,${IMAGE_NAME}:latest"
-          fi
+          tags="$tags,${IMAGE_NAME}:latest"
           echo "tags=$tags" >> "$GITHUB_OUTPUT"
           echo "version=$norm" >> "$GITHUB_OUTPUT"
 
