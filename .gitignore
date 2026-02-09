@@ -15,8 +15,6 @@ lm-bridge-plugin/plugin/bin/
 lm-bridge-plugin/plugin/obj/
 lm-bridge-plugin/dist/
 
-# never commit upstream working-tree artifacts
-upstream/lidarr-metadata/lmd-settings.yml
 # never commit upstream edits; Dockerfile is tracked upstream
 !upstream/lidarr-metadata/Dockerfile
 

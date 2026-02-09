@@ -4,6 +4,8 @@
 
 # Lidarr/MusicBrainz Bridge
 
+**A Lidarr metadata server that bridges to a local MusicBrainz mirror - FAST queries, no Remote Lidarr server issues**
+
 This repo Contains two complimentary parts that run 100% locally:
 
 1. A Lidarr Metadata Server image that bridges to a MusicBrainz mirror

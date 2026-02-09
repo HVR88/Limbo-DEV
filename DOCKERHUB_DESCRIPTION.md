@@ -4,7 +4,7 @@
 
 # Lidarr/MusicBrainz Bridge
 
-A Lidarr Metadata Server that bridges to a MusicBrainz mirror
+**A Lidarr metadata server that bridges to a local MusicBrainz mirror - FAST queries, no Remote Lidarr server issues**
 
 **_Thanks to blampe and Typnull for inspiration_** : this wouldn't have been possible without leveraging their previous work
 
@@ -34,9 +34,9 @@ You should already be running a plugins-enabled [Lidarr](https://hub.docker.com/
 1. MusicBrainz DB defaults to `musicbrainz:musicbrainz` unless you override
 2. LMBRIDGE cache DB defaults to `lm_cache_db` with user `abc` / password `abc`
 
-## Lidarr/MusicBrainz Bridge API Plugin
+## Required Lidarr Plugin
 
-**Install the Plugin**
+**Install the LM-Bridge Plugin**
 
 1. In Lidarr, open **System → Plugins**
 2. Paste the GitHub repo URL `https://github.com/HVR88/LM-Bridge` into the GitHub URL box and click **Install**.

@@ -86,4 +86,4 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN_LMBRIDGE }}
           repository: espressomatic/lm-bridge
-          readme-filepath: README.md
+          readme-filepath: DOCKERHUB_DESCRIPTION.md
