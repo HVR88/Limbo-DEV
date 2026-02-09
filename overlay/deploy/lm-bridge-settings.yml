@@ -27,7 +27,7 @@ services:
       PROVIDERS__MUSICBRAINZDBPROVIDER__1__DB_PASSWORD: "musicbrainz"
 
       # --- Postgres cache (lm_cache_db) ---
-      # Uses abc:abc by default in upstream; ensure that user exists or adjust.
+      # Uses lidarr:lidarr by default in upstream; ensure that user exists or adjust.
       POSTGRES_CACHE_HOST: "db"
       POSTGRES_CACHE_PORT: "5432"
 

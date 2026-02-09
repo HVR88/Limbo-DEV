@@ -51,7 +51,7 @@ Likewise, you should already be running a plugins-enabled [Lidarr](https://hub.d
 **Key Defaults**
 
 1. MusicBrainz DB defaults to `musicbrainz:musicbrainz` unless you override
-2. LMBRIDGE cache DB defaults to `lm_cache_db` with user `abc` / password `abc`
+2. LMBRIDGE cache DB defaults to `lm_cache_db` with user `lidarr` / password `lidarr`
 
 ## Lidarr API Plugin (Required)
 
@@ -116,8 +116,8 @@ You can change cache DB settings if needed:
 
 ```bash
 LMBRIDGE_CACHE_DB=lm_cache_db \
-LMBRIDGE_CACHE_USER=abc \
-LMBRIDGE_CACHE_PASSWORD=abc \
+LMBRIDGE_CACHE_USER=lidarr \
+LMBRIDGE_CACHE_PASSWORD=lidarr \
 scripts/init-mbdb.sh
 ```
 

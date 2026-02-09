@@ -9,8 +9,8 @@ services:
       MB_DB_PASSWORD: ${MB_DB_PASSWORD:-musicbrainz}
       MB_DB_NAME: ${MB_DB_NAME:-musicbrainz_db}
       LMBRIDGE_CACHE_DB: ${LMBRIDGE_CACHE_DB:-lm_cache_db}
-      LMBRIDGE_CACHE_USER: ${LMBRIDGE_CACHE_USER:-abc}
-      LMBRIDGE_CACHE_PASSWORD: ${LMBRIDGE_CACHE_PASSWORD:-abc}
+      LMBRIDGE_CACHE_USER: ${LMBRIDGE_CACHE_USER:-lidarr}
+      LMBRIDGE_CACHE_PASSWORD: ${LMBRIDGE_CACHE_PASSWORD:-lidarr}
     restart: "no"
     networks:
       - musicbrainz
