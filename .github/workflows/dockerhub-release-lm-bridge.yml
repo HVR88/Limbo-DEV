@@ -48,12 +48,23 @@ jobs:
 
       - name: Compute tags
         id: tags
+        shell: bash
         run: |
-          tags="${IMAGE_NAME}:${{ inputs.tag }}"
+          tag="${{ inputs.tag }}"
+          norm="$tag"
+          if [[ "$tag" =~ ^v[0-9] ]]; then
+            norm="${tag#v}"
+          fi
+
+          tags="${IMAGE_NAME}:${norm}"
+          if [ "$tag" != "$norm" ]; then
+            tags="$tags,${IMAGE_NAME}:${tag}"
+          fi
           if [ "${{ inputs.push_latest }}" = "true" ]; then
             tags="$tags,${IMAGE_NAME}:latest"
           fi
           echo "tags=$tags" >> "$GITHUB_OUTPUT"
+          echo "version=$norm" >> "$GITHUB_OUTPUT"
 
       - name: Build and push
         uses: docker/build-push-action@v6
@@ -63,6 +74,12 @@ jobs:
           platforms: ${{ inputs.platforms }}
           push: true
           tags: ${{ steps.tags.outputs.tags }}
+          labels: |
+            org.opencontainers.image.title=LM-Bridge
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.url=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=${{ steps.tags.outputs.version }}
 
   update-description:
     runs-on: ubuntu-latest
