@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/HVR88/LM-Bridge/main/assets/lmbridge-icon.png" alt="LM Bridge" width="500" />
+  <img src="https://raw.githubusercontent.com/HVR88/LM-Bridge-DEV/main/assets/lmbridge-icon.png" alt="LM Bridge" width="500" />
 </p>
 
 # Lidarr/MusicBrainz Bridge
