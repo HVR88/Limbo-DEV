@@ -35,13 +35,12 @@ jobs:
 
       - name: Commit and push
         run: |
-          cd deploy-repo
-          if [[ -z "$(git status --porcelain)" ]]; then
+          if [[ -z "$(git -C deploy-repo status --porcelain)" ]]; then
             echo "No changes to deploy repo."
             exit 0
           fi
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add .
-          git commit -m "Sync deploy from ${GITHUB_REPOSITORY}@${GITHUB_SHA}"
-          git push
+          git -C deploy-repo config user.name "github-actions[bot]"
+          git -C deploy-repo config user.email "github-actions[bot]@users.noreply.github.com"
+          git -C deploy-repo add .
+          git -C deploy-repo commit -m "Sync deploy from ${GITHUB_REPOSITORY}@${GITHUB_SHA}"
+          git -C deploy-repo push
