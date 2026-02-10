@@ -1,35 +1,26 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/HVR88/LM-Bridge-DEV/main/assets/lmbridge-icon.png" alt="LM Bridge" width="500" />
+  <img src="https://raw.githubusercontent.com/HVR88/LM-Bridge-DEV/main/assets/lmbridge-icon.png" alt="LM Bridge" width="250" />
 </p>
 
-# Lidarr/MusicBrainz Bridge
+# LM Bridge Development Source
 
 **A Local API Bridge - _FAST_ queries, no remote server issues**
 
-This repo Contains two complimentary parts that run 100% locally:
+**_This is the source repo to build the LM-Bridge project_**
+and contains two complimentary parts that run 100% locally:
 
 1. A Lidarr Metadata Server image that bridges to a MusicBrainz mirror
 2. A Plugin to set the URL of this bridge container in Lidarr
 
 **_Thanks to blampe and Typnull for inspiration_** : this wouldn't have been possible without leveraging their previous work
 
-**_If you just want to run the LM Bridge, don't use this repo - it's for building from source_**
-
-_You'll want only the **Compose** file above plus the **Docker Container** below:_
+> [!IMPORTANT]
+>
+> **_For the premade Docker container, visit the Deployment Repo instead: https://github.com/HVR88/LM-Bridge_**
 
 Deploy-only files live in `deploy/` (`docker-compose.yml`, `compose/`, `.env.example`). You can copy that folder as-is, or run `scripts/export-deploy.sh` to create a bundle or sync it to a separate deploy repo (the export excludes `.env` by default).
 
-> [!NOTE]
->
-> ## **[espressomatic/lm-bridge](https://hub.docker.com/r/espressomatic/lm-bridge)**
-
-Likewise, you should already be running a plugins-enabled [Lidarr](https://hub.docker.com/r/linuxserver/lidarr) release plus [MusicBrainz Mirror](https://github.com/metabrainz/musicbrainz-docker) server _(with materialized tables AND fully indexed db)_
-
-> [!IMPORTANT]
->
-> _Follow **the above linked** MusicBrainz Mirror Server instructions_<br>
-
-## Repo Summary
+## Source Repo Summary
 
 **What This Repo Does**
 
@@ -54,30 +45,6 @@ Likewise, you should already be running a plugins-enabled [Lidarr](https://hub.d
 
 1. MusicBrainz DB defaults to user `musicbrainz` and password `musicbrainz`
 2. LM-BRIDGE cache DB defaults user `lidarr` and password `lidarr`
-
-## Lidarr API Plugin (Required)
-
-This repo includes a plugin that will appear in Lidarr's Metadata settings page after being installed. Lidarr must have this plugin installed to talk to the bridge on your network.
-
-**Install the Plugin**
-
-1. In Lidarr, open **System → Plugins**
-2. Paste the GitHub repo URL into the GitHub URL box and click **Install**.
-3. Restart Lidarr when prompted.
-
-Example: URL for this repo: `https://github.com/HVR88/LM-Bridge`
-
-If you don't see a System → Plugins page in your Lidarr, switch to the `nightly` branch, such as **[LinuxServer.io's](https://hub.docker.com/r/linuxserver/lidarr)**
-
-**Enable the Plugin**
-
-1. In Lidarr, open **Settings → Metadata**
-2. Click **Lidarr/MusicBrainz Bridge API**.
-3. Make sure the Enable check-box is checked
-4. Enter the URL of the LM Bridge container : 5001
-5. Click Save
-
-Lidarr is now using the Bridge API and you should see lightning-fast queries to your MusicBrainz mirror.
 
 ## Configuration of the LM Bridge Container
 
@@ -127,7 +94,7 @@ The script also creates the cache tables (`fanart`, `tadb`, `wikipedia`, `artist
 
 ## Technical - Build And Run
 
-## Clone
+### Clone
 
 Recommended (pulls the upstream submodule automatically):
 
@@ -198,7 +165,7 @@ If you are building from source, add the dev override:
 MB_NETWORK=musicbrainz_default docker compose -f deploy/compose/lm-bridge-docker-network.yml -f docker-compose.dev.yml up -d
 ```
 
-## Verify
+### Verify
 
 Once running, test a known artist endpoint:
 
