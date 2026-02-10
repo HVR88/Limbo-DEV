@@ -1,4 +1,4 @@
 name: lm-bridge
 
 include:
-  - overlay/deploy/lm-bridge-compose.yml
+  - deploy/compose/lm-bridge-docker-network.yml

@@ -4,7 +4,7 @@
 
 # Lidarr/MusicBrainz Bridge
 
-**A Lidarr metadata server that bridges to a local MusicBrainz mirror - FAST queries, no Remote Lidarr server issues**
+**A Local API Bridge - _FAST_ queries, no remote server issues**
 
 This repo Contains two complimentary parts that run 100% locally:
 
@@ -16,6 +16,8 @@ This repo Contains two complimentary parts that run 100% locally:
 **_If you just want to run the LM Bridge, don't use this repo - it's for building from source_**
 
 _You'll want only the **Compose** file above plus the **Docker Container** below:_
+
+Deploy-only files live in `deploy/` (`docker-compose.yml`, `compose/`, `.env.example`). You can copy that folder as-is, or run `scripts/export-deploy.sh` to create a bundle or sync it to a separate deploy repo (the export excludes `.env` by default).
 
 > [!NOTE]
 >
@@ -79,7 +81,7 @@ Lidarr is now using the Bridge API and you should see lightning-fast queries to 
 
 ## Configuration of the LM Bridge Container
 
-Edit `overlay/deploy/lm-bridge-settings.yml` to match your environment. This file is a standalone Compose file for the LM-Bridge container.
+Edit `deploy/compose/lm-bridge-hosted-services.yml` to match your environment. This file is a standalone Compose file for the LM-Bridge container.
 
 Important fields:
 
@@ -89,7 +91,7 @@ Important fields:
 
 If you want to use Docker service names like `db`, `search`, or `redis`, run this container on the same Docker network as your MusicBrainz mirror.
 
-For best metadata enrichment, set API keys for TheAudioDB and Fanart.tv via `TADB_KEY` and `FANART_KEY` (in `overlay/deploy/lm-bridge-settings.yml` or via environment variables).
+For best metadata enrichment, set API keys for TheAudioDB and Fanart.tv via `TADB_KEY` and `FANART_KEY` (in `deploy/compose/lm-bridge-hosted-services.yml` or via environment variables).
 
 ## Initialize LMBRIDGE Cache DB and MusicBrainz Indexes
 
@@ -158,13 +160,13 @@ Multi-arch build (push required):
 PLATFORMS=linux/amd64,linux/arm64 PUSH=1 LMBRIDGE_IMAGE=lm-bridge:latest scripts/build-image.sh
 ```
 
-Start the container using the provided settings file (Compose will build the image if it doesn't exist locally):
+Start the container using the provided settings file (Compose will pull the image if it doesn't exist locally):
 
 ```bash
-docker compose -f overlay/deploy/lm-bridge-settings.yml up -d
+docker compose -f deploy/compose/lm-bridge-hosted-services.yml up -d
 ```
 
-Note: Compose defaults to `lm-bridge:latest`. Build locally first, or set `LMBRIDGE_IMAGE` to a tag you’ve already built or pushed.
+Note: Deploy files default to `espressomatic/lm-bridge:latest`. If you build locally, set `LMBRIDGE_IMAGE` to your tag.
 
 If you want to run it on the **same Docker network** as your MusicBrainz mirror and auto-run the **init container**, use the repo’s root `docker-compose.yml` (it’s already there if you cloned the repo). Then run:
 
@@ -187,7 +189,13 @@ Note: `MB_DB_USER` must have permission to create roles and databases (the mirro
 If your Docker Compose version does not support `include` (used by `docker-compose.yml`), you can still run the underlying file directly:
 
 ```bash
-MB_NETWORK=musicbrainz_default docker compose -f overlay/deploy/lm-bridge-compose.yml up -d
+MB_NETWORK=musicbrainz_default docker compose -f deploy/compose/lm-bridge-docker-network.yml up -d
+```
+
+If you are building from source, add the dev override:
+
+```bash
+MB_NETWORK=musicbrainz_default docker compose -f deploy/compose/lm-bridge-docker-network.yml -f docker-compose.dev.yml up -d
 ```
 
 ## Verify

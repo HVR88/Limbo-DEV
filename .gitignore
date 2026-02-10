@@ -7,6 +7,10 @@ research/
 # Local noise
 **/.DS_Store
 
+# Deploy outputs
+deploy/.env
+dist/
+
 # Plugin local backup
 lm-bridge-plugin/Submodules/Lidarr.bak/
 

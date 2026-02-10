@@ -52,10 +52,22 @@ jobs:
           chmod +x lm-bridge-plugin/build.sh
           VERSION_OVERRIDE="${{ steps.version.outputs.version }}" lm-bridge-plugin/build.sh
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ steps.version.outputs.tag }}
-          name: Lidar/MusicBrainz Plugin v${{ steps.version.outputs.version }}
-          files: lm-bridge-plugin/dist/*.zip
-          generate_release_notes: true
+      - name: Publish to deploy repo release
+        env:
+          GH_TOKEN: ${{ secrets.LMBRIDGE_DEPLOY_TOKEN }}
+          DEPLOY_REPO: ${{ github.repository_owner }}/LM-Bridge
+          TAG: ${{ steps.version.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${GH_TOKEN:-}" ]]; then
+            echo "LMBRIDGE_DEPLOY_TOKEN not set; skipping deploy repo release."
+            exit 0
+          fi
+          files=(lm-bridge-plugin/dist/*.zip)
+          title="LM-Bridge Plugin v${VERSION}"
+          if gh release view "${TAG}" --repo "${DEPLOY_REPO}" >/dev/null 2>&1; then
+            gh release upload "${TAG}" "${files[@]}" --repo "${DEPLOY_REPO}" --clobber
+          else
+            gh release create "${TAG}" "${files[@]}" --repo "${DEPLOY_REPO}" --title "${title}" --generate-notes
+          fi
