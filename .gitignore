@@ -9,7 +9,6 @@ research/
 lm-bridge.code-workspace
 
 # Deploy outputs
-deploy/.env
 dist/
 
 # Plugin local backup
