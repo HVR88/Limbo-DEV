@@ -70,13 +70,18 @@ jobs:
             norm="${tag#v}"
           fi
 
-          tags="${IMAGE_NAME}:${norm}"
-          if [ "$tag" != "$norm" ]; then
-            tags="$tags,${IMAGE_NAME}:${tag}"
+          if [[ "$norm" =~ ^([0-9]+\.[0-9]+\.[0-9]+)\.[0-9]+$ ]]; then
+            docker_tag="${BASH_REMATCH[1]}"
+          elif [[ "$norm" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            docker_tag="$norm"
+          else
+            echo "Invalid tag format for Docker Hub: $norm" >&2
+            exit 1
           fi
-          tags="$tags,${IMAGE_NAME}:latest"
+
+          tags="${IMAGE_NAME}:${docker_tag},${IMAGE_NAME}:latest"
           echo "tags=$tags" >> "$GITHUB_OUTPUT"
-          echo "version=$norm" >> "$GITHUB_OUTPUT"
+          echo "version=$docker_tag" >> "$GITHUB_OUTPUT"
 
       - name: Build and push
         uses: docker/build-push-action@v6
