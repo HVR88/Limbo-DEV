@@ -1,0 +1,40 @@
+name: Tag Version
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: write
+
+jobs:
+  tag-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Tag if VERSION changed
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          BEFORE="${{ github.event.before }}"
+          AFTER="${{ github.sha }}"
+
+          if git diff --name-only "$BEFORE" "$AFTER" | grep -q '^VERSION$'; then
+            VERSION=$(cat VERSION)
+            TAG="v${VERSION}"
+            git fetch --tags
+            if git rev-parse "$TAG" >/dev/null 2>&1; then
+              echo "Tag $TAG already exists."
+              exit 0
+            fi
+            git tag -a "$TAG" -m "Version $VERSION"
+            git push origin "$TAG"
+          else
+            echo "VERSION unchanged; skipping tag."
+          fi

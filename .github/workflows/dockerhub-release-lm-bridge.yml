@@ -11,6 +11,9 @@ on:
         description: "Target platforms"
         required: true
         default: "linux/amd64"
+  push:
+    tags:
+      - "v*"
 
 env:
   IMAGE_NAME: espressomatic/lm-bridge
@@ -38,11 +41,30 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN_LMBRIDGE }}
 
+      - name: Resolve inputs
+        id: vars
+        shell: bash
+        run: |
+          tag_input="${{ inputs.tag }}"
+          if [[ -n "$tag_input" ]]; then
+            tag="$tag_input"
+          else
+            tag="${GITHUB_REF_NAME}"
+          fi
+
+          platforms="${{ inputs.platforms }}"
+          if [[ -z "$platforms" ]]; then
+            platforms="linux/amd64"
+          fi
+
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "platforms=$platforms" >> "$GITHUB_OUTPUT"
+
       - name: Compute tags
         id: tags
         shell: bash
         run: |
-          tag="${{ inputs.tag }}"
+          tag="${{ steps.vars.outputs.tag }}"
           norm="$tag"
           if [[ "$tag" =~ ^v[0-9] ]]; then
             norm="${tag#v}"
@@ -61,7 +83,7 @@ jobs:
         with:
           context: .
           file: Dockerfile
-          platforms: ${{ inputs.platforms }}
+          platforms: ${{ steps.vars.outputs.platforms }}
           push: true
           tags: ${{ steps.tags.outputs.tags }}
           labels: |
