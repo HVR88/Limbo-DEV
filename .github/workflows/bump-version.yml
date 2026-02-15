@@ -14,10 +14,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Bump VERSION + sync files
         run: |
           set -e
+          BEFORE="${{ github.event.before }}"
+          AFTER="${{ github.sha }}"
+          if git diff --name-only "$BEFORE" "$AFTER" | grep -q '^VERSION$'; then
+            echo "VERSION already changed in this push; skipping bump."
+            exit 0
+          fi
           if [ ! -f VERSION ]; then
             echo "VERSION file not found." >&2
             exit 1
