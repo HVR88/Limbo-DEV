@@ -30,6 +30,11 @@ services:
       # Uses lidarr:lidarr by default in upstream; ensure that user exists or adjust.
       POSTGRES_CACHE_HOST: "db"
       POSTGRES_CACHE_PORT: "5432"
+      POSTGRES_CACHE_DB: "lm_cache_db"
+      POSTGRES_CACHE_USER: "lidarr"
+      POSTGRES_CACHE_PASSWORD: "lidarr"
+      POSTGRES_CACHE_SCHEMA: "public"
+      LMBRIDGE_INIT_STATE_DIR: "/metadata/init-state"
 
       # --- External providers (fill in later) ---
       FANART_KEY: ""

@@ -21,6 +21,9 @@ MB_DB_NETWORK=${MB_DB_NETWORK:-}
 LMBRIDGE_CACHE_DB=${LMBRIDGE_CACHE_DB:-lm_cache_db}
 LMBRIDGE_CACHE_USER=${LMBRIDGE_CACHE_USER:-lidarr}
 LMBRIDGE_CACHE_PASSWORD=${LMBRIDGE_CACHE_PASSWORD:-lidarr}
+LMBRIDGE_CACHE_SCHEMA=${LMBRIDGE_CACHE_SCHEMA:-public}
+LMBRIDGE_CACHE_FAIL_OPEN=${LMBRIDGE_CACHE_FAIL_OPEN:-false}
+LMBRIDGE_INIT_STATE_DIR=${LMBRIDGE_INIT_STATE_DIR:-/metadata/init-state}
 
 TMP_SQL="$(mktemp)"
 CACHE_SQL="$(mktemp)"
@@ -87,10 +90,30 @@ echo "Initializing cache role/database and MusicBrainz indexes..."
 ensure_role
 ensure_db
 
+# Ensure cache DB permissions so cache tables can be created
+echo "Ensuring cache DB permissions..."
+psql_run "$MB_ADMIN_DB" -v ON_ERROR_STOP=1 \
+  -c "GRANT CONNECT ON DATABASE \"${LMBRIDGE_CACHE_DB}\" TO \"${LMBRIDGE_CACHE_USER}\";"
+psql_run "$LMBRIDGE_CACHE_DB" -v ON_ERROR_STOP=1 \
+  -c "GRANT USAGE, CREATE ON SCHEMA public TO \"${LMBRIDGE_CACHE_USER}\";"
+
+if [[ "$LMBRIDGE_CACHE_SCHEMA" != "public" ]]; then
+  psql_run "$LMBRIDGE_CACHE_DB" -v ON_ERROR_STOP=1 \
+    -c "CREATE SCHEMA IF NOT EXISTS \"${LMBRIDGE_CACHE_SCHEMA}\" AUTHORIZATION \"${LMBRIDGE_CACHE_USER}\";"
+  psql_run "$LMBRIDGE_CACHE_DB" -v ON_ERROR_STOP=1 \
+    -c "GRANT USAGE, CREATE ON SCHEMA \"${LMBRIDGE_CACHE_SCHEMA}\" TO \"${LMBRIDGE_CACHE_USER}\";"
+  psql_run "$LMBRIDGE_CACHE_DB" -v ON_ERROR_STOP=1 \
+    -c "ALTER ROLE \"${LMBRIDGE_CACHE_USER}\" IN DATABASE \"${LMBRIDGE_CACHE_DB}\" SET search_path = \"${LMBRIDGE_CACHE_SCHEMA}\", public;"
+fi
+
 # Create indexes on musicbrainz_db
 psql_run "$MB_DB_NAME" -v ON_ERROR_STOP=1 -f "$SQL_PATH"
 
-cat > "$CACHE_SQL" <<'SQL'
+{
+  if [[ "$LMBRIDGE_CACHE_SCHEMA" != "public" ]]; then
+    echo "SET search_path TO \"${LMBRIDGE_CACHE_SCHEMA}\", public;"
+  fi
+  cat <<'SQL'
 CREATE OR REPLACE FUNCTION cache_updated() RETURNS TRIGGER
 AS
 $$
@@ -101,6 +124,7 @@ END;
 $$
 language 'plpgsql';
 SQL
+} > "$CACHE_SQL"
 
 cache_tables=(fanart tadb wikipedia artist album spotify)
 for table in "${cache_tables[@]}"; do
@@ -114,6 +138,18 @@ SQL
 done
 
 # Ensure cache tables exist in lm_cache_db
-psql_run_cache "$LMBRIDGE_CACHE_DB" -v ON_ERROR_STOP=1 -f "$CACHE_SQL_PATH"
+mkdir -p "$LMBRIDGE_INIT_STATE_DIR"
+if ! psql_run_cache "$LMBRIDGE_CACHE_DB" -v ON_ERROR_STOP=1 -f "$CACHE_SQL_PATH"; then
+  echo "ERROR: cache table creation failed for database ${LMBRIDGE_CACHE_DB}." >&2
+  echo "Common cause: ${LMBRIDGE_CACHE_USER} lacks CREATE on schema ${LMBRIDGE_CACHE_SCHEMA}." >&2
+  echo "Suggested fix: GRANT USAGE, CREATE ON SCHEMA ${LMBRIDGE_CACHE_SCHEMA} TO ${LMBRIDGE_CACHE_USER};" >&2
+  if [[ "$LMBRIDGE_CACHE_FAIL_OPEN" == "true" || "$LMBRIDGE_CACHE_FAIL_OPEN" == "1" ]]; then
+    echo "Cache fail-open enabled. API will start with cache disabled." >&2
+    touch "$LMBRIDGE_INIT_STATE_DIR/cache_init_failed"
+    exit 0
+  fi
+  exit 3
+fi
+rm -f "$LMBRIDGE_INIT_STATE_DIR/cache_init_failed"
 
 echo "Done."

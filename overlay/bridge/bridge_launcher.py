@@ -17,6 +17,15 @@ def main() -> int:
     # Default to the bridge config unless explicitly overridden
     os.environ.setdefault("LIDARR_METADATA_CONFIG", "BRIDGE")
 
+    init_state_dir = os.environ.get("LMBRIDGE_INIT_STATE_DIR", "/metadata/init-state")
+    cache_fail_flag = os.path.join(init_state_dir, "cache_init_failed")
+    if os.path.exists(cache_fail_flag):
+        os.environ.setdefault("USE_CACHE", "false")
+        print(
+            "LM-Bridge: cache init failed; starting with USE_CACHE=false (null cache).",
+            file=sys.stderr,
+        )
+
     # Register overlay config (adds BRIDGE to CONFIGS)
     import lidarrmetadata.bridge_config  # noqa: F401
 

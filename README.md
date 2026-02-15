@@ -90,6 +90,14 @@ LMBRIDGE_CACHE_PASSWORD=lidarr \
 scripts/init-mbdb.sh
 ```
 
+Optional cache schema and fail-open:
+
+```bash
+LMBRIDGE_CACHE_SCHEMA=lm_cache \
+LMBRIDGE_CACHE_FAIL_OPEN=true \
+scripts/init-mbdb.sh
+```
+
 The script also creates the cache tables (`fanart`, `tadb`, `wikipedia`, `artist`, `album`, `spotify`) inside `lm_cache_db` to avoid runtime errors like `relation "tadb" does not exist`.
 
 ## Technical - Build And Run
