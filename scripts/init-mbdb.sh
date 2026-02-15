@@ -114,15 +114,27 @@ psql_run "$MB_DB_NAME" -v ON_ERROR_STOP=1 -f "$SQL_PATH"
     echo "SET search_path TO \"${LMBRIDGE_CACHE_SCHEMA}\", public;"
   fi
   cat <<'SQL'
-CREATE OR REPLACE FUNCTION cache_updated() RETURNS TRIGGER
-AS
-$$
+DO $do$
 BEGIN
-    NEW.updated = current_timestamp;
-    RETURN NEW;
-END;
-$$
-language 'plpgsql';
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_proc p
+        JOIN pg_namespace n ON n.oid = p.pronamespace
+        WHERE p.proname = 'cache_updated'
+          AND n.nspname = current_schema()
+    ) THEN
+        EXECUTE $f$
+        CREATE FUNCTION cache_updated() RETURNS TRIGGER
+        AS $$
+        BEGIN
+            NEW.updated = current_timestamp;
+            RETURN NEW;
+        END;
+        $$ LANGUAGE plpgsql;
+        $f$;
+    END IF;
+END
+$do$;
 SQL
 } > "$CACHE_SQL"
 
