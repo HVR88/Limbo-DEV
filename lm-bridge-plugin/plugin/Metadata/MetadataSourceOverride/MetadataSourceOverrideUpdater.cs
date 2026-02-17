@@ -10,7 +10,11 @@ using NzbDrone.Common.Serializer;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Extras.Metadata;
 using NzbDrone.Core.Lifecycle;
+using NzbDrone.Core.MediaFiles;
+using NzbDrone.Core.MediaFiles.Commands;
+using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Messaging.Events;
+using NzbDrone.Core.RootFolders;
 using NzbDrone.Core.ThingiProvider;
 using NzbDrone.Core.ThingiProvider.Events;
 
@@ -30,6 +34,8 @@ namespace LMBridgePlugin.Metadata.MetadataSourceOverride
         private readonly IConfigService _configService;
         private readonly IDiskProvider _diskProvider;
         private readonly IHttpClient _httpClient;
+        private readonly IManageCommandQueue _commandQueueManager;
+        private readonly IRootFolderService _rootFolderService;
         private readonly Logger _logger;
         private readonly string _autoEnableMarkerPath;
         private string? _lastReleaseFilterPayload;
@@ -38,12 +44,16 @@ namespace LMBridgePlugin.Metadata.MetadataSourceOverride
                                              IConfigService configService,
                                              IDiskProvider diskProvider,
                                              IHttpClient httpClient,
+                                             IManageCommandQueue commandQueueManager,
+                                             IRootFolderService rootFolderService,
                                              Logger logger)
         {
             _metadataRepository = metadataRepository;
             _configService = configService;
             _diskProvider = diskProvider;
             _httpClient = httpClient;
+            _commandQueueManager = commandQueueManager;
+            _rootFolderService = rootFolderService;
             _logger = logger;
             _autoEnableMarkerPath = ResolveAutoEnableMarkerPath();
         }
@@ -152,6 +162,50 @@ namespace LMBridgePlugin.Metadata.MetadataSourceOverride
             }
 
             SyncReleaseFilterConfig(definition, settings, logEvenIfUnchanged);
+            HandleForceRescan(definition, settings);
+        }
+
+        private void HandleForceRescan(ProviderDefinition definition, MetadataSourceOverrideSettings settings)
+        {
+            if (definition == null || settings == null)
+            {
+                return;
+            }
+
+            if (!definition.Enable || !settings.ForceRescanReleases)
+            {
+                return;
+            }
+
+            if (definition is not MetadataDefinition metadataDefinition)
+            {
+                return;
+            }
+
+            try
+            {
+                var folders = _rootFolderService.All()
+                    .Select(folder => folder.Path)
+                    .Where(path => path.IsNotNullOrWhiteSpace())
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
+                if (folders.Count == 0)
+                {
+                    _logger.Warn("Force Rescan requested but no root folders were found.");
+                    return;
+                }
+
+                _commandQueueManager.Push(new RescanFoldersCommand(folders, FilterFilesType.Known, false, null),
+                    trigger: CommandTrigger.Manual);
+                _logger.Info("Queued rescan of releases for {0} root folder(s).", folders.Count);
+            }
+            finally
+            {
+                settings.ForceRescanReleases = false;
+                _metadataRepository.Update(metadataDefinition);
+                _logger.Info("Cleared Force Rescan of Releases flag.");
+            }
         }
 
         private void EnsureDisplayName(ProviderDefinition definition)
