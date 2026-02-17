@@ -5,10 +5,10 @@
     <Nullable>enable</Nullable>
     <RootNamespace>LMBridgePlugin</RootNamespace>
     <AssemblyName>Lidarr.Plugin.LMBridge</AssemblyName>
-    <AssemblyVersion>1.6.5.00</AssemblyVersion>
-    <Version>1.6.5.00</Version>
-    <AssemblyVersion>1.6.5.00</AssemblyVersion>
-    <Version>1.6.5.00</Version>
+    <AssemblyVersion>1.6.8.00</AssemblyVersion>
+    <Version>1.6.8.00</Version>
+    <AssemblyVersion>1.6.8.00</AssemblyVersion>
+    <Version>1.6.8.00</Version>
     <Branch></Branch>
     <Author>HVR88</Author>
     <RepoUrl>https://github.com/HVR88/LM-Bridge</RepoUrl>

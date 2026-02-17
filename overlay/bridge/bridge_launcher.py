@@ -44,6 +44,8 @@ def main() -> int:
 
     from lidarrmetadata import version_patch
     version_patch.register_version_route()
+    from lidarrmetadata import root_patch
+    root_patch.register_root_route()
     from lidarrmetadata import config_patch
     config_patch.register_config_routes()
 

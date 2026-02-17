@@ -130,7 +130,7 @@ namespace LMBridgePlugin.Metadata.MetadataSourceOverride
         [FieldDefinition(4, Label = "Prefer", HelpText = "when Max # set. (Digital or Analog format priority)", HelpLink = "https://github.com/HVR88/LM-Bridge", Type = FieldType.Select, SelectOptions = typeof(MediaPreferOption), Section = MetadataSectionType.Metadata)]
         public int Prefer { get; set; } = (int)MediaPreferOption.Digital;
 
-        [FieldDefinition(5, Label = "Rescan Releases", HelpText = "One-time immediate scan of all releases to update available formats. Releases will otherwise update over time on their own as they're slowly rescanned by Lidarr.", HelpTextWarning = "This will take a long time on large libraries.", Type = FieldType.Checkbox, Section = MetadataSectionType.Metadata)]
+        [FieldDefinition(5, Label = "Refresh Releases", HelpText = "One-time refresh of all releases to update formats. Releases will otherwise update slowly over time, as they're refreshed by Lidarr (anywhere from days to never).", HelpTextWarning = "This will take a long time on large libraries.", Type = FieldType.Checkbox, Section = MetadataSectionType.Metadata)]
         public bool ForceRescanReleases { get; set; }
 
         public bool UseAtOwnRisk { get; set; } = true;

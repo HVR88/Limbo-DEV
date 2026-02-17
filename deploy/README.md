@@ -2,7 +2,7 @@
   <img src="https://raw.githubusercontent.com/HVR88/LM-Bridge-DEV/main/assets/lmbridge-icon.png" alt="LM Bridge" width="500" />
 </p>
 
-# <p align="center">**_Lidarr Metadata Bridge_**<br><sub>**_FAST • Local • Private_**</sub></p>
+# <p align="center">**LM Bridge - Metadata Handler for Lidarr\_**<br><sub>**_FAST • Local • Private_**</sub></p>
 
 ## Introduction
 
@@ -10,10 +10,11 @@ This is a stand-alone _LM Bridge_ release for existing MusicBrainz mirror instal
 
 **LM Bridge Features**
 
-- Helps to make Lidarr feel less like _hot garbage_
-- Direct access to local MusicBrainz mirror server for all queries
+- Directly access a local MusicBrainz server instead of remote Lidarr server
+  - No more broken connections, and failed searches
 - Caching database
-- Media Format filtering - remove vinyl or other issues from all releases
+- Media Format filtering - remove media issues you don't want listed in Lidarr
+  - Vinyl? Cassette? Remove them if you want, right at the data layer
 - Extendable hook mechanism allows others to add functionality
 
 > [!IMPORTANT]
@@ -57,8 +58,8 @@ docker compose up -d
 
 ## Version
 
-Deploy version: `1.6.5.00`
-Deploy version: `1.6.5.00`
+Deploy version: `1.6.8.00`
+Deploy version: `1.6.8.00`
 
 Optional cache settings (in `.env`):
 
