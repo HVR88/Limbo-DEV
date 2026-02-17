@@ -37,6 +37,14 @@ def _env_first(*names: str) -> Optional[str]:
     return None
 
 
+def _env_any(*names: str) -> bool:
+    for name in names:
+        value = os.getenv(name)
+        if value is not None and str(value).strip():
+            return True
+    return False
+
+
 def _format_replication_schedule() -> Optional[str]:
     enabled = _env_first("MUSICBRAINZ_REPLICATION_ENABLED")
     if enabled is not None and enabled.lower() in {"0", "false", "no", "off"}:
@@ -175,6 +183,19 @@ def register_root_route() -> None:
             "replication_date": fmt(replication_date),
             "uptime": _format_uptime(time.time() - _START_TIME),
         }
+        show_mbms = _env_any(
+            "MBMS_PLUS_VERSION",
+            "MBMS_REPLICATION_SCHEDULE",
+            "MBMS_INDEX_SCHEDULE",
+            "MUSICBRAINZ_REPLICATION_SCHEDULE",
+            "MUSICBRAINZ_REPLICATION_TIME",
+            "MUSICBRAINZ_REPLICATION_ENABLED",
+            "MUSICBRAINZ_INDEXING_SCHEDULE",
+            "MUSICBRAINZ_INDEXING_TIME",
+            "MUSICBRAINZ_INDEXING_DAY",
+            "MUSICBRAINZ_INDEXING_FREQUENCY",
+            "MUSICBRAINZ_INDEXING_ENABLED",
+        )
         try:
             from lidarrmetadata import release_filters
 
@@ -203,211 +224,78 @@ def register_root_route() -> None:
             else "/assets/lmbridge-icon.png"
         )
         mbms_url = "https://github.com/HVR88/MBMS_PLUS"
-        config_json = html.escape(json.dumps(config, indent=2, sort_keys=True))
+        def fmt_config_value(value: object) -> str:
+            if value is None:
+                return "none"
+            if isinstance(value, bool):
+                return "Yes" if value else "No"
+            if isinstance(value, (list, tuple)):
+                return ", ".join(str(item) for item in value) or "none"
+            text = str(value).strip()
+            return text if text else "none"
 
-        page = f"""<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>LM Bridge</title>
-  <style>
-    :root {{
-      --bg1: #f6f1e9;
-      --bg2: #e6f2f3;
-      --ink: #1f2c33;
-      --muted: #55666f;
-      --accent: #0b7d6d;
-      --accent-2: #e2b159;
-      --card: rgba(255, 255, 255, 0.88);
-      --border: rgba(31, 44, 51, 0.08);
-      --shadow: 0 12px 30px rgba(26, 38, 45, 0.14);
-    }}
-    * {{ box-sizing: border-box; }}
-    body {{
-      margin: 0;
-      color: var(--ink);
-      font-family: "Space Grotesk", "IBM Plex Sans", "Source Sans 3", sans-serif;
-      background:
-        radial-gradient(1200px 700px at 10% 0%, var(--bg2), transparent 60%),
-        radial-gradient(900px 600px at 100% 0%, #f8e8d4, transparent 55%),
-        linear-gradient(180deg, var(--bg1), #fbfbfb 65%);
-      min-height: 100vh;
-    }}
-    .wrap {{
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 48px 24px 64px;
-    }}
-    .card {{
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 28px 28px 24px;
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(6px);
-    }}
-    .hero {{
-      text-align: center;
-      margin-bottom: 12px;
-    }}
-    .hero img {{
-      max-width: 100%;
-      height: auto;
-    }}
-    .hero-title {{
-      margin: 12px 0 6px 0;
-      font-size: clamp(26px, 4vw, 40px);
-      letter-spacing: -0.02em;
-    }}
-    .hero-sub {{
-      display: block;
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--muted);
-      letter-spacing: 0.08em;
-    }}
-    h1 {{
-      margin: 0 0 8px 0;
-      font-size: clamp(28px, 4vw, 40px);
-      letter-spacing: -0.02em;
-    }}
-    .subtitle {{
-      margin: 0 0 22px 0;
-      color: var(--muted);
-      font-size: 16px;
-    }}
-    .grid {{
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 14px;
-    }}
-    .pill {{
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 12px 14px;
-      background: #ffffff;
-    }}
-    .label {{
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--muted);
-      margin-bottom: 6px;
-    }}
-    .value {{
-      font-size: 16px;
-      font-weight: 600;
-    }}
-    .links {{
-      margin-top: 20px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }}
-    .config {{
-      margin-top: 20px;
-      border: 1px solid var(--border);
-      background: #fff;
-      border-radius: 12px;
-      padding: 14px 16px;
-      font-family: "JetBrains Mono", "SFMono-Regular", "Consolas", "Liberation Mono", monospace;
-      font-size: 12px;
-      line-height: 1.6;
-      white-space: pre-wrap;
-      max-height: 260px;
-      overflow: auto;
-    }}
-    .link {{
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 14px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: #fff;
-      color: var(--ink);
-      text-decoration: none;
-      font-weight: 600;
-      transition: transform 120ms ease, box-shadow 120ms ease;
-    }}
-    .link:hover {{
-      transform: translateY(-1px);
-      box-shadow: 0 8px 18px rgba(17, 27, 32, 0.12);
-    }}
-    .badge {{
-      display: inline-block;
-      font-size: 12px;
-      font-weight: 700;
-      color: #fff;
-      background: var(--accent);
-      padding: 4px 10px;
-      border-radius: 999px;
-    }}
-    .foot {{
-      margin-top: 18px;
-      font-size: 13px;
-      color: var(--muted);
-    }}
-    .accent {{
-      color: var(--accent);
-    }}
-  </style>
-</head>
-<body>
-  <main class="wrap">
-    <section class="card">
-      <div class="hero">
-        <img src="{html.escape(icon_url)}" alt="LM Bridge" width="500" />
-        <h1 class="hero-title">LM Bridge - Metadata Handler for Lidarr</h1>
-        <span class="hero-sub"><em>FAST • Local • Private</em></span>
-      </div>
+        config_rows = [
+            ("Filtering Enabled", fmt_config_value(config.get("enabled"))),
+            (
+                "Exclude Media Formats",
+                fmt_config_value(config.get("exclude_media_formats")),
+            ),
+            (
+                "Include Media Formats",
+                fmt_config_value(config.get("include_media_formats")),
+            ),
+            ("Max Media Count", fmt_config_value(config.get("keep_only_media_count"))),
+            ("Prefer Media Type", fmt_config_value(config.get("prefer"))),
+        ]
+        config_html = "\n".join(
+            [
+                '          <div class="config-row">'
+                f'<div class="config-label">{html.escape(label)}</div>'
+                f'<div class="config-value">{html.escape(value)}</div>'
+                "</div>"
+                for label, value in config_rows
+            ]
+        )
 
-        <div class="grid">
-          <div class="pill">
-            <div class="label">LM Bridge Version</div>
-            <div class="value">{safe["version"]}</div>
-          </div>
-          <div class="pill">
-            <div class="label">MBMS PLUS VERSION</div>
-            <div class="value">{safe["mbms_plus_version"]}</div>
-          </div>
-          <div class="pill">
-            <div class="label">Lidarr Version (Last Seen)</div>
-            <div class="value">{safe["lidarr_version"]}</div>
-          </div>
-          <div class="pill">
-            <div class="label">MBMS Replication Schedule</div>
-            <div class="value">{safe["mbms_replication_schedule"]}</div>
-          </div>
-          <div class="pill">
-            <div class="label">MBMS Index Schedule</div>
-            <div class="value">{safe["mbms_index_schedule"]}</div>
-          </div>
-          <div class="pill">
-            <div class="label">Metadata Version</div>
-            <div class="value">{safe["metadata_version"]}</div>
-          </div>
-          <div class="pill">
-            <div class="label">Replication Date</div>
-            <div class="value">{safe["replication_date"]}</div>
-          </div>
-          <div class="pill">
-            <div class="label">Uptime</div>
-            <div class="value">{safe["uptime"]}</div>
-          </div>
-      </div>
-      <div class="links">
-        <a class="link" href="{html.escape(version_url)}">Version JSON</a>
-        <a class="link" href="{html.escape(mbms_url)}">MBMS PLUS Repo</a>
-      </div>
-      <pre class="config">{config_json}</pre>
-      <div class="foot">Tip: Use <span class="accent">/album/&lt;mbid&gt;</span> to fetch release group JSON | <span class="accent">/artist/&lt;mbid&gt;</span> to fetch artist JSON.</div>
-    </section>
-  </main>
-</body>
-</html>
-"""
+        template_path = assets_dir / "root.html"
+        template = template_path.read_text(encoding="utf-8")
+        replacements = {
+            "__ICON_URL__": html.escape(icon_url),
+            "__LM_VERSION__": safe["version"],
+            "__MBMS_PLUS_VERSION__": safe["mbms_plus_version"],
+            "__LIDARR_VERSION__": safe["lidarr_version"],
+            "__MBMS_REPLICATION_SCHEDULE__": safe["mbms_replication_schedule"],
+            "__MBMS_INDEX_SCHEDULE__": safe["mbms_index_schedule"],
+            "__METADATA_VERSION__": safe["metadata_version"],
+            "__REPLICATION_DATE__": safe["replication_date"],
+            "__UPTIME__": safe["uptime"],
+            "__VERSION_URL__": html.escape(version_url),
+            "__MBMS_URL__": html.escape(mbms_url),
+            "__CONFIG_HTML__": config_html,
+        }
+        if show_mbms:
+            mbms_pills = "\n".join(
+                [
+                    '          <div class="pill">',
+                    '            <div class="label">MBMS PLUS VERSION</div>',
+                    f'            <div class="value">{safe["mbms_plus_version"]}</div>',
+                    "          </div>",
+                    '          <div class="pill">',
+                    '            <div class="label">MBMS Replication Schedule</div>',
+                    f'            <div class="value">{safe["mbms_replication_schedule"]}</div>',
+                    "          </div>",
+                    '          <div class="pill">',
+                    '            <div class="label">MBMS Index Schedule</div>',
+                    f'            <div class="value">{safe["mbms_index_schedule"]}</div>',
+                    "          </div>",
+                ]
+            )
+        else:
+            mbms_pills = ""
+        replacements["__MBMS_PILLS__"] = mbms_pills
+        page = template
+        for key, value in replacements.items():
+            page = page.replace(key, value)
         return Response(page, mimetype="text/html")
 
     wrapped = no_cache(_lmbridge_root_route)

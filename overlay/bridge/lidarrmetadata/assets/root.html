@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LM Bridge</title>
+    <style>
+      :root {
+        --bg1: #f6f1e9;
+        --bg2: #e6f2f3;
+        --ink: #1f2c33;
+        --muted: #55666f;
+        --accent: #0b7d6d;
+        --accent-2: #e2b159;
+        --card: rgba(255, 255, 255, 0.88);
+        --border: rgba(31, 44, 51, 0.08);
+        --shadow: 0 12px 30px rgba(26, 38, 45, 0.14);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        color: var(--ink);
+        font-family:
+          "Space Grotesk", "IBM Plex Sans", "Source Sans 3", sans-serif;
+        background:
+          radial-gradient(1200px 700px at 10% 0%, var(--bg2), transparent 60%),
+          radial-gradient(900px 600px at 100% 0%, #f8e8d4, transparent 55%),
+          linear-gradient(180deg, var(--bg1), #fbfbfb 65%);
+        min-height: 100vh;
+      }
+      .wrap {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 48px 24px 64px;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 28px 28px 24px;
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(6px);
+      }
+      .hero {
+        text-align: center;
+        margin-bottom: 12px;
+      }
+      .hero img {
+        max-width: 100%;
+        height: auto;
+      }
+      .hero-title {
+        margin: 12px 0 6px 0;
+        font-size: clamp(26px, 4vw, 40px);
+        letter-spacing: -0.02em;
+      }
+      .hero-sub {
+        display: block;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--muted);
+        letter-spacing: 0.08em;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 14px;
+      }
+      .pill {
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 12px 14px;
+        background: #ffffff;
+      }
+      .label {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+      .value {
+        font-size: 16px;
+        font-weight: 600;
+      }
+      .links {
+        margin-top: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .config {
+        margin-top: 20px;
+        border: 1px solid var(--border);
+        background: #fff;
+        border-radius: 12px;
+        padding: 14px 16px;
+        display: grid;
+        gap: 6px;
+      }
+      .config-row {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 6px 0;
+      }
+      .config-row + .config-row {
+        border-top: 1px dashed var(--border);
+      }
+      .config-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--muted);
+      }
+      .config-value {
+        font-size: 13px;
+        font-weight: 600;
+        font-family:
+          "JetBrains Mono", "SFMono-Regular", "Consolas", "Liberation Mono",
+          monospace;
+        text-align: right;
+        white-space: normal;
+        word-break: break-word;
+      }
+      .link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: #fff;
+        color: var(--ink);
+        text-decoration: none;
+        font-weight: 600;
+        transition:
+          transform 120ms ease,
+          box-shadow 120ms ease;
+      }
+      .link:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 18px rgba(17, 27, 32, 0.12);
+      }
+      .foot {
+        margin-top: 18px;
+        font-size: 13px;
+        color: var(--muted);
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+      }
+      .credit {
+        margin-left: auto;
+        color: var(--muted);
+        text-decoration: none;
+        font-weight: 600;
+      }
+      .credit:hover {
+        color: var(--accent);
+      }
+      .accent {
+        color: var(--accent);
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <section class="card">
+        <div class="hero">
+          <img src="__ICON_URL__" alt="LM Bridge" width="500" />
+          <h1 class="hero-title">LM Bridge Metadata Handler</h1>
+          <span class="hero-sub"><em>FAST • Local • Private</em></span>
+        </div>
+
+        <div class="grid">
+          <div class="pill">
+            <div class="label">LM Bridge Version</div>
+            <div class="value">__LM_VERSION__</div>
+          </div>
+          <div class="pill">
+            <div class="label">Lidarr Version (Last Seen)</div>
+            <div class="value">__LIDARR_VERSION__</div>
+          </div>
+          __MBMS_PILLS__
+          <div class="pill">
+            <div class="label">Metadata Version</div>
+            <div class="value">__METADATA_VERSION__</div>
+          </div>
+          <div class="pill">
+            <div class="label">Replication Date</div>
+            <div class="value">__REPLICATION_DATE__</div>
+          </div>
+          <div class="pill">
+            <div class="label">Uptime</div>
+            <div class="value">__UPTIME__</div>
+          </div>
+        </div>
+
+        <div class="links">
+          <a class="link" href="__VERSION_URL__">Version JSON</a>
+          <a class="link" href="__MBMS_URL__">MBMS PLUS Repo</a>
+        </div>
+        <div class="config">__CONFIG_HTML__</div>
+        <div class="foot">
+          Tip: Use <span class="accent">/album/&lt;mbid&gt;</span> to fetch
+          release group JSON or
+          <span class="accent">/artist/&lt;mbid&gt;</span> to fetch artist JSON
+          <a class="credit" href="https://github.com/HVR88"
+            >Espressomatic | HVR88</a
+          >
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
