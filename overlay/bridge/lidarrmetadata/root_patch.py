@@ -112,6 +112,20 @@ def _read_last_lidarr_version() -> Optional[str]:
     return _LAST_LIDARR_VERSION
 
 
+def _read_mbms_plus_version() -> Optional[str]:
+    env_value = _env_first("MBMS_PLUS_VERSION")
+    if env_value:
+        return env_value
+    version_path = _env_first("MBMS_PLUS_VERSION_FILE") or "/mbms/VERSION"
+    try:
+        value = Path(version_path).read_text().strip()
+    except OSError:
+        return None
+    if value.startswith("v"):
+        value = value[1:].strip()
+    return value or None
+
+
 def _capture_lidarr_version(user_agent: Optional[str]) -> None:
     if not user_agent:
         return
@@ -173,7 +187,7 @@ def register_root_route() -> None:
 
         info = {
             "version": fmt(_read_version()),
-            "mbms_plus_version": fmt(os.getenv("MBMS_PLUS_VERSION")),
+            "mbms_plus_version": fmt(_read_mbms_plus_version()),
             "mbms_replication_schedule": fmt(_format_replication_schedule()),
             "mbms_index_schedule": fmt(_format_index_schedule()),
             "lidarr_version": fmt(_read_last_lidarr_version()),
