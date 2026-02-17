@@ -7,6 +7,10 @@ on:
         description: "Target platforms"
         required: true
         default: "linux/amd64"
+      version:
+        description: "Override version (x.y.z or x.y.z.bb)"
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -25,6 +29,10 @@ jobs:
           fetch-depth: 0
           submodules: recursive
 
+      - name: Generate media format mappings
+        run: |
+          python3 scripts/generate-media-formats.py
+
       - name: Bump patch + sync version files
         id: bump
         run: |
@@ -34,23 +42,38 @@ jobs:
             exit 1
           fi
 
+          INPUT_VERSION="${{ inputs.version }}"
           NEW_VERSION=$(python3 - <<'PY'
           import re
+          import os
           from pathlib import Path
 
           version_path = Path("VERSION")
-          version = version_path.read_text()
-          # Normalize accidental literal "\n" sequences and whitespace
-          version = version.replace("\\n", "").strip()
-          if version.startswith("v"):
-            version = version[1:]
-          m = re.fullmatch(r"(\d+)\.(\d+)\.(\d+)\.(\d{1,3})", version)
-          if not m:
-            raise SystemExit(f"VERSION format invalid: {version!r}")
+          version_input = os.environ.get("INPUT_VERSION", "").strip()
 
-          major, minor, patch, _build = map(int, m.groups())
-          patch += 1
-          new_version = f"{major}.{minor}.{patch}.00"
+          if version_input:
+            version_input = version_input.replace("\\n", "").strip()
+            if version_input.startswith("v"):
+              version_input = version_input[1:]
+            if re.fullmatch(r"\\d+\\.\\d+\\.\\d+", version_input):
+              version_input = version_input + ".00"
+            m = re.fullmatch(r"(\\d+)\\.(\\d+)\\.(\\d+)\\.(\\d{1,3})", version_input)
+            if not m:
+              raise SystemExit(f"Invalid version override: {version_input!r}")
+            new_version = version_input
+          else:
+            version = version_path.read_text()
+            # Normalize accidental literal "\\n" sequences and whitespace
+            version = version.replace("\\n", "").strip()
+            if version.startswith("v"):
+              version = version[1:]
+            m = re.fullmatch(r"(\\d+)\\.(\\d+)\\.(\\d+)\\.(\\d{1,3})", version)
+            if not m:
+              raise SystemExit(f"VERSION format invalid: {version!r}")
+
+            major, minor, patch, _build = map(int, m.groups())
+            patch += 1
+            new_version = f"{major}.{minor}.{patch}.00"
 
           version_path.write_text(new_version + "\\n")
           Path("deploy/VERSION").write_text(new_version + "\\n")
@@ -83,14 +106,16 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add VERSION deploy/VERSION deploy/README.md lm-bridge-plugin/plugin/LMBridgePlugin.csproj
+          git add VERSION deploy/VERSION deploy/README.md lm-bridge-plugin/plugin/LMBridgePlugin.csproj \
+            overlay/bridge/lidarrmetadata/media_formats_meta.py \
+            lm-bridge-plugin/plugin/Metadata/MetadataSourceOverride/MediaFormats.generated.cs
           if git diff --cached --quiet; then
             echo "No version change to commit."
-            exit 1
+          else
+            NEW_VERSION="${{ steps.bump.outputs.new_version }}"
+            git commit -m "Publish version ${NEW_VERSION}"
+            git push
           fi
-          NEW_VERSION="${{ steps.bump.outputs.new_version }}"
-          git commit -m "Publish version ${NEW_VERSION}"
-          git push
 
       - name: Tag release
         run: |

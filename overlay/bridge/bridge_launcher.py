@@ -44,6 +44,8 @@ def main() -> int:
 
     from lidarrmetadata import version_patch
     version_patch.register_version_route()
+    from lidarrmetadata import config_patch
+    config_patch.register_config_routes()
 
     # Optional runtime patches (auto-enable if MITM hook configured)
     apply_patches = os.environ.get("LMBRIDGE_APPLY_PATCHES", "").lower() in {"1", "true", "yes"}

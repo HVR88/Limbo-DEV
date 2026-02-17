@@ -1,9 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NLog;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
+using NzbDrone.Common.Http;
+using NzbDrone.Common.Serializer;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Extras.Metadata;
 using NzbDrone.Core.Lifecycle;
@@ -26,17 +29,21 @@ namespace LMBridgePlugin.Metadata.MetadataSourceOverride
         private readonly IMetadataRepository _metadataRepository;
         private readonly IConfigService _configService;
         private readonly IDiskProvider _diskProvider;
+        private readonly IHttpClient _httpClient;
         private readonly Logger _logger;
         private readonly string _autoEnableMarkerPath;
+        private string? _lastReleaseFilterPayload;
 
         public MetadataSourceOverrideUpdater(IMetadataRepository metadataRepository,
                                              IConfigService configService,
                                              IDiskProvider diskProvider,
+                                             IHttpClient httpClient,
                                              Logger logger)
         {
             _metadataRepository = metadataRepository;
             _configService = configService;
             _diskProvider = diskProvider;
+            _httpClient = httpClient;
             _logger = logger;
             _autoEnableMarkerPath = ResolveAutoEnableMarkerPath();
         }
@@ -143,6 +150,8 @@ namespace LMBridgePlugin.Metadata.MetadataSourceOverride
                 _logger.Info("Clearing MetadataSource override (provider disabled).");
                 _configService.MetadataSource = string.Empty;
             }
+
+            SyncReleaseFilterConfig(definition, settings, logEvenIfUnchanged);
         }
 
         private void EnsureDisplayName(ProviderDefinition definition)
@@ -218,6 +227,82 @@ namespace LMBridgePlugin.Metadata.MetadataSourceOverride
                 _metadataRepository.Update(metadataDefinition);
                 _logger.Info("Enabled metadata provider by default.");
             }
+        }
+
+        private void SyncReleaseFilterConfig(ProviderDefinition definition, MetadataSourceOverrideSettings settings, bool logEvenIfUnchanged)
+        {
+            if (definition == null || settings == null)
+            {
+                return;
+            }
+
+            var baseUrl = settings.MetadataSource?.Trim();
+            if (string.IsNullOrWhiteSpace(baseUrl))
+            {
+                return;
+            }
+
+            var url = baseUrl.TrimEnd('/') + "/config/release-filter";
+            var excludeTokens = NormalizeTokens(settings.ExcludeMediaFormats);
+            var includeTokens = NormalizeTokens(settings.KeepOnlyFormats);
+            if (includeTokens.Length > 0)
+            {
+                excludeTokens = Array.Empty<string>();
+            }
+            var keepOnlyMediaCount = settings.KeepOnlyMediaCount.GetValueOrDefault();
+            var prefer = settings.Prefer == (int)MediaPreferOption.Analog ? "analog" : "digital";
+            var payload = new ReleaseFilterPayload
+            {
+                Enabled = definition.Enable,
+                ExcludeMediaFormats = definition.Enable ? excludeTokens : Array.Empty<string>(),
+                IncludeMediaFormats = definition.Enable ? includeTokens : Array.Empty<string>(),
+                KeepOnlyMediaCount = definition.Enable && keepOnlyMediaCount > 0 ? keepOnlyMediaCount : null,
+                Prefer = definition.Enable && keepOnlyMediaCount > 0 ? prefer : null
+            };
+
+            var json = payload.ToJson();
+            if (!logEvenIfUnchanged && string.Equals(_lastReleaseFilterPayload, json, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            try
+            {
+                var requestBuilder = new HttpRequestBuilder(url).Post();
+                var request = requestBuilder.Build();
+                request.Headers.ContentType = "application/json";
+                request.SetContent(json);
+                _httpClient.Post(request);
+                _lastReleaseFilterPayload = json;
+            }
+            catch (Exception ex)
+            {
+                _logger.Warn(ex, "Failed to sync release filter config to LM-Bridge.");
+            }
+        }
+
+        private static string[] NormalizeTokens(IEnumerable<string> values)
+        {
+            if (values == null)
+            {
+                return Array.Empty<string>();
+            }
+
+            return values
+                .Select(value => value?.Trim())
+                .Where(value => !string.IsNullOrWhiteSpace(value))
+                .Select(value => value!.ToLowerInvariant())
+                .Distinct()
+                .ToArray();
+        }
+
+        private class ReleaseFilterPayload
+        {
+            public bool Enabled { get; set; }
+            public IEnumerable<string> ExcludeMediaFormats { get; set; } = Array.Empty<string>();
+            public IEnumerable<string> IncludeMediaFormats { get; set; } = Array.Empty<string>();
+            public int? KeepOnlyMediaCount { get; set; }
+            public string? Prefer { get; set; }
         }
 
         private string ResolveAutoEnableMarkerPath()

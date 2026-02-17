@@ -18,6 +18,9 @@ if [[ ! -f "$PROJ" ]]; then
   exit 1
 fi
 
+# PluginInfo.cs is generated at build time via PluginInfo.targets; remove any stale copy
+rm -f "$ROOT/plugin/PluginInfo.cs"
+
 if [[ ! -d "$ROOT/Submodules/Lidarr/src" ]]; then
   echo "Missing Lidarr submodule. Expected: $ROOT/Submodules/Lidarr" >&2
   exit 1

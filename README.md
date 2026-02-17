@@ -11,6 +11,8 @@ and contains two complimentary parts that run 100% locally:
 
 1. A Lidarr Metadata Server image that bridges to a MusicBrainz mirror
 2. A Plugin to set the URL of this bridge container in Lidarr
+3. ???? - revealing soon
+4. ???? - and next?
 
 **_Thanks to blampe and Typnull for inspiration_** : this wouldn't have been possible without leveraging their previous work
 
@@ -19,6 +21,8 @@ and contains two complimentary parts that run 100% locally:
 > **_For the premade Docker container, visit the Deployment Repo instead: https://github.com/HVR88/LM-Bridge_**
 
 Deploy-only files live in `deploy/` (`docker-compose.yml`, `compose/`, `.env.example`). You can copy that folder as-is, or run `scripts/export-deploy.sh` to create a bundle or sync it to a separate deploy repo (the export excludes `.env` by default).
+
+Hook documentation is in `hooks_readme.md` (custom DB/MITM transforms that run after built-in processing).
 
 ## Source Repo Summary
 
@@ -44,7 +48,7 @@ Deploy-only files live in `deploy/` (`docker-compose.yml`, `compose/`, `.env.exa
 **Key Defaults**
 
 1. MusicBrainz DB defaults to user `musicbrainz` and password `musicbrainz`
-2. LM-BRIDGE cache DB defaults user `lidarr` and password `lidarr`
+2. LM-BRIDGE cache DB defaults user `lmbridge` and password `lmbridge`
 
 ## Configuration of the LM Bridge Container
 

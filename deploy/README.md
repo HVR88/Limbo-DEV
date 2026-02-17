@@ -2,37 +2,62 @@
   <img src="https://raw.githubusercontent.com/HVR88/LM-Bridge-DEV/main/assets/lmbridge-icon.png" alt="LM Bridge" width="500" />
 </p>
 
-# Lidarr/MusicBrainz Bridge
+# <p align="center">**_Lidarr Metadata Bridge_**<br><sub>**_FAST Local, Private Queries_**</sub></p>
 
-**A Local API Bridge - _FAST_ queries, no remote server issues**
+## Introduction
 
-The compose files are not meant to be edited. Put all overrides in `.env`.
+This is a stand-alone _LM-Bridge_ release for existing MusicBrainz mirror installations.
 
-## Quick Start<br>(Same Docker Network as MusicBrainz Mirror)
-
-You should already be running a plugins-enabled [Lidarr](https://hub.docker.com/r/linuxserver/lidarr) release plus [MusicBrainz Mirror](https://github.com/metabrainz/musicbrainz-docker) server _(with materialized tables AND fully indexed db)_
+If you don't have a MusicBrainz mirror yet, then use our [**MBNMS PLUS**](https://github.com/HVR88/MBMS_PLUS). It includes _LM-Bridge_ and a fully automated MusicBrainz installation.
 
 > [!IMPORTANT]
 >
-> _Follow **the above linked** MusicBrainz Mirror Server instructions_<br>
+> _Follow **the below linked** MusicBrainz Mirror Server instructions_<br>
 
-1. Copy `.env.example` to `.env` and edit values.
-2. Ensure `MB_NETWORK` points at the MusicBrainz mirror network (example: `musicbrainz_default`).
-3. Run:
+## Quick start
 
-```bash
+### 1. Lidarr and MusicBrainz
+
+You should already be running a plugins-enabled [Lidarr](https://hub.docker.com/r/linuxserver/lidarr) release plus [MusicBrainz Mirror](https://github.com/metabrainz/musicbrainz-docker) server _(with materialized tables AND fully indexed db)_
+
+### 2. Download the LM-Bridge project
+
+```
+mkdir -p /opt/docker/
+cd /opt/docker/
+git clone https://github.com/HVR88/LM-Bridge.git
+cd /opt/docker/LM-Bridge
+```
+
+### 3. Optionally Configure .env file
+
+Edit `.env` (top section) before first run:
+
+- Ensure `MB_NETWORK` points at the MusicBrainz mirror network (example: `musicbrainz_default`).
+- `LMBRIDGE_PORT` ('5001' default, edit as needed)
+- Optional provider keys/tokens for Fanart, The AudioDB, Last.FM, etc.
+
+### 4. Download containers, build & startup
+
+```
 docker compose up -d
 ```
 
+> [!NOTE]
+>
+> The compose files are not meant to be edited. Put all overrides in `.env`.
+
 ## Version
 
-Deploy version: `1.1.11.00`
+Deploy version: `1.5.0.00`
+Deploy version: `1.5.0.00`
 
 Optional cache settings (in `.env`):
+
 - `LMBRIDGE_CACHE_SCHEMA` to use a dedicated schema (default: `public`).
 - `LMBRIDGE_CACHE_FAIL_OPEN=true` to start the API with cache disabled if init cannot create cache tables.
 
-## Lidarr API Plugin (Required)
+## LM Bridge API Plugin (Required)
 
 This repo includes a plugin that will appear in Lidarr's Metadata settings page after being installed. Lidarr must have this plugin installed to talk to the bridge on your network.
 
@@ -49,7 +74,7 @@ If you don't see a System → Plugins page in your Lidarr, switch to the `nightl
 **Enable the Plugin**
 
 1. In Lidarr, open **Settings → Metadata**
-2. Click **Lidarr/MusicBrainz Bridge API**.
+2. Click **LM Bridge API**.
 3. Make sure the Enable check-box is checked
 4. Enter the URL of the LM Bridge container : 5001
 5. Click Save
@@ -61,7 +86,7 @@ Lidarr is now using the Bridge API and you should see lightning-fast queries to 
 - `docker-compose.yml` (default: init + external network)
 - `compose/lm-bridge-hosted-services.yml` (standalone single-container)
 - `compose/lm-bridge-docker-network.yml` (full compose with init container + external network)
-- `.env.example` (copy to `.env` and edit)
+- `.env.example` (copy to `.env` if needed, and edit)
 - `License/` (LICENSE + THIRD_PARTY_NOTICES)
   <br>
   <br>

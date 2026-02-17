@@ -10,34 +10,66 @@ import contextvars
 
 logger = logging.getLogger(__name__)
 
-_BEFORE: Optional[Callable[[str, Tuple[Any, ...], Dict[str, Any]], Tuple[str, Tuple[Any, ...]]]] = None
-_AFTER: Optional[Callable[[Any, Dict[str, Any]], Any]] = None
-_LOAD_ATTEMPTED = False
+_DEFAULT_HOOK_MODULE = "lidarrmetadata.release_filters"
+_BUILTIN_BEFORE: Optional[Callable[[str, Tuple[Any, ...], Dict[str, Any]], Tuple[str, Tuple[Any, ...]]]] = None
+_BUILTIN_AFTER: Optional[Callable[[Any, Dict[str, Any]], Any]] = None
+_CUSTOM_BEFORE: Optional[Callable[[str, Tuple[Any, ...], Dict[str, Any]], Tuple[str, Tuple[Any, ...]]]] = None
+_CUSTOM_AFTER: Optional[Callable[[Any, Dict[str, Any]], Any]] = None
+_BUILTIN_LOAD_ATTEMPTED = False
+_CUSTOM_LOAD_ATTEMPTED = False
 _SQL_FILE = contextvars.ContextVar("lmbridge_sql_file", default=None)
 
 
 def is_enabled() -> bool:
-    return bool(os.environ.get("LMBRIDGE_DB_HOOK_MODULE") or os.environ.get("LMBRIDGE_DB_HOOK_PATH"))
+    return True
 
 
-def _load_hooks() -> None:
-    global _BEFORE, _AFTER, _LOAD_ATTEMPTED
-    if _LOAD_ATTEMPTED:
+def _load_builtin() -> None:
+    global _BUILTIN_BEFORE, _BUILTIN_AFTER, _BUILTIN_LOAD_ATTEMPTED
+    if _BUILTIN_LOAD_ATTEMPTED:
         return
-    _LOAD_ATTEMPTED = True
+    _BUILTIN_LOAD_ATTEMPTED = True
 
-    module_name = os.environ.get("LMBRIDGE_DB_HOOK_MODULE")
-    file_path = os.environ.get("LMBRIDGE_DB_HOOK_PATH")
+    try:
+        module = importlib.import_module(_DEFAULT_HOOK_MODULE)
+    except Exception:
+        logger.exception("LM-Bridge DB hooks: failed to import built-in module %s", _DEFAULT_HOOK_MODULE)
+        return
+
+    before = getattr(module, "before_query", None)
+    after = getattr(module, "after_query", None)
+
+    if callable(before):
+        _BUILTIN_BEFORE = before
+    if callable(after):
+        _BUILTIN_AFTER = after
+
+    if _BUILTIN_BEFORE is None and _BUILTIN_AFTER is None:
+        logger.error(
+            "LM-Bridge DB hooks: built-in module must define before_query(sql, args, context) or "
+            "after_query(results, context)"
+        )
+
+
+def _load_custom() -> None:
+    global _CUSTOM_BEFORE, _CUSTOM_AFTER, _CUSTOM_LOAD_ATTEMPTED
+    if _CUSTOM_LOAD_ATTEMPTED:
+        return
+    _CUSTOM_LOAD_ATTEMPTED = True
+
+    module_name_env = os.environ.get("LMBRIDGE_DB_HOOK_AFTER_MODULE") or os.environ.get("LMBRIDGE_DB_HOOK_MODULE")
+    file_path = os.environ.get("LMBRIDGE_DB_HOOK_AFTER_PATH") or os.environ.get("LMBRIDGE_DB_HOOK_PATH")
+
+    if module_name_env == _DEFAULT_HOOK_MODULE and not file_path:
+        logger.warning(
+            "LM-Bridge DB hooks: %s is built-in and applied automatically; "
+            "use LMBRIDGE_DB_HOOK_AFTER_MODULE for custom hooks.",
+            _DEFAULT_HOOK_MODULE,
+        )
+        return
 
     module = None
-    if module_name:
-        try:
-            module = importlib.import_module(module_name)
-        except Exception:
-            logger.exception("LM-Bridge DB hooks: failed to import module %s", module_name)
-            return
-
-    elif file_path:
+    if file_path:
         try:
             spec = importlib.util.spec_from_file_location("lmbridge_db_hooks", file_path)
             if spec is None or spec.loader is None:
@@ -48,6 +80,12 @@ def _load_hooks() -> None:
         except Exception:
             logger.exception("LM-Bridge DB hooks: failed to load hook file %s", file_path)
             return
+    elif module_name_env:
+        try:
+            module = importlib.import_module(module_name_env)
+        except Exception:
+            logger.exception("LM-Bridge DB hooks: failed to import module %s", module_name_env)
+            return
 
     if module is None:
         return
@@ -56,11 +94,11 @@ def _load_hooks() -> None:
     after = getattr(module, "after_query", None)
 
     if callable(before):
-        _BEFORE = before
+        _CUSTOM_BEFORE = before
     if callable(after):
-        _AFTER = after
+        _CUSTOM_AFTER = after
 
-    if _BEFORE is None and _AFTER is None:
+    if _CUSTOM_BEFORE is None and _CUSTOM_AFTER is None:
         logger.error(
             "LM-Bridge DB hooks: module must define before_query(sql, args, context) or "
             "after_query(results, context)"
@@ -79,58 +117,82 @@ def get_sql_file() -> Optional[str]:
     return _SQL_FILE.get()
 
 
-def apply_before(
-    sql: str, args: Tuple[Any, ...], context: Dict[str, Any]
+def _apply_before_hook(
+    hook: Optional[Callable[[str, Tuple[Any, ...], Dict[str, Any]], Tuple[str, Tuple[Any, ...]]]],
+    sql: str,
+    args: Tuple[Any, ...],
+    context: Dict[str, Any],
+    pool_key: str,
 ) -> Tuple[str, Tuple[Any, ...], str]:
-    if not is_enabled():
-        return sql, args, "default"
-    _load_hooks()
-    if _BEFORE is None:
-        return sql, args, "default"
+    if hook is None:
+        return sql, args, pool_key
 
     try:
-        result = _BEFORE(sql, args, context)
+        result = hook(sql, args, context)
     except Exception:
         logger.exception("LM-Bridge DB hooks: before_query failed")
-        return sql, args, "default"
+        return sql, args, pool_key
 
     if result is None:
-        return sql, args, "default"
+        return sql, args, pool_key
 
     try:
         new_sql, new_args, *rest = result
     except Exception:
         logger.error("LM-Bridge DB hooks: before_query must return (sql, args) or None")
-        return sql, args, "default"
+        return sql, args, pool_key
 
     if not isinstance(new_args, tuple):
         new_args = tuple(new_args)
 
-    pool_key = "default"
+    new_pool_key = pool_key
     if rest:
         extra = rest[0]
         if isinstance(extra, str):
-            pool_key = extra
+            new_pool_key = extra
         elif isinstance(extra, dict):
-            pool_key = str(extra.get("pool", "default"))
+            new_pool_key = str(extra.get("pool", pool_key))
 
-    return new_sql, new_args, pool_key
+    return new_sql, new_args, new_pool_key
+
+
+def apply_before(
+    sql: str, args: Tuple[Any, ...], context: Dict[str, Any]
+) -> Tuple[str, Tuple[Any, ...], str]:
+    if not is_enabled():
+        return sql, args, "default"
+    _load_builtin()
+    _load_custom()
+
+    current_sql, current_args, pool_key = _apply_before_hook(
+        _BUILTIN_BEFORE, sql, args, context, "default"
+    )
+    current_sql, current_args, pool_key = _apply_before_hook(
+        _CUSTOM_BEFORE, current_sql, current_args, context, pool_key
+    )
+
+    return current_sql, current_args, pool_key
 
 
 def apply_after(results: Any, context: Dict[str, Any]) -> Any:
     if not is_enabled():
         return results
-    _load_hooks()
-    if _AFTER is None:
-        return results
+    _load_builtin()
+    _load_custom()
 
-    try:
-        updated = _AFTER(results, context)
-    except Exception:
-        logger.exception("LM-Bridge DB hooks: after_query failed")
-        return results
+    current = results
+    for hook in (_BUILTIN_AFTER, _CUSTOM_AFTER):
+        if hook is None:
+            continue
+        try:
+            updated = hook(current, context)
+        except Exception:
+            logger.exception("LM-Bridge DB hooks: after_query failed")
+            continue
+        if updated is not None:
+            current = updated
 
-    return results if updated is None else updated
+    return current
 
 
 def _pool_env(pool_key: str, suffix: str) -> Optional[str]:

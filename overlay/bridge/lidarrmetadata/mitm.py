@@ -9,22 +9,29 @@ from quart import request
 
 logger = logging.getLogger(__name__)
 
-_TRANSFORM: Optional[Callable[[Any, Dict[str, Any]], Any]] = None
-_LOAD_ATTEMPTED = False
+_BUILTIN_TRANSFORM: Optional[Callable[[Any, Dict[str, Any]], Any]] = None
+_CUSTOM_TRANSFORM: Optional[Callable[[Any, Dict[str, Any]], Any]] = None
+_CUSTOM_LOAD_ATTEMPTED = False
 
 
 def is_enabled() -> bool:
-    return bool(os.environ.get("LMBRIDGE_MITM_MODULE") or os.environ.get("LMBRIDGE_MITM_PATH"))
+    return bool(
+        _BUILTIN_TRANSFORM
+        or os.environ.get("LMBRIDGE_MITM_AFTER_MODULE")
+        or os.environ.get("LMBRIDGE_MITM_AFTER_PATH")
+        or os.environ.get("LMBRIDGE_MITM_MODULE")
+        or os.environ.get("LMBRIDGE_MITM_PATH")
+    )
 
 
-def _load_transform() -> Optional[Callable[[Any, Dict[str, Any]], Any]]:
-    global _TRANSFORM, _LOAD_ATTEMPTED
-    if _LOAD_ATTEMPTED:
-        return _TRANSFORM
-    _LOAD_ATTEMPTED = True
+def _load_custom_transform() -> Optional[Callable[[Any, Dict[str, Any]], Any]]:
+    global _CUSTOM_TRANSFORM, _CUSTOM_LOAD_ATTEMPTED
+    if _CUSTOM_LOAD_ATTEMPTED:
+        return _CUSTOM_TRANSFORM
+    _CUSTOM_LOAD_ATTEMPTED = True
 
-    module_name = os.environ.get("LMBRIDGE_MITM_MODULE")
-    file_path = os.environ.get("LMBRIDGE_MITM_PATH")
+    module_name = os.environ.get("LMBRIDGE_MITM_AFTER_MODULE") or os.environ.get("LMBRIDGE_MITM_MODULE")
+    file_path = os.environ.get("LMBRIDGE_MITM_AFTER_PATH") or os.environ.get("LMBRIDGE_MITM_PATH")
 
     if module_name:
         try:
@@ -35,8 +42,8 @@ def _load_transform() -> Optional[Callable[[Any, Dict[str, Any]], Any]]:
 
         transform = getattr(module, "transform_payload", None)
         if callable(transform):
-            _TRANSFORM = transform
-            return _TRANSFORM
+            _CUSTOM_TRANSFORM = transform
+            return _CUSTOM_TRANSFORM
         logger.error("LM-Bridge MITM: module %s missing transform_payload(payload, context)", module_name)
         return None
 
@@ -54,8 +61,8 @@ def _load_transform() -> Optional[Callable[[Any, Dict[str, Any]], Any]]:
 
         transform = getattr(module, "transform_payload", None)
         if callable(transform):
-            _TRANSFORM = transform
-            return _TRANSFORM
+            _CUSTOM_TRANSFORM = transform
+            return _CUSTOM_TRANSFORM
         logger.error("LM-Bridge MITM: hook file %s missing transform_payload(payload, context)", file_path)
         return None
 
@@ -66,8 +73,8 @@ async def apply_response(response):
     if not is_enabled():
         return response
 
-    transform = _load_transform()
-    if not transform:
+    custom_transform = _load_custom_transform()
+    if _BUILTIN_TRANSFORM is None and custom_transform is None:
         return response
 
     content_type = response.content_type or ""
@@ -95,17 +102,23 @@ async def apply_response(response):
         "headers": {k: v for k, v in request.headers.items()},
     }
 
-    try:
-        new_payload = transform(payload, context)
-    except Exception:
-        logger.exception("LM-Bridge MITM: transform_payload failed")
+    current = payload
+    for transform in (_BUILTIN_TRANSFORM, custom_transform):
+        if transform is None:
+            continue
+        try:
+            updated = transform(current, context)
+        except Exception:
+            logger.exception("LM-Bridge MITM: transform_payload failed")
+            continue
+        if updated is not None:
+            current = updated
+
+    if current is payload:
         return response
 
-    if new_payload is None or new_payload is payload:
-        return response
-
     try:
-        response.set_data(json.dumps(new_payload, separators=(",", ":")))
+        response.set_data(json.dumps(current, separators=(",", ":")))
     except Exception:
         logger.exception("LM-Bridge MITM: failed to update response body")
         return response
