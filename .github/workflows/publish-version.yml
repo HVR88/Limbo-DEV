@@ -163,6 +163,8 @@ jobs:
         with:
           context: .
           file: Dockerfile
+          build-args: |
+            APP_VERSION=${{ steps.docker-tags.outputs.docker_tag }}
           platforms: ${{ inputs.platforms }}
           push: true
           tags: |

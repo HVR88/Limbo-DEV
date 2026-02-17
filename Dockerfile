@@ -4,6 +4,10 @@ FROM python:3.9-bullseye
 # Set working directory
 WORKDIR /metadata
 
+ARG APP_VERSION=dev
+LABEL org.opencontainers.image.version=$APP_VERSION
+ENV LMBRIDGE_VERSION=$APP_VERSION
+
 # Runtime hygiene
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
@@ -32,6 +36,7 @@ COPY scripts/init-mbdb.sh /metadata/init/init-mbdb.sh
 COPY upstream/lidarr-metadata/lidarrmetadata/sql/CreateIndices.sql /metadata/init/CreateIndices.sql
 RUN chmod +x /metadata/init/init-mbdb.sh
 ENV SQL_FILE=/metadata/init/CreateIndices.sql
+RUN echo "$APP_VERSION" > /metadata/VERSION
 
 # Install Python dependencies
 RUN pip install --no-cache-dir --upgrade pip \
