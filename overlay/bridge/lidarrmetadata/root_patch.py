@@ -2,6 +2,7 @@ import html
 import json
 import os
 from pathlib import Path
+import re
 import time
 
 import lidarrmetadata
@@ -10,6 +11,8 @@ from lidarrmetadata.app import no_cache
 from lidarrmetadata.version_patch import _read_version
 
 _START_TIME = time.time()
+_LIDARR_VERSION_FILE = Path(os.environ.get("LMBRIDGE_LIDARR_VERSION_FILE", "/metadata/lidarr_version.txt"))
+_LAST_LIDARR_VERSION: str | None = None
 
 
 def _format_uptime(seconds: float) -> str:
@@ -24,6 +27,42 @@ def _format_uptime(seconds: float) -> str:
     if minutes:
         return f"{minutes}m {secs}s"
     return f"{secs}s"
+
+def _env_first(*names: str) -> str | None:
+    for name in names:
+        value = os.getenv(name)
+        if value is not None and str(value).strip():
+            return str(value).strip()
+    return None
+
+def _read_last_lidarr_version() -> str | None:
+    global _LAST_LIDARR_VERSION
+    if _LAST_LIDARR_VERSION is not None:
+        return _LAST_LIDARR_VERSION
+    try:
+        value = _LIDARR_VERSION_FILE.read_text().strip()
+    except OSError:
+        value = ""
+    _LAST_LIDARR_VERSION = value or None
+    return _LAST_LIDARR_VERSION
+
+
+def _capture_lidarr_version(user_agent: str | None) -> None:
+    if not user_agent:
+        return
+    match = re.search(r"\bLidarr/([0-9A-Za-z.\-]+)", user_agent)
+    if not match:
+        return
+    version = match.group(1)
+    global _LAST_LIDARR_VERSION
+    if _LAST_LIDARR_VERSION == version:
+        return
+    _LAST_LIDARR_VERSION = version
+    try:
+        _LIDARR_VERSION_FILE.parent.mkdir(parents=True, exist_ok=True)
+        _LIDARR_VERSION_FILE.write_text(version + "\n")
+    except OSError:
+        return
 
 
 def register_root_route() -> None:
@@ -42,6 +81,13 @@ def register_root_route() -> None:
             return await send_file(
                 assets_dir / "lmbridge-icon.png", mimetype="image/png"
             )
+
+    if not upstream_app.app.config.get("LMBRIDGE_CAPTURE_LIDARR_VERSION"):
+        upstream_app.app.config["LMBRIDGE_CAPTURE_LIDARR_VERSION"] = True
+
+        @upstream_app.app.before_request
+        async def _lmbridge_capture_lidarr_version():
+            _capture_lidarr_version(request.headers.get("User-Agent"))
 
     async def _lmbridge_root_route():
         replication_date = None
@@ -63,6 +109,21 @@ def register_root_route() -> None:
         info = {
             "version": fmt(_read_version()),
             "mbms_plus_version": fmt(os.getenv("MBMS_PLUS_VERSION")),
+            "mbms_replication_schedule": fmt(
+                _env_first(
+                    "MBMS_REPLICATION_SCHEDULE",
+                    "MUSICBRAINZ_REPLICATION_SCHEDULE",
+                    "MUSICBRAINZ_REPLICATION_CRON",
+                )
+            ),
+            "mbms_index_schedule": fmt(
+                _env_first(
+                    "MBMS_INDEX_SCHEDULE",
+                    "MUSICBRAINZ_INDEXING_SCHEDULE",
+                    "MUSICBRAINZ_INDEXING_CRON",
+                )
+            ),
+            "lidarr_version": fmt(_read_last_lidarr_version()),
             "metadata_version": fmt(lidarrmetadata.__version__),
             "branch": fmt(os.getenv("GIT_BRANCH")),
             "commit": fmt(os.getenv("COMMIT_HASH")),
@@ -265,6 +326,18 @@ def register_root_route() -> None:
           <div class="pill">
             <div class="label">MBMS PLUS VERSION</div>
             <div class="value">{safe["mbms_plus_version"]}</div>
+          </div>
+          <div class="pill">
+            <div class="label">Lidarr Version (Last Seen)</div>
+            <div class="value">{safe["lidarr_version"]}</div>
+          </div>
+          <div class="pill">
+            <div class="label">MBMS Replication Schedule</div>
+            <div class="value">{safe["mbms_replication_schedule"]}</div>
+          </div>
+          <div class="pill">
+            <div class="label">MBMS Index Schedule</div>
+            <div class="value">{safe["mbms_index_schedule"]}</div>
           </div>
           <div class="pill">
             <div class="label">Metadata Version</div>
