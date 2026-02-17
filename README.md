@@ -63,6 +63,7 @@ For best metadata enrichment, set API keys for TheAudioDB and Fanart.tv via `TAD
 ## Initialize LMBRIDGE Cache DB and MusicBrainz Indexes
 
 This repo includes `scripts/init-mbdb.sh` to handle the database prep that used to be done inside the mirror stack.
+If you are upgrading from the legacy cache user `lidarr` or `abc`, the script will automatically migrate ownership to the new cache user and update the password.
 
 Run it once after your MusicBrainz mirror is up:
 
@@ -85,8 +86,8 @@ You can change cache DB settings if needed:
 
 ```bash
 LMBRIDGE_CACHE_DB=lm_cache_db \
-LMBRIDGE_CACHE_USER=lidarr \
-LMBRIDGE_CACHE_PASSWORD=lidarr \
+LMBRIDGE_CACHE_USER=lmbridge \
+LMBRIDGE_CACHE_PASSWORD=lmbridge \
 scripts/init-mbdb.sh
 ```
 

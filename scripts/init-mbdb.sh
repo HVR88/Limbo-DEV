@@ -19,8 +19,8 @@ MB_ADMIN_DB=${MB_ADMIN_DB:-postgres}
 MB_DB_NETWORK=${MB_DB_NETWORK:-}
 
 LMBRIDGE_CACHE_DB=${LMBRIDGE_CACHE_DB:-lm_cache_db}
-LMBRIDGE_CACHE_USER=${LMBRIDGE_CACHE_USER:-lidarr}
-LMBRIDGE_CACHE_PASSWORD=${LMBRIDGE_CACHE_PASSWORD:-lidarr}
+LMBRIDGE_CACHE_USER=${LMBRIDGE_CACHE_USER:-lmbridge}
+LMBRIDGE_CACHE_PASSWORD=${LMBRIDGE_CACHE_PASSWORD:-lmbridge}
 LMBRIDGE_CACHE_SCHEMA=${LMBRIDGE_CACHE_SCHEMA:-public}
 LMBRIDGE_CACHE_FAIL_OPEN=${LMBRIDGE_CACHE_FAIL_OPEN:-false}
 LMBRIDGE_INIT_STATE_DIR=${LMBRIDGE_INIT_STATE_DIR:-/metadata/init-state}
@@ -66,6 +66,80 @@ else
   CACHE_SQL_PATH="/sql/cache.sql"
 fi
 
+LEGACY_CACHE_USERS=("lidarr" "abc")
+
+migrate_legacy_cache_role() {
+  local legacy_user
+  local legacy_exists
+  local new_exists
+  local db_exists
+  local db_owner
+  local schema_owner
+  local legacy_owns=0
+  local tables_owned
+  local func_owned
+
+  db_exists="$(psql_run "$MB_ADMIN_DB" -tAc "SELECT 1 FROM pg_database WHERE datname='${LMBRIDGE_CACHE_DB}'" | tr -d '[:space:]')"
+  if [[ "$db_exists" != "1" ]]; then
+    return
+  fi
+
+  new_exists="$(psql_run "$MB_ADMIN_DB" -tAc "SELECT 1 FROM pg_roles WHERE rolname='${LMBRIDGE_CACHE_USER}'" | tr -d '[:space:]')"
+  db_owner="$(psql_run "$MB_ADMIN_DB" -tAc "SELECT pg_get_userbyid(datdba) FROM pg_database WHERE datname='${LMBRIDGE_CACHE_DB}'" | tr -d '[:space:]')"
+  for legacy_user in "${LEGACY_CACHE_USERS[@]}"; do
+    if [[ "$LMBRIDGE_CACHE_USER" == "$legacy_user" ]]; then
+      return
+    fi
+
+    legacy_exists="$(psql_run "$MB_ADMIN_DB" -tAc "SELECT 1 FROM pg_roles WHERE rolname='${legacy_user}'" | tr -d '[:space:]')"
+    if [[ "$legacy_exists" != "1" ]]; then
+      continue
+    fi
+
+    legacy_owns=0
+    if [[ "$db_owner" == "$legacy_user" ]]; then
+      legacy_owns=1
+    fi
+
+    tables_owned="$(psql_run "$LMBRIDGE_CACHE_DB" -tAc "SELECT 1 FROM pg_tables WHERE schemaname='${LMBRIDGE_CACHE_SCHEMA}' AND tableowner='${legacy_user}' LIMIT 1;" | tr -d '[:space:]')"
+    if [[ "$tables_owned" == "1" ]]; then
+      legacy_owns=1
+    fi
+
+    func_owned="$(psql_run "$LMBRIDGE_CACHE_DB" -tAc "SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE p.proname='cache_updated' AND n.nspname='${LMBRIDGE_CACHE_SCHEMA}' AND pg_get_userbyid(p.proowner)='${legacy_user}' LIMIT 1;" | tr -d '[:space:]')"
+    if [[ "$func_owned" == "1" ]]; then
+      legacy_owns=1
+    fi
+
+    if [[ "$legacy_owns" != "1" ]]; then
+      continue
+    fi
+
+    if [[ "$new_exists" != "1" ]]; then
+      echo "Migrating legacy cache role ${legacy_user} -> ${LMBRIDGE_CACHE_USER}..."
+      psql_run "$MB_ADMIN_DB" -v ON_ERROR_STOP=1 \
+        -c "ALTER ROLE \"${legacy_user}\" RENAME TO \"${LMBRIDGE_CACHE_USER}\";"
+    else
+      echo "Reassigning cache ownership from ${legacy_user} to ${LMBRIDGE_CACHE_USER}..."
+      if [[ "$db_owner" == "$legacy_user" ]]; then
+        psql_run "$MB_ADMIN_DB" -v ON_ERROR_STOP=1 \
+          -c "ALTER DATABASE \"${LMBRIDGE_CACHE_DB}\" OWNER TO \"${LMBRIDGE_CACHE_USER}\";"
+      fi
+      schema_owner="$(psql_run "$LMBRIDGE_CACHE_DB" -tAc "SELECT nspowner::regrole::text FROM pg_namespace WHERE nspname='${LMBRIDGE_CACHE_SCHEMA}'" | tr -d '[:space:]')"
+      if [[ "$schema_owner" == "$legacy_user" ]]; then
+        psql_run "$LMBRIDGE_CACHE_DB" -v ON_ERROR_STOP=1 \
+          -c "ALTER SCHEMA \"${LMBRIDGE_CACHE_SCHEMA}\" OWNER TO \"${LMBRIDGE_CACHE_USER}\";"
+      fi
+      psql_run "$LMBRIDGE_CACHE_DB" -v ON_ERROR_STOP=1 \
+        -c "REASSIGN OWNED BY \"${legacy_user}\" TO \"${LMBRIDGE_CACHE_USER}\";"
+    fi
+
+    psql_run "$MB_ADMIN_DB" -v ON_ERROR_STOP=1 \
+      -c "ALTER ROLE \"${LMBRIDGE_CACHE_USER}\" LOGIN PASSWORD '${LMBRIDGE_CACHE_PASSWORD}';"
+    return
+  done
+}
+
 ensure_role() {
   if ! psql_run "$MB_ADMIN_DB" -tAc "SELECT 1 FROM pg_roles WHERE rolname='${LMBRIDGE_CACHE_USER}'" | grep -q 1; then
     echo "Creating role: ${LMBRIDGE_CACHE_USER}"
@@ -87,6 +161,7 @@ ensure_db() {
 }
 
 echo "Initializing cache role/database and MusicBrainz indexes..."
+migrate_legacy_cache_role
 ensure_role
 ensure_db
 

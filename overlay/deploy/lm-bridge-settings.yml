@@ -31,8 +31,8 @@ services:
       POSTGRES_CACHE_HOST: "db"
       POSTGRES_CACHE_PORT: "5432"
       POSTGRES_CACHE_DB: "lm_cache_db"
-      POSTGRES_CACHE_USER: "lidarr"
-      POSTGRES_CACHE_PASSWORD: "lidarr"
+      POSTGRES_CACHE_USER: "lmbridge"
+      POSTGRES_CACHE_PASSWORD: "lmbridge"
       POSTGRES_CACHE_SCHEMA: "public"
       LMBRIDGE_INIT_STATE_DIR: "/metadata/init-state"
 
