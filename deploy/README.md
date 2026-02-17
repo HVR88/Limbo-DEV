@@ -57,8 +57,8 @@ docker compose up -d
 
 ## Version
 
-Deploy version: `1.6.4.00`
-Deploy version: `1.6.4.00`
+Deploy version: `1.6.5.00`
+Deploy version: `1.6.5.00`
 
 Optional cache settings (in `.env`):
 

@@ -28,7 +28,7 @@ namespace LMBridgePlugin.Metadata.MetadataSourceOverride
 
                 if (hasExclude && hasInclude)
                 {
-                    const string message = "Use either Exclude Media Formats or Keep only formats, not both.";
+                    const string message = "Use either Exclude Media Formats or Keep Media Formats, not both.";
                     context.AddFailure(nameof(MetadataSourceOverrideSettings.ExcludeMediaFormats), message);
                     context.AddFailure(nameof(MetadataSourceOverrideSettings.KeepOnlyFormats), message);
                 }
@@ -118,19 +118,19 @@ namespace LMBridgePlugin.Metadata.MetadataSourceOverride
         [FieldDefinition(0, Label = "API URL", Type = FieldType.Url, Placeholder = DefaultMetadataSource, Section = MetadataSectionType.Metadata, HelpText = "HTTP://ADDRESS:PORT of your LM Bridge Instance")]
         public string MetadataSource { get; set; } = DefaultMetadataSource;
 
-        [FieldDefinition(1, Label = "Exclude Media Formats", HelpText = "List of release formats to remove - keep everything else. examples: vinyl, cassette, flexi, CD-R, etc. (Special aliases: analog / digital)", HelpTextWarning = "Mutually exclusive with Keep only formats.", HelpLink = "https://github.com/HVR88/LM-Bridge", Type = FieldType.Tag, Section = MetadataSectionType.Metadata)]
+        [FieldDefinition(1, Label = "Exclude Media Formats", HelpText = "List of release formats to remove - keep everything else. examples: vinyl, cassette, flexi, CD-R, etc. (Special aliases: analog / digital)", HelpTextWarning = "Mutually exclusive with Keep Media Formats.", HelpLink = "https://github.com/HVR88/LM-Bridge", Type = FieldType.Tag, Section = MetadataSectionType.Metadata)]
         public IEnumerable<string> ExcludeMediaFormats { get; set; } = Array.Empty<string>();
 
-        [FieldDefinition(2, Label = "or Keep only formats", HelpText = "List of release formats to keep/show - remove everything else. examples: SACD, CD, Digital Media, etc. (Special aliases: analog / digital)", HelpTextWarning = "Mutually exclusive with Exclude Media Formats.", HelpLink = "https://github.com/HVR88/LM-Bridge", Type = FieldType.Tag, Section = MetadataSectionType.Metadata)]
+        [FieldDefinition(2, Label = "or Keep Media Formats", HelpText = "List of release formats to keep - remove everything else. examples: SACD, CD, Digital Media, etc. (Special aliases: analog / digital)", HelpTextWarning = "Mutually exclusive with Exclude Media Formats.", HelpLink = "https://github.com/HVR88/LM-Bridge", Type = FieldType.Tag, Section = MetadataSectionType.Metadata)]
         public IEnumerable<string> KeepOnlyFormats { get; set; } = Array.Empty<string>();
 
-        [FieldDefinition(3, Label = "Max. # of Media", HelpText = "Only keep and show a maximim number of media issues per release (0=keep all, default)", Type = FieldType.Number, Section = MetadataSectionType.Metadata)]
+        [FieldDefinition(3, Label = "Max. # of Media", HelpText = "Keep only up to this maximim number of media issues per release (0=keep all, default)", Type = FieldType.Number, Section = MetadataSectionType.Metadata)]
         public int? KeepOnlyMediaCount { get; set; }
 
         [FieldDefinition(4, Label = "Prefer", HelpText = "when Max # set. (Digital or Analog format priority)", HelpLink = "https://github.com/HVR88/LM-Bridge", Type = FieldType.Select, SelectOptions = typeof(MediaPreferOption), Section = MetadataSectionType.Metadata)]
         public int Prefer { get; set; } = (int)MediaPreferOption.Digital;
 
-        [FieldDefinition(5, Label = "Rescan Releases", HelpText = "One-time automatic scan of releases to update available formats", Type = FieldType.Checkbox, Section = MetadataSectionType.Metadata)]
+        [FieldDefinition(5, Label = "Rescan Releases", HelpText = "One-time immediate scan of all releases to update available formats. Releases will otherwise update over time on their own as they're slowly rescanned by Lidarr.", HelpTextWarning = "This will take a long time on large libraries.", Type = FieldType.Checkbox, Section = MetadataSectionType.Metadata)]
         public bool ForceRescanReleases { get; set; }
 
         public bool UseAtOwnRisk { get; set; } = true;

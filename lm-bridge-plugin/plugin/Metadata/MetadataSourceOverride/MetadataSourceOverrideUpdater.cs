@@ -10,11 +10,10 @@ using NzbDrone.Common.Serializer;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Extras.Metadata;
 using NzbDrone.Core.Lifecycle;
-using NzbDrone.Core.MediaFiles;
-using NzbDrone.Core.MediaFiles.Commands;
 using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Messaging.Events;
-using NzbDrone.Core.RootFolders;
+using NzbDrone.Core.Music;
+using NzbDrone.Core.Music.Commands;
 using NzbDrone.Core.ThingiProvider;
 using NzbDrone.Core.ThingiProvider.Events;
 
@@ -35,7 +34,7 @@ namespace LMBridgePlugin.Metadata.MetadataSourceOverride
         private readonly IDiskProvider _diskProvider;
         private readonly IHttpClient _httpClient;
         private readonly IManageCommandQueue _commandQueueManager;
-        private readonly IRootFolderService _rootFolderService;
+        private readonly IAlbumService _albumService;
         private readonly Logger _logger;
         private readonly string _autoEnableMarkerPath;
         private string? _lastReleaseFilterPayload;
@@ -45,7 +44,7 @@ namespace LMBridgePlugin.Metadata.MetadataSourceOverride
                                              IDiskProvider diskProvider,
                                              IHttpClient httpClient,
                                              IManageCommandQueue commandQueueManager,
-                                             IRootFolderService rootFolderService,
+                                             IAlbumService albumService,
                                              Logger logger)
         {
             _metadataRepository = metadataRepository;
@@ -53,7 +52,7 @@ namespace LMBridgePlugin.Metadata.MetadataSourceOverride
             _diskProvider = diskProvider;
             _httpClient = httpClient;
             _commandQueueManager = commandQueueManager;
-            _rootFolderService = rootFolderService;
+            _albumService = albumService;
             _logger = logger;
             _autoEnableMarkerPath = ResolveAutoEnableMarkerPath();
         }
@@ -184,21 +183,18 @@ namespace LMBridgePlugin.Metadata.MetadataSourceOverride
 
             try
             {
-                var folders = _rootFolderService.All()
-                    .Select(folder => folder.Path)
-                    .Where(path => path.IsNotNullOrWhiteSpace())
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .ToList();
-
-                if (folders.Count == 0)
+                var albums = _albumService.GetAllAlbums();
+                if (albums.Count == 0)
                 {
-                    _logger.Warn("Force Rescan requested but no root folders were found.");
+                    _logger.Warn("Rescan Releases requested but no albums were found.");
                     return;
                 }
 
-                _commandQueueManager.Push(new RescanFoldersCommand(folders, FilterFilesType.Known, false, null),
-                    trigger: CommandTrigger.Manual);
-                _logger.Info("Queued rescan of releases for {0} root folder(s).", folders.Count);
+                var commands = albums
+                    .Select(album => new RefreshAlbumCommand(album.Id))
+                    .ToList();
+                _commandQueueManager.PushMany(commands);
+                _logger.Info("Queued refresh of {0} album(s).", commands.Count);
             }
             finally
             {

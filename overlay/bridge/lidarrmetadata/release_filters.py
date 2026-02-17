@@ -1,5 +1,4 @@
 import json
-import os
 from typing import Any, Dict, Iterable, List, Optional
 
 from lidarrmetadata.media_formats_meta import (
@@ -166,14 +165,7 @@ def _has_included_format(release: Dict[str, Any], include_tokens: List[str]) -> 
 
 
 def _priority_tokens() -> List[str]:
-    env_tokens = _parse_list(os.environ.get("LMBRIDGE_RELEASE_FILTER_MEDIA_PRIORITY"))
-    if env_tokens:
-        return _expand_aliases(env_tokens)
     prefer = get_runtime_media_prefer()
-    if prefer is None:
-        prefer = os.environ.get("LMBRIDGE_RELEASE_FILTER_MEDIA_PREFER")
-        if prefer:
-            prefer = prefer.strip().lower()
     if prefer == "analog":
         return list(PRIORITY_ANALOG_FIRST)
     return list(PRIORITY_DIGITAL_FIRST)
@@ -195,17 +187,9 @@ def after_query(results: Any, context: Dict[str, Any]) -> Any:
     if context.get("sql_file") != "release_group_by_id.sql":
         return None
 
-    include_tokens = get_runtime_media_include()
-    if include_tokens is None:
-        include_tokens = _expand_aliases(_parse_list(os.environ.get("LMBRIDGE_RELEASE_FILTER_MEDIA_INCLUDE")))
-
-    excluded_tokens = get_runtime_media_exclude()
-    if excluded_tokens is None:
-        excluded_tokens = _expand_aliases(_parse_list(os.environ.get("LMBRIDGE_RELEASE_FILTER_MEDIA_EXCLUDE")))
-
+    include_tokens = get_runtime_media_include() or []
+    excluded_tokens = get_runtime_media_exclude() or []
     keep_only_count = get_runtime_media_keep_only()
-    if keep_only_count is None:
-        keep_only_count = _parse_int(os.environ.get("LMBRIDGE_RELEASE_FILTER_MEDIA_KEEP_ONLY"))
 
     if not include_tokens and not excluded_tokens and not keep_only_count:
         return None
