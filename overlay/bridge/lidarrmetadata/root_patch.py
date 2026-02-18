@@ -211,15 +211,17 @@ def register_root_route() -> None:
             else "/assets/lmbridge-icon.png"
         )
         mbms_url = "https://github.com/HVR88/MBMS_PLUS"
-        def fmt_config_value(value: object) -> str:
+        def fmt_config_value(value: object, *, empty_label: str = "none") -> str:
             if value is None:
-                return "none"
+                return empty_label
             if isinstance(value, bool):
                 return "Yes" if value else "No"
             if isinstance(value, (list, tuple)):
-                return ", ".join(str(item) for item in value) or "none"
+                if not value:
+                    return empty_label
+                return ", ".join(str(item) for item in value)
             text = str(value).strip()
-            return text if text else "none"
+            return text if text else empty_label
 
         config_rows = [
             ("Filtering Enabled", fmt_config_value(config.get("enabled"))),
@@ -229,10 +231,16 @@ def register_root_route() -> None:
             ),
             (
                 "Include Media Formats",
-                fmt_config_value(config.get("include_media_formats")),
+                fmt_config_value(config.get("include_media_formats"), empty_label="all"),
             ),
-            ("Max Media Count", fmt_config_value(config.get("keep_only_media_count"))),
-            ("Prefer Media Type", fmt_config_value(config.get("prefer"))),
+            (
+                "Max Media Count",
+                fmt_config_value(config.get("keep_only_media_count"), empty_label="no limit"),
+            ),
+            (
+                "Prefer Media Type",
+                fmt_config_value(config.get("prefer"), empty_label="any"),
+            ),
         ]
         config_html = "\n".join(
             [
