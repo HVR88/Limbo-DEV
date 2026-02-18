@@ -82,3 +82,4 @@ networks:
 
 volumes:
   lmbridge-init-state:
+    name: ${LMBRIDGE_INIT_STATE_VOLUME:-lmbridge-init-state}
