@@ -75,8 +75,8 @@ jobs:
             patch += 1
             new_version = f"{major}.{minor}.{patch}.00"
 
-          version_path.write_text(new_version + "\\n")
-          Path("deploy/VERSION").write_text(new_version + "\\n")
+          version_path.write_text(new_version + "\n")
+          Path("deploy/VERSION").write_text(new_version + "\n")
 
           csproj_path = Path("lm-bridge-plugin/plugin/LMBridgePlugin.csproj")
           text = csproj_path.read_text()
