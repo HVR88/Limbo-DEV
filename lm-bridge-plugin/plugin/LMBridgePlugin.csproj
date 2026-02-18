@@ -5,8 +5,8 @@
     <Nullable>enable</Nullable>
     <RootNamespace>LMBridgePlugin</RootNamespace>
     <AssemblyName>Lidarr.Plugin.LMBridge</AssemblyName>
-    <AssemblyVersion>1.7.5.00</AssemblyVersion>
-    <Version>1.7.5.00</Version>
+    <AssemblyVersion>1.7.6.00</AssemblyVersion>
+    <Version>1.7.6.00</Version>
     <AssemblyVersion>1.7.0.00</AssemblyVersion>
     <Version>1.7.0.00</Version>
     <Branch></Branch>
