@@ -56,15 +56,6 @@ docker compose up -d
 >
 > The compose files are not meant to be edited. Put all overrides in `.env`.
 
-## Version
-
-Deploy version: `1.9.2.00`
-
-Optional cache settings (in `.env`):
-
-- `LMBRIDGE_CACHE_SCHEMA` to use a dedicated schema (default: `public`).
-- `LMBRIDGE_CACHE_FAIL_OPEN=true` to start the API with cache disabled if init cannot create cache tables.
-
 ## LM Bridge Plugin for Lidarr
 
 To use LM Bridge, Lidarr has to have the LM Bridge plugin installed. The plugin sets the API's IP:PORT in Lidarr and allows you to configure media filtering
@@ -99,5 +90,11 @@ Lidarr is now using the Bridge API and you should see lightning-fast queries to 
   <br>
   <br>
 
+Source code, docs and licenses: https://github.com/HVR88/LM-Bridge-DEV
+
 > <br>**_Thanks to blampe and Typnull for inspiration_** : this wouldn't have been possible without leveraging their previous work
 > <br><br>
+
+## Version
+
+Deploy version: `1.9.1.00`
