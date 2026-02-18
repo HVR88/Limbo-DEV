@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using NLog;
 using NzbDrone.Common.Disk;
+using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
 using NzbDrone.Common.Serializer;
@@ -307,7 +308,8 @@ namespace LMBridgePlugin.Metadata.MetadataSourceOverride
                 ExcludeMediaFormats = definition.Enable ? excludeTokens : Array.Empty<string>(),
                 IncludeMediaFormats = definition.Enable ? includeTokens : Array.Empty<string>(),
                 KeepOnlyMediaCount = definition.Enable && keepOnlyMediaCount > 0 ? keepOnlyMediaCount : null,
-                Prefer = definition.Enable && keepOnlyMediaCount > 0 ? prefer : null
+                Prefer = definition.Enable && keepOnlyMediaCount > 0 ? prefer : null,
+                LidarrVersion = BuildInfo.Version.ToString()
             };
 
             var json = payload.ToJson();
@@ -353,6 +355,7 @@ namespace LMBridgePlugin.Metadata.MetadataSourceOverride
             public IEnumerable<string> IncludeMediaFormats { get; set; } = Array.Empty<string>();
             public int? KeepOnlyMediaCount { get; set; }
             public string? Prefer { get; set; }
+            public string? LidarrVersion { get; set; }
         }
 
         private string ResolveAutoEnableMarkerPath()
