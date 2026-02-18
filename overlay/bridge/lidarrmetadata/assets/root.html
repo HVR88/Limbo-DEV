@@ -92,13 +92,14 @@
         gap: 10px;
       }
       .config {
-        margin-top: 20px;
+        margin: 20px auto 0;
         border: 1px solid var(--border);
         background: #fff;
         border-radius: 12px;
         padding: 14px 16px;
         display: grid;
         gap: 6px;
+        width: clamp(280px, 60%, 720px);
       }
       .config-row {
         display: flex;
@@ -185,18 +186,18 @@
             <div class="label">Lidarr Version (Last Seen)</div>
             <div class="value">__LIDARR_VERSION__</div>
           </div>
-          __MBMS_PILLS__
           <div class="pill">
             <div class="label">Metadata Version</div>
             <div class="value">__METADATA_VERSION__</div>
           </div>
-          <div class="pill">
-            <div class="label">Replication Date</div>
-            <div class="value">__REPLICATION_DATE__</div>
-          </div>
+          __MBMS_PILLS__
           <div class="pill">
             <div class="label">Uptime</div>
             <div class="value">__UPTIME__</div>
+          </div>
+          <div class="pill">
+            <div class="label">Replication Date</div>
+            <div class="value">__REPLICATION_DATE__</div>
           </div>
         </div>
 
@@ -206,9 +207,15 @@
         </div>
         <div class="config">__CONFIG_HTML__</div>
         <div class="foot">
-          Tip: Use <span class="accent">/album/&lt;mbid&gt;</span> to fetch
-          release group JSON or
-          <span class="accent">/artist/&lt;mbid&gt;</span> to fetch artist JSON
+          Tip: Use
+          <a class="accent" href="album/9d148b20-c055-4f0d-9020-ae5c9ae08466"
+            >/album/&lt;mbid&gt;</a
+          >
+          to fetch release group JSON or
+          <a class="accent" href="artist/8434409e-baa9-4e12-b4aa-566a91c7d7cf"
+            >/artist/&lt;mbid&gt;</a
+          >
+          to fetch artist JSON
           <a class="credit" href="https://github.com/HVR88"
             >Espressomatic | HVR88</a
           >
