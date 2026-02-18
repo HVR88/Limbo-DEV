@@ -4,7 +4,8 @@ import os
 from pathlib import Path
 import re
 import time
-from typing import Optional
+import asyncio
+from typing import Optional, Tuple, Iterable
 
 import lidarrmetadata
 from lidarrmetadata import provider
@@ -14,6 +15,55 @@ from lidarrmetadata.version_patch import _read_version
 _START_TIME = time.time()
 _LIDARR_VERSION_FILE = Path(os.environ.get("LMBRIDGE_LIDARR_VERSION_FILE", "/metadata/lidarr_version.txt"))
 _LAST_LIDARR_VERSION: Optional[str] = None
+
+
+def _cache_targets() -> Iterable[Tuple[str, object]]:
+    from lidarrmetadata import util
+    return (
+        ("artist", util.ARTIST_CACHE),
+        ("album", util.ALBUM_CACHE),
+        ("spotify", util.SPOTIFY_CACHE),
+        ("fanart", util.FANART_CACHE),
+        ("tadb", util.TADB_CACHE),
+        ("wikipedia", util.WIKI_CACHE),
+    )
+
+
+def _postgres_cache_targets() -> Iterable[Tuple[str, object]]:
+    for name, cache in _cache_targets():
+        if hasattr(cache, "_get_pool") and hasattr(cache, "_db_table"):
+            yield name, cache
+
+
+async def _clear_all_cache_tables() -> dict:
+    cleared = []
+    skipped = []
+    tasks = []
+    for name, cache in _postgres_cache_targets():
+        if hasattr(cache, "clear"):
+            tasks.append(cache.clear())
+            cleared.append(name)
+        else:
+            skipped.append(name)
+    if tasks:
+        await asyncio.gather(*tasks)
+    return {"cleared": cleared, "skipped": skipped}
+
+
+async def _expire_all_cache_tables() -> dict:
+    expired = []
+    skipped = []
+    for name, cache in _postgres_cache_targets():
+        try:
+            pool = await cache._get_pool()
+            async with pool.acquire() as conn:
+                await conn.execute(
+                    f"UPDATE {cache._db_table} SET expires = current_timestamp;"
+                )
+            expired.append(name)
+        except Exception:
+            skipped.append(name)
+    return {"expired": expired, "skipped": skipped}
 
 
 def _format_uptime(seconds: float) -> str:
@@ -132,7 +182,7 @@ def _capture_lidarr_version(user_agent: Optional[str]) -> None:
 
 def register_root_route() -> None:
     from lidarrmetadata import app as upstream_app
-    from quart import Response, request, send_file
+    from quart import Response, request, send_file, jsonify
 
     assets_dir = Path(__file__).resolve().parent / "assets"
 
@@ -153,6 +203,34 @@ def register_root_route() -> None:
         @upstream_app.app.before_request
         async def _lmbridge_capture_lidarr_version():
             _capture_lidarr_version(request.headers.get("User-Agent"))
+
+    for rule in upstream_app.app.url_map.iter_rules():
+        if rule.rule == "/cache/clear":
+            break
+    else:
+
+        @upstream_app.app.route("/cache/clear", methods=["POST"])
+        async def _lmbridge_cache_clear():
+            if request.headers.get("authorization") != upstream_app.app.config.get(
+                "INVALIDATE_APIKEY"
+            ):
+                return jsonify("Unauthorized"), 401
+            result = await _clear_all_cache_tables()
+            return jsonify(result)
+
+    for rule in upstream_app.app.url_map.iter_rules():
+        if rule.rule == "/cache/expire":
+            break
+    else:
+
+        @upstream_app.app.route("/cache/expire", methods=["POST"])
+        async def _lmbridge_cache_expire():
+            if request.headers.get("authorization") != upstream_app.app.config.get(
+                "INVALIDATE_APIKEY"
+            ):
+                return jsonify("Unauthorized"), 401
+            result = await _expire_all_cache_tables()
+            return jsonify(result)
 
     async def _lmbridge_root_route():
         replication_date = None
@@ -205,6 +283,8 @@ def register_root_route() -> None:
         if base_path and not base_path.startswith("/"):
             base_path = "/" + base_path
         version_url = f"{base_path}/version" if base_path else "/version"
+        cache_clear_url = f"{base_path}/cache/clear" if base_path else "/cache/clear"
+        cache_expire_url = f"{base_path}/cache/expire" if base_path else "/cache/expire"
         icon_url = (
             f"{base_path}/assets/lmbridge-icon.png"
             if base_path
@@ -265,6 +345,11 @@ def register_root_route() -> None:
             "__REPLICATION_DATE__": safe["replication_date"],
             "__UPTIME__": safe["uptime"],
             "__VERSION_URL__": html.escape(version_url),
+            "__CACHE_CLEAR_URL__": html.escape(cache_clear_url),
+            "__CACHE_EXPIRE_URL__": html.escape(cache_expire_url),
+            "__INVALIDATE_APIKEY__": html.escape(
+                upstream_app.app.config.get("INVALIDATE_APIKEY") or ""
+            ),
             "__MBMS_URL__": html.escape(mbms_url),
             "__CONFIG_HTML__": config_html,
         }

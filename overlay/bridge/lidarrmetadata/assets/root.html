@@ -89,7 +89,18 @@
         margin-top: 20px;
         display: flex;
         flex-wrap: wrap;
+        align-items: center;
         gap: 10px;
+      }
+      .links-left,
+      .links-right {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+      }
+      .links-right {
+        margin-left: auto;
       }
       .config {
         margin: 20px auto 0;
@@ -140,6 +151,16 @@
         transition:
           transform 120ms ease,
           box-shadow 120ms ease;
+      }
+      button.link {
+        appearance: none;
+        cursor: pointer;
+        font: inherit;
+      }
+      .link-danger {
+        border-color: rgba(176, 38, 45, 0.2);
+        color: #8a1f26;
+        background: rgba(255, 235, 236, 0.7);
       }
       .link:hover {
         transform: translateY(-1px);
@@ -202,8 +223,28 @@
         </div>
 
         <div class="links">
-          <a class="link" href="__VERSION_URL__">Version JSON</a>
-          <a class="link" href="__MBMS_URL__">MBMS PLUS Repo</a>
+          <div class="links-left">
+            <a class="link" href="__VERSION_URL__">Version JSON</a>
+            <a class="link" href="__MBMS_URL__">MBMS PLUS Repo</a>
+          </div>
+          <div class="links-right">
+            <button
+              class="link"
+              type="button"
+              data-cache-action="expire"
+              data-cache-url="__CACHE_EXPIRE_URL__"
+            >
+              Expire Cache Tables
+            </button>
+            <button
+              class="link link-danger"
+              type="button"
+              data-cache-action="clear"
+              data-cache-url="__CACHE_CLEAR_URL__"
+            >
+              Clear Cache Tables
+            </button>
+          </div>
         </div>
         <div class="config">__CONFIG_HTML__</div>
         <div class="foot">
@@ -222,5 +263,46 @@
         </div>
       </section>
     </main>
+    <script>
+      const cacheButtons = document.querySelectorAll("[data-cache-action]");
+      const invalidateApiKey = "__INVALIDATE_APIKEY__";
+
+      const runCacheAction = async (button) => {
+        const action = button.dataset.cacheAction || "action";
+        const url = button.dataset.cacheUrl;
+        if (!url) {
+          alert("Missing cache endpoint.");
+          return;
+        }
+        if (
+          action === "clear" &&
+          !confirm("Clear all cache tables? This cannot be undone.")
+        ) {
+          return;
+        }
+        const headers = {};
+        if (invalidateApiKey) {
+          headers.Authorization = invalidateApiKey;
+        }
+        button.disabled = true;
+        try {
+          const response = await fetch(url, { method: "POST", headers });
+          const text = await response.text();
+          if (!response.ok) {
+            alert(`Error (${response.status}): ${text}`);
+            return;
+          }
+          alert(`OK: ${text}`);
+        } catch (error) {
+          alert(`Request failed: ${error}`);
+        } finally {
+          button.disabled = false;
+        }
+      };
+
+      cacheButtons.forEach((button) => {
+        button.addEventListener("click", () => runCacheAction(button));
+      });
+    </script>
   </body>
 </html>
