@@ -10,3 +10,4 @@ lm-bridge-plugin/
 scripts/*
 !scripts/init-mbdb.sh
 research/
+docs/
