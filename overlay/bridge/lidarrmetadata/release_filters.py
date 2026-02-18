@@ -183,6 +183,75 @@ def _release_priority(release: Dict[str, Any], tokens: List[str]) -> int:
     return best
 
 
+def _apply_release_filters_to_album(
+    album: Dict[str, Any],
+    include_tokens: List[str],
+    excluded_tokens: List[str],
+    keep_only_count: Optional[int],
+) -> None:
+    releases = album.get("Releases") if isinstance(album, dict) else None
+    if releases is None and isinstance(album, dict):
+        releases = album.get("releases")
+    if not isinstance(releases, list):
+        return
+
+    if include_tokens:
+        filtered = [
+            release for release in releases
+            if _has_included_format(release, include_tokens)
+        ]
+        if "Releases" in album:
+            album["Releases"] = filtered
+        else:
+            album["releases"] = filtered
+    elif excluded_tokens:
+        filtered = [
+            release for release in releases
+            if not _has_excluded_format(release, excluded_tokens)
+        ]
+        if filtered:
+            if "Releases" in album:
+                album["Releases"] = filtered
+            else:
+                album["releases"] = filtered
+
+    if keep_only_count and keep_only_count > 0:
+        current = album.get("Releases") if isinstance(album, dict) else None
+        if current is None and isinstance(album, dict):
+            current = album.get("releases")
+        if isinstance(current, list) and len(current) > keep_only_count:
+            priority_tokens = _priority_tokens()
+            trimmed = sorted(
+                current,
+                key=lambda release: (
+                    _release_priority(release, priority_tokens),
+                    ",".join(sorted(_release_formats(release))),
+                ),
+            )[:keep_only_count]
+            if "Releases" in album:
+                album["Releases"] = trimmed
+            else:
+                album["releases"] = trimmed
+
+
+def apply_release_group_filters(release_group: Dict[str, Any]) -> Dict[str, Any]:
+    include_tokens = get_runtime_media_include() or []
+    excluded_tokens = get_runtime_media_exclude() or []
+    keep_only_count = get_runtime_media_keep_only()
+
+    if not include_tokens and not excluded_tokens and not keep_only_count:
+        return release_group
+
+    if isinstance(release_group, dict):
+        _apply_release_filters_to_album(
+            release_group,
+            include_tokens,
+            excluded_tokens,
+            keep_only_count,
+        )
+    return release_group
+
+
 def after_query(results: Any, context: Dict[str, Any]) -> Any:
     if context.get("sql_file") != "release_group_by_id.sql":
         return None
@@ -207,47 +276,13 @@ def after_query(results: Any, context: Dict[str, Any]) -> Any:
             updated.append(row)
             continue
 
-        releases = album.get("Releases") if isinstance(album, dict) else None
-        if releases is None and isinstance(album, dict):
-            releases = album.get("releases")
-        if isinstance(releases, list):
-            if include_tokens:
-                filtered = [
-                    release for release in releases
-                    if _has_included_format(release, include_tokens)
-                ]
-                if "Releases" in album:
-                    album["Releases"] = filtered
-                else:
-                    album["releases"] = filtered
-            elif excluded_tokens:
-                filtered = [
-                    release for release in releases
-                    if not _has_excluded_format(release, excluded_tokens)
-                ]
-                if filtered:
-                    if "Releases" in album:
-                        album["Releases"] = filtered
-                    else:
-                        album["releases"] = filtered
-
-            if keep_only_count and keep_only_count > 0:
-                current = album.get("Releases") if isinstance(album, dict) else None
-                if current is None and isinstance(album, dict):
-                    current = album.get("releases")
-                if isinstance(current, list) and len(current) > keep_only_count:
-                    priority_tokens = _priority_tokens()
-                    trimmed = sorted(
-                        current,
-                        key=lambda release: (
-                            _release_priority(release, priority_tokens),
-                            ",".join(sorted(_release_formats(release)))
-                        )
-                    )[:keep_only_count]
-                    if "Releases" in album:
-                        album["Releases"] = trimmed
-                    else:
-                        album["releases"] = trimmed
+        if isinstance(album, dict):
+            _apply_release_filters_to_album(
+                album,
+                include_tokens,
+                excluded_tokens,
+                keep_only_count,
+            )
 
         try:
             row["album"] = json.dumps(album, separators=(",", ":"))

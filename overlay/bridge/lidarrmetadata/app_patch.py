@@ -1,4 +1,25 @@
 import os
+import contextvars
+
+_CACHE_STATUS = contextvars.ContextVar("lmbridge_cache_status", default=None)
+
+
+def _record_cache_event(hit: bool) -> None:
+    status = _CACHE_STATUS.get()
+    next_status = "hit" if hit else "miss"
+    if status is None:
+        _CACHE_STATUS.set(next_status)
+        return
+    if status != next_status:
+        _CACHE_STATUS.set("mixed")
+
+
+def _get_cache_status() -> str:
+    return _CACHE_STATUS.get()
+
+
+def _reset_cache_status() -> None:
+    _CACHE_STATUS.set(None)
 
 async def safe_spotify_set(spotify_id, albumid):
     """
@@ -19,12 +40,63 @@ def apply() -> None:
     """
     from lidarrmetadata import mitm
     from lidarrmetadata import db_hooks
+    from lidarrmetadata import app as upstream_app
+    from lidarrmetadata import api as api_mod
+    from lidarrmetadata import provider as provider_api
+    from lidarrmetadata import util
+    from lidarrmetadata import release_filters
     if mitm.is_enabled():
-        from lidarrmetadata import app as upstream_app
-
         @upstream_app.app.after_request
         async def _lmbridge_mitm_hook(response):
             return await mitm.apply_response(response)
+
+    if not getattr(api_mod.get_release_group_info, "_lmbridge_release_filter_wrapped", False):
+        original_release_group_info = api_mod.get_release_group_info
+
+        async def _lmbridge_get_release_group_info(*args, **kwargs):
+            release_group, expiry = await original_release_group_info(*args, **kwargs)
+            try:
+                release_group = release_filters.apply_release_group_filters(release_group)
+            except Exception:
+                pass
+            return release_group, expiry
+
+        _lmbridge_get_release_group_info._lmbridge_release_filter_wrapped = True
+        api_mod.get_release_group_info = _lmbridge_get_release_group_info
+
+    if not getattr(api_mod.get_release_group_info_basic, "_lmbridge_cache_status", False):
+        original_release_group_info_basic = api_mod.get_release_group_info_basic
+
+        async def _lmbridge_get_release_group_info_basic(mbid, *args, **kwargs):
+            try:
+                cached, expiry = await util.ALBUM_CACHE.get(mbid)
+                now = provider_api.utcnow()
+                if cached and expiry > now:
+                    _record_cache_event(True)
+                else:
+                    _record_cache_event(False)
+            except Exception:
+                pass
+            return await original_release_group_info_basic(mbid, *args, **kwargs)
+
+        _lmbridge_get_release_group_info_basic._lmbridge_cache_status = True
+        api_mod.get_release_group_info_basic = _lmbridge_get_release_group_info_basic
+
+    if not getattr(upstream_app.app, "_lmbridge_cache_header", False):
+
+        @upstream_app.app.before_request
+        async def _lmbridge_cache_header_reset():
+            _reset_cache_status()
+
+        @upstream_app.app.after_request
+        async def _lmbridge_cache_header(response):
+            status = _get_cache_status()
+            if status:
+                response.headers["X-LMBridge-Cache"] = status
+            _reset_cache_status()
+            return response
+
+        upstream_app.app._lmbridge_cache_header = True
 
     if db_hooks.is_enabled():
         from lidarrmetadata import provider as provider_mod
