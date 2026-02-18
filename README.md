@@ -11,14 +11,14 @@ and contains two complimentary parts that run 100% locally:
 
 1. A Lidarr Metadata Server image that bridges to a MusicBrainz mirror
 2. A Plugin to set the URL of this bridge container in Lidarr
-3. ???? - revealing soon
-4. ???? - and next?
+3. Media format filtering - remove any format from Lidarr (like vinyl)
+4. Before/After API hooks allowing third parties to insert plugin-like code to manipulate json and database queries, including addind other external databases
 
 **_Thanks to blampe and Typnull for inspiration_** : this wouldn't have been possible without leveraging their previous work
 
 > [!IMPORTANT]
 >
-> **_For the premade Docker container, visit the Deployment Repo instead: https://github.com/HVR88/LM-Bridge_**
+> **_For the premade Docker container: https://github.com/HVR88/LM-Bridge_**
 
 Deploy-only files live in `deploy/` (`docker-compose.yml`, `compose/`, `.env.example`). You can copy that folder as-is, or run `scripts/export-deploy.sh` to create a bundle or sync it to a separate deploy repo (the export excludes `.env` by default).
 

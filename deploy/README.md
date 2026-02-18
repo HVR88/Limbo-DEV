@@ -15,11 +15,11 @@ This is a stand-alone _LM Bridge_ release for existing MusicBrainz mirror instal
 - Caching database
 - Media Format filtering - remove media issues you don't want listed in Lidarr
   - Vinyl? Cassette? Remove them if you want, right at the data layer
-- Extendable hook mechanism allows others to add functionality
+- Extendable hook mechanism allows others to add functionality - including additional databases beyond MusicBrainz
 
 > [!IMPORTANT]
 >
-> If you don't have a MusicBrainz mirror yet, use [**MBMS PLUS**](https://github.com/HVR88/MBMS_PLUS), our automated MusicBrainz installation with LM Bridge built-in.
+> I highly recommend [**MBMS PLUS**](https://github.com/HVR88/MBMS_PLUS), our automated MusicBrainz installation with LM Bridge built-in instead of a manual mirror setup.
 
 ## Quick start
 
@@ -56,8 +56,6 @@ docker compose up -d
 >
 > The compose files are not meant to be edited. Put all overrides in `.env`.
 
-### 5. Install the LM Bridge Plugin in Lidarr
-
 ## Version
 
 Deploy version: `1.9.1.00`
@@ -67,27 +65,27 @@ Optional cache settings (in `.env`):
 - `LMBRIDGE_CACHE_SCHEMA` to use a dedicated schema (default: `public`).
 - `LMBRIDGE_CACHE_FAIL_OPEN=true` to start the API with cache disabled if init cannot create cache tables.
 
-## LM Bridge API Plugin (Required)
+## LM Bridge Plugin for Lidarr
 
-This repo includes a plugin that will appear in Lidarr's Metadata settings page after being installed. Lidarr must have this plugin installed to talk to the bridge on your network.
+To use LM Bridge, Lidarr has to have the LM Bridge plugin installed. The plugin sets the API's IP:PORT in Lidarr and allows you to configure media filtering
 
-**Install the Plugin**
+**Installing the Plugin**
 
 1. In Lidarr, open **System → Plugins**
-2. Paste the GitHub repo URL into the GitHub URL box and click **Install**.
+2. Paste `https://github.com/HVR88/LM-Bridge` into the GitHub URL box and click **Install**.
 3. Restart Lidarr when prompted.
 
-Example: URL for this repo: `https://github.com/HVR88/LM-Bridge`
-
-If you don't see a System → Plugins page in your Lidarr, switch to the `nightly` branch, such as **[LinuxServer.io's](https://hub.docker.com/r/linuxserver/lidarr)**
+If you don't see a _System → Plugins_ page in your Lidarr, switch to the `nightly` branch, such as **[LinuxServer.io's](https://hub.docker.com/r/linuxserver/lidarr)**
 
 **Enable the Plugin**
 
 1. In Lidarr, open **Settings → Metadata**
-2. Click **LM Bridge API**.
-3. Make sure the Enable check-box is checked
-4. Enter the URL of the LM Bridge container : 5001
+2. Click the **LM Bridge Settings** card
+3. Make sure the Enable check-box is checked in the plugin window
+4. Enter the URL of the LM Bridge container **http://<your_LM_BRIDGE_IP>:5001**
 5. Click Save
+
+Verify a successful LM Bridge installation and check versions by opening the LM Bridge URL in your browser: **http://<your_LM_BRIDGE_IP>:5001**
 
 Lidarr is now using the Bridge API and you should see lightning-fast queries to your MusicBrainz mirror.
 
