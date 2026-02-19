@@ -66,6 +66,21 @@ else
   CACHE_SQL_PATH="/sql/cache.sql"
 fi
 
+wait_for_db() {
+  local attempts="${LMBRIDGE_DB_WAIT_ATTEMPTS:-30}"
+  local sleep_secs="${LMBRIDGE_DB_WAIT_DELAY:-2}"
+  local attempt=1
+  until psql_run "$MB_ADMIN_DB" -tAc "SELECT 1" >/dev/null 2>&1; do
+    if (( attempt >= attempts )); then
+      echo "Database not ready after ${attempts} attempts." >&2
+      return 1
+    fi
+    echo "Waiting for database to accept connections... (${attempt}/${attempts})"
+    sleep "$sleep_secs"
+    attempt=$((attempt + 1))
+  done
+}
+
 LEGACY_CACHE_USERS=("lidarr" "abc")
 
 migrate_legacy_cache_role() {
@@ -160,6 +175,7 @@ ensure_db() {
   fi
 }
 
+wait_for_db
 echo "Initializing cache role/database and MusicBrainz indexes..."
 migrate_legacy_cache_role
 ensure_role
