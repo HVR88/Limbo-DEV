@@ -118,16 +118,16 @@ namespace LMBridgePlugin.Metadata.MetadataSourceOverride
         [FieldDefinition(0, Label = "API URL", Type = FieldType.Url, Placeholder = DefaultMetadataSource, Section = MetadataSectionType.Metadata, HelpText = "HTTP://ADDRESS:PORT of your LM Bridge Instance")]
         public string MetadataSource { get; set; } = DefaultMetadataSource;
 
-        [FieldDefinition(1, Label = "Exclude Media Formats", HelpText = "List of release formats to remove - keep everything else. examples: vinyl, cassette, flexi, CD-R, etc. (Special aliases: analog / digital)", HelpTextWarning = "Mutually exclusive with Include Media Formats", HelpLink = "https://github.com/HVR88/LM-Bridge-DEV/blob/main/docs/Media-Formats.md", Type = FieldType.Tag, Section = MetadataSectionType.Metadata)]
+        [FieldDefinition(1, Label = "Exclude Media Formats", HelpText = "List of release formats to remove - keep everything else. examples: vinyl, cassette, flexi, CD-R, etc. (Special aliases: analog / digital)", HelpTextWarning = "Mutually exclusive with Include Media Formats", HelpLink = "https://github.com/HVR88/Docs-Extras/blob/master/docs/Media-Formats.md", Type = FieldType.Tag, Section = MetadataSectionType.Metadata)]
         public IEnumerable<string> ExcludeMediaFormats { get; set; } = Array.Empty<string>();
 
-        [FieldDefinition(2, Label = "or Include Media Formats", HelpText = "List of release formats to keep - remove everything else. examples: SACD, CD, Digital Media, etc. (Special aliases: analog / digital)", HelpTextWarning = "Mutually exclusive with Exclude Media Formats", HelpLink = "https://github.com/HVR88/LM-Bridge-DEV/blob/main/docs/Media-Formats.md", Type = FieldType.Tag, Section = MetadataSectionType.Metadata)]
+        [FieldDefinition(2, Label = "or Include Media Formats", HelpText = "List of release formats to keep - remove everything else. examples: SACD, CD, Digital Media, etc. (Special aliases: analog / digital)", HelpTextWarning = "Mutually exclusive with Exclude Media Formats", HelpLink = "https://github.com/HVR88/Docs-Extras/blob/master/docs/Media-Formats.md", Type = FieldType.Tag, Section = MetadataSectionType.Metadata)]
         public IEnumerable<string> KeepOnlyFormats { get; set; } = Array.Empty<string>();
 
         [FieldDefinition(3, Label = "Max. # of Media", HelpText = "Keep only up to this maximim number of media issues per release (0=keep all, default)", Type = FieldType.Number, Section = MetadataSectionType.Metadata)]
         public int? KeepOnlyMediaCount { get; set; }
 
-        [FieldDefinition(4, Label = "Prefer", HelpText = "when Max # set. (Digital or Analog format priority)", HelpLink = "https://github.com/HVR88/LM-Bridge-DEV/blob/main/docs/Media-Formats.md", Type = FieldType.Select, SelectOptions = typeof(MediaPreferOption), Section = MetadataSectionType.Metadata)]
+        [FieldDefinition(4, Label = "Prefer", HelpText = "when Max # set. (Digital or Analog format priority)", HelpLink = "https://github.com/HVR88/Docs-Extras/blob/master/docs/Media-Formats.md", Type = FieldType.Select, SelectOptions = typeof(MediaPreferOption), Section = MetadataSectionType.Metadata)]
         public int Prefer { get; set; } = (int)MediaPreferOption.Digital;
 
         [FieldDefinition(5, Label = "Refresh Releases", HelpText = "One-time refresh of all releases to update formats. Releases will otherwise update slowly over time, as they're periodically refreshed by Lidarr", HelpTextWarning = "NOTE: This takes a long time on large libraries", Type = FieldType.Checkbox, Section = MetadataSectionType.Metadata)]

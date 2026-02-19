@@ -361,7 +361,7 @@ def register_root_route() -> None:
             text = str(value).strip()
             return text if text else empty_label
 
-        media_formats_url = "https://github.com/HVR88/LM-Bridge-DEV/blob/main/docs/Media-Formats.md"
+        media_formats_url = "https://github.com/HVR88/Docs-Extras/blob/master/docs/Media-Formats.md"
         exclude_label = (
             'Exclude <a class="config-link" href="{}" target="_blank" rel="noopener">Media Formats</a>'.format(
                 html.escape(media_formats_url)

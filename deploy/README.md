@@ -13,7 +13,7 @@ This is a stand-alone _LM Bridge_ release for existing MusicBrainz mirror instal
 - Directly access a local MusicBrainz server instead of remote Lidarr server
   - No more broken connections, and failed searches
 - Caching database
-- Media Format filtering - remove media issues you don't want listed in Lidarr
+- [Media Format](https://github.com/HVR88/Docs-Extras/blob/master/docs/Media-Formats.md) filtering - remove media issues you don't want listed in Lidarr
   - Vinyl? Cassette? Remove them if you want, right at the data layer
 - Extendable hook mechanism allows others to add functionality - including additional databases beyond MusicBrainz
 
