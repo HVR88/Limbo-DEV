@@ -14,16 +14,24 @@
         --accent-2: #e2b159;
         --accent-green: #6dd000;
         --accent-orange: #ff8a00;
-        --accent-danger: #e0582b;
-        --accent-danger-soft: rgba(224, 88, 43, 0.16);
-        --accent-danger-border: rgba(224, 88, 43, 0.4);
-        --accent-update: #d24a1e;
+        --accent-danger: #d3481e;
+        --accent-danger-base: #f8e2d6;
+        --accent-danger-soft: linear-gradient(
+          135deg,
+          rgba(255, 98, 12, 0.22),
+          rgba(210, 32, 26, 0.2),
+          rgba(154, 32, 118, 0.18)
+        );
+        --accent-danger-border: rgba(211, 72, 30, 0.5);
+        --accent-update: #d3481e;
+        --accent-update-base: #f8e2d6;
         --accent-update-soft: linear-gradient(
           135deg,
-          rgba(255, 110, 20, 0.22),
-          rgba(180, 20, 20, 0.2)
+          rgba(255, 98, 12, 0.22),
+          rgba(210, 32, 26, 0.2),
+          rgba(154, 32, 118, 0.18)
         );
-        --accent-update-border: rgba(210, 74, 30, 0.5);
+        --accent-update-border: rgba(211, 72, 30, 0.5);
         --accent-gradient-soft: linear-gradient(
           135deg,
           rgba(109, 208, 0, 0.18),
@@ -95,6 +103,11 @@
         background: #ffffff;
         box-shadow: var(--soft-shadow);
       }
+      .pill .label,
+      .pill .value {
+        position: relative;
+        z-index: 1;
+      }
       .pill.has-action {
         padding-right: 90px;
       }
@@ -133,19 +146,21 @@
       }
       .pill-button.update {
         border-color: var(--accent-update-border);
-        background: var(--accent-update-soft);
+        background-color: var(--accent-update-base);
+        background-image: var(--accent-update-soft);
         color: var(--accent-update);
       }
       .pill-button.update:hover {
-        box-shadow: 0 6px 12px rgba(210, 74, 30, 0.22);
+        box-shadow: 0 6px 12px rgba(210, 52, 32, 0.24);
       }
       .pill-button.danger {
         border-color: var(--accent-danger-border);
-        background: var(--accent-danger-soft);
+        background-color: var(--accent-danger-base);
+        background-image: var(--accent-danger-soft);
         color: var(--accent-danger);
       }
       .pill-button.danger:hover {
-        box-shadow: 0 6px 12px rgba(224, 88, 43, 0.22);
+        box-shadow: 0 6px 12px rgba(210, 52, 32, 0.24);
       }
       .pill-button.overlay {
         top: 10px;
@@ -368,7 +383,7 @@
 __LM_VERSION_BUTTON__
           </div>
           <div class="__PLUGIN_PILL_CLASS__">
-            <div class="label">LM Bridge Plugin Version</div>
+            <div class="label">__LM_PLUGIN_LABEL__</div>
             <div class="value">__LM_PLUGIN_VERSION__</div>
 __PLUGIN_VERSION_BUTTON__
           </div>

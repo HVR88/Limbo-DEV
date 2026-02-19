@@ -717,9 +717,11 @@ def register_root_route() -> None:
             replacements["__PLUGIN_VERSION_BUTTON__"] = (
                 '            <a class="pill-button update overlay" href="{}" target="_blank" rel="noopener">{}</a>'
             ).format(html.escape(plugin_target), html.escape(plugin_update))
+            replacements["__LM_PLUGIN_LABEL__"] = "LM Bridge Plugin"
         else:
             replacements["__PLUGIN_PILL_CLASS__"] = "pill"
             replacements["__PLUGIN_VERSION_BUTTON__"] = ""
+            replacements["__LM_PLUGIN_LABEL__"] = "LM Bridge Plugin Version"
 
         if mbms_update:
             mbms_button = (

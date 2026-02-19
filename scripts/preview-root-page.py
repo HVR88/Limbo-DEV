@@ -44,6 +44,7 @@ def build_preview_html() -> str:
         "__ICON_URL__": "assets/lmbridge-icon.png",
         "__LM_VERSION__": "1.9.7.10",
         "__LM_PLUGIN_VERSION__": "1.9.7.10",
+        "__LM_PLUGIN_LABEL__": "LM Bridge Plugin",
         "__LM_PILL_CLASS__": "pill has-action",
         "__PLUGIN_PILL_CLASS__": "pill",
         "__LM_VERSION_BUTTON__": (
