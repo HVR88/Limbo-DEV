@@ -109,6 +109,7 @@ def register_config_routes() -> None:
             return jsonify({"ok": False, "error": "Missing Lidarr base URL or API key."}), 400
 
         resolved_ids: List[int] = []
+        resolved_artist_ids: List[int] = []
         missing_mbids: List[str] = []
         errors: List[str] = []
         timeout = aiohttp.ClientTimeout(total=5)
@@ -126,10 +127,47 @@ def register_config_routes() -> None:
                 except Exception as exc:
                     errors.append(f"MBID {mbid}: {exc}")
                     continue
-                if not data:
+                if data:
+                    for item in data:
+                        album_id = item.get("id")
+                        if isinstance(album_id, int):
+                            resolved_ids.append(album_id)
+                    continue
+
+                artist_url = base_url.rstrip("/") + "/api/v1/artist"
+                try:
+                    async with session.get(artist_url, headers=headers, params={"mbId": mbid}) as resp:
+                        if resp.status != 200:
+                            errors.append(f"Artist MBID {mbid}: status {resp.status}")
+                            continue
+                        artist_data = await resp.json()
+                except Exception as exc:
+                    errors.append(f"Artist MBID {mbid}: {exc}")
+                    continue
+                if not artist_data:
                     missing_mbids.append(mbid)
                     continue
-                for item in data:
+                for artist in artist_data:
+                    artist_id = artist.get("id")
+                    if isinstance(artist_id, int):
+                        resolved_artist_ids.append(artist_id)
+
+            artist_ids_unique = sorted(set(resolved_artist_ids))
+            for artist_id in artist_ids_unique:
+                try:
+                    async with session.get(
+                        base_url.rstrip("/") + "/api/v1/album",
+                        headers=headers,
+                        params={"artistId": artist_id},
+                    ) as resp:
+                        if resp.status != 200:
+                            errors.append(f"Artist {artist_id}: status {resp.status}")
+                            continue
+                        albums = await resp.json()
+                except Exception as exc:
+                    errors.append(f"Artist {artist_id}: {exc}")
+                    continue
+                for item in albums or []:
                     album_id = item.get("id")
                     if isinstance(album_id, int):
                         resolved_ids.append(album_id)
@@ -154,6 +192,7 @@ def register_config_routes() -> None:
                 "requested_ids": lidarr_ids,
                 "resolved_ids": resolved_ids,
                 "queued_ids": queued,
+                "resolved_artist_ids": artist_ids_unique,
                 "missing_mbids": missing_mbids,
                 "errors": errors,
             }
