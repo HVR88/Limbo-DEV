@@ -1,4 +1,0 @@
-Marker placed immediately after saving CHAT_HISTORY.txt.
-Next segment begins with:
-User: ok, good to continue.
-Assistant: Here’s a concrete #1 synthetic ID scheme plus a test plan...

@@ -7,9 +7,7 @@ research/
 # Local noise
 **/.DS_Store
 lm-bridge.code-workspace
-CHAT_HISTORY.txt
-CHAT_HISTORY_MARKER.txt
-Espanda - PART1.txt
+.vscode/
 
 # Deploy outputs
 dist/

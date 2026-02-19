@@ -4,41 +4,53 @@
     {
       "name": "digital_hi_res",
       "formats": [
+        "SHM-SACD",
+        "SHM-SACD (2 channels)",
+        "SHM-SACD (multichannel)",
+        "SACD",
+        "SACD (2 channels)",
+        "SACD (multichannel)",
+        "Hybrid SACD (SACD layer)",
+        "Hybrid SACD (SACD layer, 2 channels)",
+        "Hybrid SACD (SACD layer, multichannel)",
+        "Hybrid SACD",
+        "Ultra HD Blu-ray",
         "Blu-ray",
         "Blu-ray-R",
         "HD-DVD",
         "DVD-Audio",
-        "SHM-SACD",
-        "SACD",
-        "Hybrid SACD (SACD layer)",
-        "Hybrid SACD",
         "DualDisc (DVD-Audio side)",
-        "DVDplus (DVD-Audio side)"
+        "DVDplus (DVD-Audio side)",
+        "Minimax DVD-Audio",
+        "MiniDVD-Audio",
+        "HDCD"
       ]
     },
     {
       "name": "digital_cd_quality",
       "formats": [
-        "DTS CD",
-        "HDCD",
-        "DAT",
+        "CD",
+        "Digital Audio",
         "Compact Disc",
-        "8cm CD",
         "SHM-CD",
         "HQCD",
         "Blu-spec CD",
         "Minimax CD",
-        "Enhanced CD",
-        "Mixed Mode CD",
-        "Copy Control CD",
-        "Data CD",
-        "CD-R",
-        "CD+G",
-        "8cm CD+G",
         "Hybrid SACD (CD layer)",
         "DualDisc (CD side)",
         "DVDplus (CD side)",
-        "CDV"
+        "8cm CD",
+        "CDV",
+        "DTS CD",
+        "DAT",
+        "Mixed Mode CD",
+        "Enhanced CD",
+        "Copy Control CD",
+        "CD-R",
+        "8cm CD-R",
+        "CD+G",
+        "8cm CD+G",
+        "Data CD"
       ]
     },
     {
@@ -51,14 +63,23 @@
       "name": "digital_video_optical",
       "formats": [
         "DVD-Video",
+        "DVD-R Video",
         "DVD",
         "DualDisc (DVD-Video side)",
         "DVDplus (DVD-Video side)",
         "DualDisc",
         "DVDplus",
+        "MiniDVD",
+        "MiniDVD-Video",
+        "Minimax DVD",
+        "Minimax DVD-Video",
         "SVCD",
         "VCD",
-        "UMD"
+        "CD-i",
+        "UMD",
+        "Data DVD",
+        "Data DVD-R",
+        "DualDisc (DVD side)"
       ]
     },
     {
@@ -71,15 +92,20 @@
     {
       "name": "digital_legacy_media",
       "formats": [
-        "USB Flash Drive",
-        "SD card",
         "Download Card",
+        "USB Flash Drive",
+        "SD Card",
+        "microSD",
+        "KiT Album",
+        "ROM cartridge",
+        "DataPlay",
         "slotMusic",
         "Zip Disk",
+        "Floppy Disk",
         "3.5\" Floppy Disk",
         "5.25\" Floppy Disk",
-        "Floppy Disk",
-        "Playbutton"
+        "Playbutton",
+        "SD card"
       ]
     },
     {
@@ -98,20 +124,26 @@
     {
       "name": "analog_vinyl",
       "formats": [
-        "Vinyl",
         "12\" Vinyl",
         "10\" Vinyl",
-        "7\" Vinyl"
+        "7\" Vinyl",
+        "3\" Vinyl",
+        "Vinyl"
       ]
     },
     {
       "name": "analog_other_discs",
       "formats": [
-        "Edison Diamond Disc",
-        "Pathé disc",
+        "VinylDisc (Vinyl side)",
+        "VinylDisc (CD side)",
+        "VinylDisc (DVD side)",
         "VinylDisc",
         "Flexi-disc",
-        "7\" Flexi-disc"
+        "7\" Flexi-disc",
+        "Phonograph record",
+        "Edison Diamond Disc",
+        "Pathé disc",
+        "Pathé disc"
       ]
     },
     {
@@ -119,6 +151,7 @@
       "formats": [
         "Reel-to-reel",
         "Cassette",
+        "8-Track Cartridge",
         "Cartridge",
         "Microcassette",
         "HiPac",
@@ -128,9 +161,10 @@
     {
       "name": "analog_video",
       "formats": [
-        "LaserDisc",
+        "Betacam SP",
         "12\" LaserDisc",
         "8\" LaserDisc",
+        "LaserDisc",
         "Betamax",
         "VHS",
         "VHD",
@@ -140,19 +174,19 @@
     {
       "name": "analog_acetate",
       "formats": [
-        "Acetate",
         "12\" Acetate",
         "10\" Acetate",
-        "7\" Acetate"
+        "7\" Acetate",
+        "Acetate"
       ]
     },
     {
       "name": "analog_shellac",
       "formats": [
-        "Shellac",
         "12\" Shellac",
         "10\" Shellac",
-        "7\" Shellac"
+        "7\" Shellac",
+        "Shellac"
       ]
     },
     {
@@ -160,7 +194,8 @@
       "formats": [
         "Tefifon",
         "Wax Cylinder",
-        "Piano roll"
+        "Piano roll",
+        "Piano Roll"
       ]
     }
   ]
