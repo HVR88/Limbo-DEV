@@ -58,29 +58,29 @@ jobs:
               return raw
 
           def _release_version(version: str) -> str:
-              m = re.fullmatch(r"(\\d+\\.\\d+\\.\\d+)\\.(\\d{1,3})", version)
+              m = re.fullmatch(r"(\d+\.\d+\.\d+)\.(\d{1,3})", version)
               if m and int(m.group(2)) == 0:
                   return m.group(1)
               return version
 
           def _docker_version(version: str) -> str:
-              m = re.fullmatch(r"(\\d+\\.\\d+\\.\\d+)\\.(\\d{1,3})", version)
+              m = re.fullmatch(r"(\d+\.\d+\.\d+)\.(\d{1,3})", version)
               if m:
                   return m.group(1)
-              m = re.fullmatch(r"(\\d+\\.\\d+\\.\\d+)", version)
+              m = re.fullmatch(r"(\d+\.\d+\.\d+)", version)
               if m:
                   return m.group(1)
               raise SystemExit(f"Invalid version for Docker tag: {version!r}")
 
           if version_input:
               version_input = _clean(version_input)
-              if not re.fullmatch(r"\\d+(?:\\.\\d+){2,3}", version_input):
+              if not re.fullmatch(r"\d+\.\d+\.\d+(?:\.\d{1,3})?", version_input):
                   raise SystemExit(f"Invalid version override (use x.y.z or x.y.z.bb): {version_input!r}")
               new_version = version_input
           else:
               version = _clean(version_path.read_text())
-              m3 = re.fullmatch(r"(\\d+)\\.(\\d+)\\.(\\d+)", version)
-              m4 = re.fullmatch(r"(\\d+)\\.(\\d+)\\.(\\d+)\\.(\\d{1,3})", version)
+              m3 = re.fullmatch(r"(\d+)\.(\d+)\.(\d+)", version)
+              m4 = re.fullmatch(r"(\d+)\.(\d+)\.(\d+)\.(\d{1,3})", version)
               if not m3 and not m4:
                   raise SystemExit(f"VERSION format invalid: {version!r}")
               if m3:
