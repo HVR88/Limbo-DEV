@@ -694,16 +694,16 @@ def register_root_route() -> None:
             [
                 '          <div class="pill has-action">',
                 '            <div class="label">MBMS PLUS VERSION</div>',
-                f'            <div class="value">{safe[\"mbms_plus_version\"]}</div>',
+                f'            <div class="value">{safe["mbms_plus_version"]}</div>',
                 mbms_button,
                 "          </div>",
                 '          <div class="pill">',
                 '            <div class="label">MBMS Index Schedule</div>',
-                f'            <div class="value">{safe[\"mbms_index_schedule\"]}</div>',
+                f'            <div class="value">{safe["mbms_index_schedule"]}</div>',
                 "          </div>",
                 '          <div class="pill">',
                 '            <div class="label">MBMS Replication Schedule</div>',
-                f'            <div class="value">{safe[\"mbms_replication_schedule\"]}</div>',
+                f'            <div class="value">{safe["mbms_replication_schedule"]}</div>',
                 "          </div>",
             ]
         )
