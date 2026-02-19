@@ -5,8 +5,8 @@
     <Nullable>enable</Nullable>
     <RootNamespace>LMBridgePlugin</RootNamespace>
     <AssemblyName>Lidarr.Plugin.LMBridge</AssemblyName>
-    <AssemblyVersion>1.9.7.60</AssemblyVersion>
-    <Version>1.9.7.60</Version>
+    <AssemblyVersion>1.9.7.70</AssemblyVersion>
+    <Version>1.9.7.70</Version>
     <Branch></Branch>
     <Author>HVR88</Author>
     <RepoUrl>https://github.com/HVR88/LM-Bridge</RepoUrl>

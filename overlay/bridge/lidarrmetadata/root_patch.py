@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 from typing import Optional, Tuple, Iterable
 
 import aiohttp
+import subprocess
 import lidarrmetadata
 from lidarrmetadata import provider
 from lidarrmetadata.app import no_cache
@@ -363,6 +364,34 @@ def register_root_route() -> None:
             result = await _expire_all_cache_tables()
             return jsonify(result)
 
+    for rule in upstream_app.app.url_map.iter_rules():
+        if rule.rule == "/replication/start":
+            break
+    else:
+
+        @upstream_app.app.route("/replication/start", methods=["POST"])
+        async def _lmbridge_replication_start():
+            if request.headers.get("authorization") != upstream_app.app.config.get(
+                "INVALIDATE_APIKEY"
+            ):
+                return jsonify("Unauthorized"), 401
+
+            script_path = os.getenv(
+                "LMBRIDGE_REPLICATION_SCRIPT", "/admin/replicate-now-bg.sh"
+            )
+            script = Path(script_path)
+            if not script.exists():
+                return jsonify({"ok": False, "error": "Replication script not found."}), 404
+            if not script.is_file():
+                return jsonify({"ok": False, "error": "Replication script is not a file."}), 400
+
+            try:
+                subprocess.Popen(["/bin/bash", str(script)], cwd=str(script.parent))
+            except Exception as exc:
+                return jsonify({"ok": False, "error": str(exc)}), 500
+
+            return jsonify({"ok": True, "script": str(script)})
+
     async def _lmbridge_root_route():
         replication_date = None
         try:
@@ -429,6 +458,9 @@ def register_root_route() -> None:
         version_url = f"{base_path}/version" if base_path else "/version"
         cache_clear_url = f"{base_path}/cache/clear" if base_path else "/cache/clear"
         cache_expire_url = f"{base_path}/cache/expire" if base_path else "/cache/expire"
+        replication_start_url = (
+            f"{base_path}/replication/start" if base_path else "/replication/start"
+        )
         icon_url = (
             f"{base_path}/assets/lmbridge-icon.png"
             if base_path
@@ -504,6 +536,7 @@ def register_root_route() -> None:
             "__VERSION_URL__": html.escape(version_url),
             "__CACHE_CLEAR_URL__": html.escape(cache_clear_url),
             "__CACHE_EXPIRE_URL__": html.escape(cache_expire_url),
+            "__REPLICATION_START_URL__": html.escape(replication_start_url),
             "__INVALIDATE_APIKEY__": html.escape(
                 upstream_app.app.config.get("INVALIDATE_APIKEY") or ""
             ),
@@ -512,9 +545,10 @@ def register_root_route() -> None:
         }
         mbms_pills = "\n".join(
             [
-                '          <div class="pill">',
+                '          <div class="pill has-action">',
                 '            <div class="label">MBMS PLUS VERSION</div>',
                 f'            <div class="value">{safe["mbms_plus_version"]}</div>',
+                f'            <a class="pill-button" href="{html.escape(mbms_url)}" target="_blank" rel="noopener">Git</a>',
                 "          </div>",
                 '          <div class="pill">',
                 '            <div class="label">MBMS Index Schedule</div>',

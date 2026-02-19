@@ -81,11 +81,37 @@
         gap: 14px;
       }
       .pill {
+        position: relative;
         border: 1px solid var(--border);
         border-radius: 14px;
         padding: 12px 14px;
         background: #ffffff;
         box-shadow: var(--soft-shadow);
+      }
+      .pill.has-action {
+        padding-right: 90px;
+      }
+      .pill-button {
+        border: 1px solid var(--accent-border);
+        background: var(--accent-gradient-soft);
+        color: #2f5f16;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        font-size: 12px;
+        width: 64px;
+        height: 40px;
+        border-radius: 8px;
+        cursor: pointer;
+        box-shadow: 0 6px 12px rgba(11, 125, 109, 0.12);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        right: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        text-decoration: none;
       }
       .label {
         font-size: 12px;
@@ -294,9 +320,12 @@
         </div>
 
         <div class="grid">
-          <div class="pill">
+          <div class="pill has-action">
             <div class="label">LM Bridge Version</div>
             <div class="value">__LM_VERSION__</div>
+            <a class="pill-button" href="__VERSION_URL__" target="_blank" rel="noopener">
+              JSON
+            </a>
           </div>
           <div class="pill">
             <div class="label">LM Bridge Plugin Version</div>
@@ -315,24 +344,20 @@
             <div class="label">Metadata API Version</div>
             <div class="value">__METADATA_VERSION__</div>
           </div>
-          <div class="pill">
-            <div class="label">Last Replicated Data</div>
+          <div class="pill has-action">
+            <div class="label">Last Replication</div>
             <div class="value">__REPLICATION_DATE__</div>
+            <button
+              class="pill-button"
+              type="button"
+              data-replication-url="__REPLICATION_START_URL__"
+            >
+              Start
+            </button>
           </div>
         </div>
         <div class="links">
-          <div class="links-left">
-            <a
-              class="link"
-              href="__VERSION_URL__"
-              target="_blank"
-              rel="noopener"
-              >Version JSON</a
-            >
-            <a class="link" href="__MBMS_URL__" target="_blank" rel="noopener"
-              >MBMS PLUS GitHub</a
-            >
-          </div>
+          <div class="links-left"></div>
           <div class="links-right">
             <button
               class="link"
@@ -430,6 +455,35 @@
       cacheButtons.forEach((button) => {
         button.addEventListener("click", () => runCacheAction(button));
       });
+
+      const replicationButton = document.querySelector("[data-replication-url]");
+      if (replicationButton) {
+        replicationButton.addEventListener("click", async () => {
+          const url = replicationButton.dataset.replicationUrl;
+          if (!url) {
+            alert("Missing replication endpoint.");
+            return;
+          }
+          const headers = {};
+          if (invalidateApiKey) {
+            headers.Authorization = invalidateApiKey;
+          }
+          replicationButton.disabled = true;
+          try {
+            const response = await fetch(url, { method: "POST", headers });
+            const text = await response.text();
+            if (!response.ok) {
+              alert(`Error (${response.status}): ${text}`);
+              return;
+            }
+            alert(`Replication started: ${text}`);
+          } catch (error) {
+            alert(`Request failed: ${error}`);
+          } finally {
+            replicationButton.disabled = false;
+          }
+        });
+      }
 
       const tabRoot = document.querySelector("[data-tabs]");
       if (tabRoot) {
