@@ -111,6 +111,9 @@
       .pill.has-action {
         padding-right: 90px;
       }
+      .pill.has-action.wide-action {
+        padding-right: 112px;
+      }
       .pill-button {
         border: 1px solid var(--accent-border);
         background: var(--accent-gradient-soft);
@@ -138,10 +141,15 @@
           transform 0.15s ease,
           box-shadow 0.15s ease;
       }
-      .pill-button:hover {
+      .pill-button.wide {
+        width: 92px;
+      }
+      .pill-button:hover,
+      .pill.has-action:hover .pill-button {
         box-shadow: 0 6px 12px rgba(11, 125, 109, 0.2);
       }
-      .pill-button:not(.overlay):hover {
+      .pill-button:not(.overlay):hover,
+      .pill.has-action:hover .pill-button:not(.overlay) {
         transform: translateY(calc(-50% - 2px));
       }
       .pill-button.update {
@@ -150,7 +158,8 @@
         background-image: var(--accent-update-soft);
         color: var(--accent-update);
       }
-      .pill-button.update:hover {
+      .pill-button.update:hover,
+      .pill.has-action:hover .pill-button.update {
         box-shadow: 0 6px 12px rgba(210, 52, 32, 0.24);
       }
       .pill-button.danger {
@@ -159,7 +168,8 @@
         background-image: var(--accent-danger-soft);
         color: var(--accent-danger);
       }
-      .pill-button.danger:hover {
+      .pill-button.danger:hover,
+      .pill.has-action:hover .pill-button.danger {
         box-shadow: 0 6px 12px rgba(210, 52, 32, 0.24);
       }
       .pill-button.overlay {
@@ -167,7 +177,8 @@
         transform: none;
         z-index: 3;
       }
-      .pill-button.overlay:hover {
+      .pill-button.overlay:hover,
+      .pill.has-action:hover .pill-button.overlay {
         transform: translateY(-2px);
       }
       .label {
@@ -401,7 +412,7 @@ __LIDARR_OPEN__
             <div class="label">Metadata API Version</div>
             <div class="value">__METADATA_VERSION__</div>
           </div>
-          <div class="pill has-action">
+          <div class="__REPLICATION_PILL_CLASS__">
             <div class="label">Last Replication</div>
             <div class="value">__REPLICATION_DATE__</div>
 __REPLICATION_BUTTON__

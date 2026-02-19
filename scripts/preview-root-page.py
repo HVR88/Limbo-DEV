@@ -72,6 +72,7 @@ def build_preview_html() -> str:
             '            <button class="pill-button" type="button" data-replication-url="/replication/start">'
             "Start</button>"
         ),
+        "__REPLICATION_PILL_CLASS__": "pill has-action",
         "__INVALIDATE_APIKEY__": "",
         "__MBMS_URL__": "https://github.com/HVR88/MBMS_PLUS",
         "__CONFIG_HTML__": config_html,

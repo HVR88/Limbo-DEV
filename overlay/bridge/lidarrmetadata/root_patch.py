@@ -235,7 +235,10 @@ def _format_replication_date(value: object) -> str:
 
 def _read_replication_status() -> Tuple[bool, str]:
     status_path = Path(
-        os.getenv("LMBRIDGE_REPLICATION_STATUS_FILE", "/admin/replication.pid")
+        os.getenv(
+            "LMBRIDGE_REPLICATION_STATUS_FILE",
+            "/metadata/init-state/replication.pid",
+        )
     )
     if not status_path.exists():
         return False, ""
@@ -623,7 +626,12 @@ def register_root_route() -> None:
         replication_running, replication_started = _read_replication_status()
         replication_button_label = "Running" if replication_running else "Start"
         replication_button_class = (
-            "pill-button danger" if replication_running else "pill-button"
+            "pill-button danger wide" if replication_running else "pill-button"
+        )
+        replication_pill_class = (
+            "pill has-action wide-action"
+            if replication_running
+            else "pill has-action"
         )
         replication_button_attrs = []
         if replication_running:
@@ -660,6 +668,7 @@ def register_root_route() -> None:
             "__CACHE_EXPIRE_URL__": html.escape(cache_expire_url),
             "__REPLICATION_START_URL__": html.escape(replication_start_url),
             "__REPLICATION_BUTTON__": replication_button_html,
+            "__REPLICATION_PILL_CLASS__": replication_pill_class,
             "__INVALIDATE_APIKEY__": html.escape(
                 upstream_app.app.config.get("INVALIDATE_APIKEY") or ""
             ),
