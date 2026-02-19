@@ -50,7 +50,7 @@ def build_preview_html() -> str:
             '            <a class="pill-button update" href="https://github.com/HVR88/LM-Bridge" target="_blank" rel="noopener">1.9.7.80</a>'
         ),
         "__PLUGIN_VERSION_BUTTON__": (
-            '            <a class="pill-button update" href="http://localhost:8686/settings/plugins" target="_blank" rel="noopener">1.9.7.80</a>'
+            '            <a class="pill-button update overlay" href="http://localhost:8686/settings/plugins" target="_blank" rel="noopener">1.9.7.80</a>'
         ),
         "__LIDARR_VERSION_LABEL__": "LIDARR VERSION",
         "__LIDARR_VERSION__": "3.1.2.4913",

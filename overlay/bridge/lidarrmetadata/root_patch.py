@@ -670,12 +670,11 @@ def register_root_route() -> None:
                 '            <a class="pill-button" href="{}" target="_blank" rel="noopener">JSON</a>'
             ).format(html.escape(version_url))
 
-        lidarr_plugins_url = "https://wiki.servarr.com/lidarr/plugins"
         if plugin_update:
             replacements["__PLUGIN_PILL_CLASS__"] = "pill"
             plugin_target = lidarr_plugins_url or lm_repo_url
             replacements["__PLUGIN_VERSION_BUTTON__"] = (
-                '            <a class="pill-button update" href="{}" target="_blank" rel="noopener">{}</a>'
+                '            <a class="pill-button update overlay" href="{}" target="_blank" rel="noopener">{}</a>'
             ).format(html.escape(plugin_target), html.escape(plugin_update))
         else:
             replacements["__PLUGIN_PILL_CLASS__"] = "pill"

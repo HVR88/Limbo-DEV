@@ -17,9 +17,13 @@
         --accent-danger: #e0582b;
         --accent-danger-soft: rgba(224, 88, 43, 0.16);
         --accent-danger-border: rgba(224, 88, 43, 0.4);
-        --accent-update: #b23b6f;
-        --accent-update-soft: rgba(178, 59, 111, 0.18);
-        --accent-update-border: rgba(178, 59, 111, 0.45);
+        --accent-update: #d24a1e;
+        --accent-update-soft: linear-gradient(
+          135deg,
+          rgba(255, 110, 20, 0.22),
+          rgba(180, 20, 20, 0.2)
+        );
+        --accent-update-border: rgba(210, 74, 30, 0.5);
         --accent-gradient-soft: linear-gradient(
           135deg,
           rgba(109, 208, 0, 0.18),
@@ -120,7 +124,11 @@
         border-color: var(--accent-update-border);
         background: var(--accent-update-soft);
         color: var(--accent-update);
-        box-shadow: 0 6px 12px rgba(178, 59, 111, 0.16);
+        box-shadow: 0 6px 12px rgba(210, 74, 30, 0.18);
+      }
+      .pill-button.overlay {
+        top: 10px;
+        transform: none;
       }
       .label {
         font-size: 12px;
