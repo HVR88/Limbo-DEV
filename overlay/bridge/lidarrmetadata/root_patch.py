@@ -377,9 +377,13 @@ def register_root_route() -> None:
                 return jsonify("Unauthorized"), 401
 
             script_path = os.getenv(
-                "LMBRIDGE_REPLICATION_SCRIPT", "/admin/replicate-now-bg.sh"
+                "LMBRIDGE_REPLICATION_SCRIPT", "/admin/replicate-now-bg"
             )
             script = Path(script_path)
+            if not script.exists() and not script_path.endswith(".sh"):
+                candidate = Path(script_path + ".sh")
+                if candidate.exists():
+                    script = candidate
             if not script.exists():
                 return jsonify({"ok": False, "error": "Replication script not found."}), 404
             if not script.is_file():
