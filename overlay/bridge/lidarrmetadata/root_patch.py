@@ -5,6 +5,7 @@ from pathlib import Path
 import re
 import time
 import asyncio
+from datetime import datetime, timezone
 from typing import Optional, Tuple, Iterable
 
 import lidarrmetadata
@@ -100,6 +101,27 @@ def _format_uptime(seconds: float) -> str:
     if minutes:
         return f"{minutes}m {secs}s"
     return f"{secs}s"
+
+
+def _format_replication_date(value: object) -> str:
+    if value is None:
+        return "unknown"
+    if isinstance(value, datetime):
+        dt = value
+    else:
+        raw = str(value).strip()
+        if not raw:
+            return "unknown"
+        try:
+            dt = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+        except Exception:
+            return raw
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    dt_local = dt.astimezone()
+    date_part = dt_local.strftime("%Y-%m-%d")
+    time_part = dt_local.strftime("%I:%M %p").lstrip("0")
+    return f"{date_part} {time_part}"
 
 def _env_first(*names: str) -> Optional[str]:
     for name in names:
@@ -316,7 +338,7 @@ def register_root_route() -> None:
             "metadata_version": fmt(lidarrmetadata.__version__),
             "branch": fmt(os.getenv("GIT_BRANCH")),
             "commit": fmt(os.getenv("COMMIT_HASH")),
-            "replication_date": fmt(replication_date),
+            "replication_date": _format_replication_date(replication_date),
             "uptime": _format_uptime(time.time() - _START_TIME),
         }
         try:
