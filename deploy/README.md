@@ -99,4 +99,4 @@ Source code, docs and licenses: https://github.com/HVR88/LM-Bridge-DEV
 
 ## Version
 
-Deploy version: `1.9.8.01`
+Deploy version: `1.9.8.05`

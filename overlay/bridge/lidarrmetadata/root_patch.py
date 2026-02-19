@@ -233,6 +233,23 @@ def _format_replication_date(value: object) -> str:
     return f"{date_part} {time_part}"
 
 
+def _read_replication_status() -> Tuple[bool, str]:
+    status_path = Path(
+        os.getenv("LMBRIDGE_REPLICATION_STATUS_FILE", "/admin/replication.pid")
+    )
+    if not status_path.exists():
+        return False, ""
+    started = ""
+    try:
+        mtime = status_path.stat().st_mtime
+        started = _format_replication_date(
+            datetime.fromtimestamp(mtime, tz=timezone.utc)
+        )
+    except Exception:
+        started = ""
+    return True, started
+
+
 async def _fetch_lidarr_version(base_url: str, api_key: str) -> Optional[str]:
     if not base_url or not api_key:
         return None
@@ -454,7 +471,7 @@ def register_root_route() -> None:
                 return jsonify("Unauthorized"), 401
 
             script_path = os.getenv(
-                "LMBRIDGE_REPLICATION_SCRIPT", "/admin/replicate-now-bg"
+                "LMBRIDGE_REPLICATION_SCRIPT", "/admin/replicate-now"
             )
             script = Path(script_path)
             if not script.exists() and not script_path.endswith(".sh"):
@@ -603,6 +620,29 @@ def register_root_route() -> None:
 
         template_path = assets_dir / "root.html"
         template = template_path.read_text(encoding="utf-8")
+        replication_running, replication_started = _read_replication_status()
+        replication_button_label = "Running" if replication_running else "Start"
+        replication_button_class = (
+            "pill-button danger" if replication_running else "pill-button"
+        )
+        replication_button_attrs = []
+        if replication_running:
+            replication_button_attrs.append('data-replication-running="true"')
+        if replication_started:
+            replication_button_attrs.append(
+                f'data-replication-started="{html.escape(replication_started)}"'
+            )
+        replication_button_attr_text = (
+            " " + " ".join(replication_button_attrs)
+            if replication_button_attrs
+            else ""
+        )
+        replication_button_html = (
+            f'            <button class="{replication_button_class}" type="button" '
+            f'data-replication-url="{html.escape(replication_start_url)}"{replication_button_attr_text}>'
+            f"{html.escape(replication_button_label)}</button>"
+        )
+
         replacements = {
             "__ICON_URL__": html.escape(icon_url),
             "__LM_VERSION__": safe["version"],
@@ -619,6 +659,7 @@ def register_root_route() -> None:
             "__CACHE_CLEAR_URL__": html.escape(cache_clear_url),
             "__CACHE_EXPIRE_URL__": html.escape(cache_expire_url),
             "__REPLICATION_START_URL__": html.escape(replication_start_url),
+            "__REPLICATION_BUTTON__": replication_button_html,
             "__INVALIDATE_APIKEY__": html.escape(
                 upstream_app.app.config.get("INVALIDATE_APIKEY") or ""
             ),
@@ -635,7 +676,7 @@ def register_root_route() -> None:
             ).format(html.escape(lidarr_ui_url))
             replacements["__LIDARR_PILL_CLASS__"] = "pill has-action"
         lidarr_plugins_url = (
-            f"{lidarr_ui_url.rstrip('/')}/settings/plugins" if lidarr_ui_url else ""
+            f"{lidarr_ui_url.rstrip('/')}/system/plugins" if lidarr_ui_url else ""
         )
 
         lm_latest, mbms_latest = await asyncio.gather(

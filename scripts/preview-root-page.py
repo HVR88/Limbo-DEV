@@ -50,7 +50,7 @@ def build_preview_html() -> str:
             '            <a class="pill-button update" href="https://github.com/HVR88/LM-Bridge" target="_blank" rel="noopener">1.9.7.80</a>'
         ),
         "__PLUGIN_VERSION_BUTTON__": (
-            '            <a class="pill-button update overlay" href="http://localhost:8686/settings/plugins" target="_blank" rel="noopener">1.9.7.80</a>'
+            '            <a class="pill-button update overlay" href="http://localhost:8686/system/plugins" target="_blank" rel="noopener">1.9.7.80</a>'
         ),
         "__LIDARR_VERSION_LABEL__": "LIDARR VERSION",
         "__LIDARR_VERSION__": "3.1.2.4913",
@@ -67,6 +67,10 @@ def build_preview_html() -> str:
         "__CACHE_CLEAR_URL__": "/cache/clear",
         "__CACHE_EXPIRE_URL__": "/cache/expire",
         "__REPLICATION_START_URL__": "/replication/start",
+        "__REPLICATION_BUTTON__": (
+            '            <button class="pill-button" type="button" data-replication-url="/replication/start">'
+            "Start</button>"
+        ),
         "__INVALIDATE_APIKEY__": "",
         "__MBMS_URL__": "https://github.com/HVR88/MBMS_PLUS",
         "__CONFIG_HTML__": config_html,

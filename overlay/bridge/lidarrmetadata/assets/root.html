@@ -139,6 +139,14 @@
       .pill-button.update:hover {
         box-shadow: 0 6px 12px rgba(210, 74, 30, 0.22);
       }
+      .pill-button.danger {
+        border-color: var(--accent-danger-border);
+        background: var(--accent-danger-soft);
+        color: var(--accent-danger);
+      }
+      .pill-button.danger:hover {
+        box-shadow: 0 6px 12px rgba(224, 88, 43, 0.22);
+      }
       .pill-button.overlay {
         top: 10px;
         transform: none;
@@ -381,13 +389,7 @@ __LIDARR_OPEN__
           <div class="pill has-action">
             <div class="label">Last Replication</div>
             <div class="value">__REPLICATION_DATE__</div>
-            <button
-              class="pill-button"
-              type="button"
-              data-replication-url="__REPLICATION_START_URL__"
-            >
-              Start
-            </button>
+__REPLICATION_BUTTON__
           </div>
         </div>
         <div class="links">
@@ -496,6 +498,14 @@ __LIDARR_OPEN__
           const url = replicationButton.dataset.replicationUrl;
           if (!url) {
             alert("Missing replication endpoint.");
+            return;
+          }
+          if (replicationButton.dataset.replicationRunning === "true") {
+            const started = replicationButton.dataset.replicationStarted;
+            const message = started
+              ? `Replication is already running (since ${started}).`
+              : "Replication is already running.";
+            alert(message);
             return;
           }
           const headers = {};
