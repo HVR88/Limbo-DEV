@@ -11,6 +11,7 @@ def build_preview_html() -> str:
     root = Path(__file__).resolve().parents[1]
     template_path = root / "overlay" / "bridge" / "lidarrmetadata" / "assets" / "root.html"
     template = template_path.read_text(encoding="utf-8")
+    template = template.replace('href="/assets/root.css"', 'href="assets/root.css"')
 
     config_html = "\n".join(
         [
@@ -104,7 +105,11 @@ def main() -> int:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(build_preview_html(), encoding="utf-8")
     if css_source.exists():
-        (output_path.parent / "root.css").write_text(css_source.read_text(encoding="utf-8"), encoding="utf-8")
+        assets_dir = output_path.parent / "assets"
+        assets_dir.mkdir(parents=True, exist_ok=True)
+        (assets_dir / "root.css").write_text(
+            css_source.read_text(encoding="utf-8"), encoding="utf-8"
+        )
     print(output_path)
     if args.open:
         try:

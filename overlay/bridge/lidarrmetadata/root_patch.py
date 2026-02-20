@@ -570,6 +570,15 @@ def register_root_route() -> None:
                 assets_dir / "lmbridge-icon.png", mimetype="image/png"
             )
 
+    for rule in upstream_app.app.url_map.iter_rules():
+        if rule.rule == "/assets/root.css":
+            break
+    else:
+
+        @upstream_app.app.route("/assets/root.css", methods=["GET"])
+        async def _lmbridge_root_css():
+            return await send_file(assets_dir / "root.css", mimetype="text/css")
+
     if not upstream_app.app.config.get("LMBRIDGE_CAPTURE_LIDARR_VERSION"):
         upstream_app.app.config["LMBRIDGE_CAPTURE_LIDARR_VERSION"] = True
 
