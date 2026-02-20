@@ -32,6 +32,17 @@
           rgba(154, 32, 118, 0.18)
         );
         --accent-update-border: rgba(211, 72, 30, 0.5);
+        --accent-hot: #8e2f12;
+        --accent-hot-base: #fff2ea;
+        --accent-hot-soft: linear-gradient(
+          135deg,
+          rgba(255, 224, 120, 0.2),
+          rgba(255, 180, 60, 0.18),
+          rgba(255, 130, 40, 0.17),
+          rgba(228, 86, 48, 0.15),
+          rgba(178, 64, 140, 0.14)
+        );
+        --accent-hot-border: rgba(217, 74, 30, 0.26);
         --accent-gradient-soft: linear-gradient(
           135deg,
           rgba(109, 208, 0, 0.18),
@@ -168,28 +179,28 @@
         box-shadow: none !important;
       }
       .pill-button.update {
-        color: var(--accent-update);
+        color: var(--accent-hot);
       }
       .pill-button.update .pill-button__inner {
-        border-color: var(--accent-update-border);
-        background-color: var(--accent-update-base);
-        background-image: var(--accent-update-soft);
-        color: var(--accent-update);
+        border-color: var(--accent-hot-border);
+        background-color: var(--accent-hot-base);
+        background-image: var(--accent-hot-soft);
+        color: var(--accent-hot);
       }
       .pill-button.update:hover .pill-button__inner {
-        box-shadow: 0 6px 12px rgba(210, 52, 32, 0.24);
+        box-shadow: 0 6px 12px rgba(217, 74, 30, 0.25);
       }
       .pill-button.danger {
-        color: var(--accent-danger);
+        color: var(--accent-hot);
       }
       .pill-button.danger .pill-button__inner {
-        border-color: var(--accent-danger-border);
-        background-color: var(--accent-danger-base);
-        background-image: var(--accent-danger-soft);
-        color: var(--accent-danger);
+        border-color: var(--accent-hot-border);
+        background-color: var(--accent-hot-base);
+        background-image: var(--accent-hot-soft);
+        color: var(--accent-hot);
       }
       .pill-button.danger:hover .pill-button__inner {
-        box-shadow: 0 6px 12px rgba(210, 52, 32, 0.24);
+        box-shadow: 0 6px 12px rgba(217, 74, 30, 0.25);
       }
       .pill-button.overlay {
         top: 10px;
@@ -286,11 +297,15 @@
       .tab-panel.active {
         display: block;
       }
+      .tab-panel[data-tab-panel="tools"] {
+        padding-top: 20px;
+      }
       .refresh-box {
         display: grid;
         grid-template-columns: 1fr auto;
         gap: 12px;
         align-items: start;
+        margin-top: 20px;
       }
       .refresh-input {
         width: 100%;
@@ -530,6 +545,7 @@ __REPLICATION_BUTTON__
             <button class="tab-button" data-tab="refresh-releases">
               Refresh Releases
             </button>
+            <button class="tab-button" data-tab="tools">Tools</button>
           </div>
           <div class="tab-panel active" data-tab-panel="filter-details">
             <div class="config">__CONFIG_HTML__</div>
@@ -544,6 +560,9 @@ __REPLICATION_BUTTON__
                 <span class="refresh-button__inner">Refresh</span>
               </button>
             </div>
+          </div>
+          <div class="tab-panel" data-tab-panel="tools">
+            <div class="config"></div>
           </div>
         </div>
         <div class="foot">
@@ -778,6 +797,36 @@ __REPLICATION_BUTTON__
       if (tabRoot) {
         const tabButtons = tabRoot.querySelectorAll("[data-tab]");
         const tabPanels = tabRoot.querySelectorAll("[data-tab-panel]");
+        let tabMinHeight = 0;
+
+        const syncTabMinHeight = () => {
+          const firstPanel = tabRoot.querySelector(
+            '[data-tab-panel="filter-details"]'
+          );
+          if (!firstPanel) {
+            return;
+          }
+          let height = 0;
+          const content = firstPanel.firstElementChild;
+          if (content) {
+            const rect = content.getBoundingClientRect();
+            const styles = window.getComputedStyle(content);
+            const marginTop = Number.parseFloat(styles.marginTop) || 0;
+            const marginBottom = Number.parseFloat(styles.marginBottom) || 0;
+            height = Math.ceil(rect.height + marginTop + marginBottom);
+          } else {
+            height = Math.ceil(firstPanel.getBoundingClientRect().height);
+          }
+          if (height > 0) {
+            tabMinHeight = height;
+          }
+          if (tabMinHeight > 0) {
+            tabPanels.forEach((panel) => {
+              panel.style.minHeight = `${tabMinHeight}px`;
+            });
+          }
+        };
+
         const setActiveTab = (name) => {
           tabButtons.forEach((button) => {
             button.classList.toggle("active", button.dataset.tab === name);
@@ -790,6 +839,11 @@ __REPLICATION_BUTTON__
           button.addEventListener("click", () =>
             setActiveTab(button.dataset.tab)
           );
+        });
+
+        requestAnimationFrame(syncTabMinHeight);
+        window.addEventListener("resize", () => {
+          requestAnimationFrame(syncTabMinHeight);
         });
       }
 

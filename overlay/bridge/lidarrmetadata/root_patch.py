@@ -5,6 +5,7 @@ from pathlib import Path
 import re
 import time
 import asyncio
+import logging
 from datetime import datetime, timezone
 from typing import Optional, Tuple, Iterable, Dict
 
@@ -44,6 +45,7 @@ _REPLICATION_NOTIFY_FILE = Path(
     )
 )
 _LAST_REPLICATION_NOTIFY: Optional[dict] = None
+_LOG = logging.getLogger(__name__)
 
 
 def _normalize_version_string(value: Optional[str]) -> str:
@@ -563,6 +565,11 @@ def register_root_route() -> None:
             ):
                 return jsonify("Unauthorized"), 401
             use_remote, start_url, _status_url, header_pair = _replication_remote_config()
+            _LOG.info(
+                "Replication start requested (remote=%s, url=%s)",
+                "true" if use_remote else "false",
+                start_url,
+            )
             if use_remote:
                 headers = {}
                 if header_pair and ":" in header_pair:
@@ -645,6 +652,7 @@ def register_root_route() -> None:
                 payload["finished_at"] = datetime.now(timezone.utc).isoformat()
             payload["finished_label"] = _format_replication_date(payload["finished_at"])
             _write_replication_notify_state(payload)
+            _LOG.info("Replication notify received: %s", payload)
             return jsonify({"ok": True})
 
     async def _lmbridge_root_route():
