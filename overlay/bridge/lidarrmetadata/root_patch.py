@@ -493,6 +493,19 @@ def register_root_route() -> None:
 
             return jsonify({"ok": True, "script": str(script)})
 
+    for rule in upstream_app.app.url_map.iter_rules():
+        if rule.rule == "/replication/status":
+            break
+    else:
+
+        @upstream_app.app.route("/replication/status", methods=["GET"])
+        async def _lmbridge_replication_status():
+            running, started = _read_replication_status()
+            payload = {"running": running}
+            if started:
+                payload["started"] = started
+            return jsonify(payload)
+
     async def _lmbridge_root_route():
         replication_date = None
         try:
@@ -561,6 +574,9 @@ def register_root_route() -> None:
         cache_expire_url = f"{base_path}/cache/expire" if base_path else "/cache/expire"
         replication_start_url = (
             f"{base_path}/replication/start" if base_path else "/replication/start"
+        )
+        replication_status_url = (
+            f"{base_path}/replication/status" if base_path else "/replication/status"
         )
         icon_url = (
             f"{base_path}/assets/lmbridge-icon.png"
@@ -648,7 +664,7 @@ def register_root_route() -> None:
         replication_button_html = (
             f'            <button class="{replication_button_class}" type="button" '
             f'data-replication-url="{html.escape(replication_start_url)}"{replication_button_attr_text}>'
-            f"{html.escape(replication_button_label)}</button>"
+            f'<span class="pill-button__inner">{html.escape(replication_button_label)}</span></button>'
         )
 
         replacements = {
@@ -667,6 +683,7 @@ def register_root_route() -> None:
             "__CACHE_CLEAR_URL__": html.escape(cache_clear_url),
             "__CACHE_EXPIRE_URL__": html.escape(cache_expire_url),
             "__REPLICATION_START_URL__": html.escape(replication_start_url),
+            "__REPLICATION_STATUS_URL__": html.escape(replication_status_url),
             "__REPLICATION_BUTTON__": replication_button_html,
             "__REPLICATION_PILL_CLASS__": replication_pill_class,
             "__INVALIDATE_APIKEY__": html.escape(
@@ -676,12 +693,16 @@ def register_root_route() -> None:
             "__CONFIG_HTML__": config_html,
         }
         lidarr_ui_url = get_lidarr_base_url()
-        if not lidarr_ui_url:
+        if "last seen" in lidarr_version_label.lower():
+            replacements["__LIDARR_OPEN__"] = ""
+            replacements["__LIDARR_PILL_CLASS__"] = "pill"
+        elif not lidarr_ui_url:
             replacements["__LIDARR_OPEN__"] = ""
             replacements["__LIDARR_PILL_CLASS__"] = "pill"
         else:
             replacements["__LIDARR_OPEN__"] = (
-                '            <a class="pill-button" href="{}" target="_blank" rel="noopener">Open</a>'
+                '            <a class="pill-button" href="{}" target="_blank" rel="noopener">'
+                '<span class="pill-button__inner">Open</span></a>'
             ).format(html.escape(lidarr_ui_url))
             replacements["__LIDARR_PILL_CLASS__"] = "pill has-action"
         lidarr_plugins_url = (
@@ -712,19 +733,22 @@ def register_root_route() -> None:
         if lm_update:
             replacements["__LM_PILL_CLASS__"] = "pill has-action"
             replacements["__LM_VERSION_BUTTON__"] = (
-                '            <a class="pill-button update" href="{}" target="_blank" rel="noopener">{}</a>'
+                '            <a class="pill-button update" href="{}" target="_blank" rel="noopener">'
+                '<span class="pill-button__inner">{}</span></a>'
             ).format(html.escape(lm_repo_url), html.escape(lm_update))
         else:
             replacements["__LM_PILL_CLASS__"] = "pill has-action"
             replacements["__LM_VERSION_BUTTON__"] = (
-                '            <a class="pill-button" href="{}" target="_blank" rel="noopener">JSON</a>'
+                '            <a class="pill-button" href="{}" target="_blank" rel="noopener">'
+                '<span class="pill-button__inner">JSON</span></a>'
             ).format(html.escape(version_url))
 
         if plugin_update:
             replacements["__PLUGIN_PILL_CLASS__"] = "pill"
             plugin_target = lidarr_plugins_url or lm_repo_url
             replacements["__PLUGIN_VERSION_BUTTON__"] = (
-                '            <a class="pill-button update overlay" href="{}" target="_blank" rel="noopener">{}</a>'
+                '            <a class="pill-button update overlay" href="{}" target="_blank" rel="noopener">'
+                '<span class="pill-button__inner">{}</span></a>'
             ).format(html.escape(plugin_target), html.escape(plugin_update))
             replacements["__LM_PLUGIN_LABEL__"] = "LM Bridge Plugin"
         else:
@@ -734,11 +758,13 @@ def register_root_route() -> None:
 
         if mbms_update:
             mbms_button = (
-                '            <a class="pill-button update" href="{}" target="_blank" rel="noopener">{}</a>'
+                '            <a class="pill-button update" href="{}" target="_blank" rel="noopener">'
+                '<span class="pill-button__inner">{}</span></a>'
             ).format(html.escape(mbms_url), html.escape(mbms_update))
         else:
             mbms_button = (
-                '            <a class="pill-button" href="{}" target="_blank" rel="noopener">Git</a>'
+                '            <a class="pill-button" href="{}" target="_blank" rel="noopener">'
+                '<span class="pill-button__inner">Git</span></a>'
             ).format(html.escape(mbms_url))
 
         mbms_pills = "\n".join(

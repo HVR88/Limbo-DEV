@@ -115,9 +115,9 @@
         padding-right: 112px;
       }
       .pill-button {
-        border: 1px solid var(--accent-border);
-        background: var(--accent-gradient-soft);
-        color: #2f5f16;
+        border: 0;
+        background: none;
+        color: inherit;
         font-weight: 700;
         letter-spacing: 0.04em;
         text-transform: uppercase;
@@ -126,7 +126,6 @@
         height: 40px;
         border-radius: 8px;
         cursor: pointer;
-        box-shadow: 0 6px 12px rgba(11, 125, 109, 0.12);
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -137,39 +136,59 @@
         text-decoration: none;
         z-index: 2;
         box-shadow: none;
-        transition:
-          transform 0.15s ease,
-          box-shadow 0.15s ease;
+        transition: none;
+        padding: 0;
       }
       .pill-button.wide {
         width: 92px;
       }
-      .pill-button:hover,
-      .pill.has-action:hover .pill-button {
+      .pill-button__inner {
+        border: 1px solid var(--accent-border);
+        background: var(--accent-gradient-soft);
+        color: #2f5f16;
+        width: 100%;
+        height: 100%;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: none;
+        transition:
+          transform 0.15s ease,
+          box-shadow 0.15s ease;
+      }
+      .pill-button:hover .pill-button__inner {
         box-shadow: 0 6px 12px rgba(11, 125, 109, 0.2);
       }
-      .pill-button:not(.overlay):hover,
-      .pill.has-action:hover .pill-button:not(.overlay) {
-        transform: translateY(calc(-50% - 2px));
+      .pill-button:not(.overlay):hover .pill-button__inner {
+        transform: translateY(-2px);
+      }
+      .pill-button:active .pill-button__inner {
+        transform: translateY(2px) !important;
+        box-shadow: none !important;
       }
       .pill-button.update {
+        color: var(--accent-update);
+      }
+      .pill-button.update .pill-button__inner {
         border-color: var(--accent-update-border);
         background-color: var(--accent-update-base);
         background-image: var(--accent-update-soft);
         color: var(--accent-update);
       }
-      .pill-button.update:hover,
-      .pill.has-action:hover .pill-button.update {
+      .pill-button.update:hover .pill-button__inner {
         box-shadow: 0 6px 12px rgba(210, 52, 32, 0.24);
       }
       .pill-button.danger {
+        color: var(--accent-danger);
+      }
+      .pill-button.danger .pill-button__inner {
         border-color: var(--accent-danger-border);
         background-color: var(--accent-danger-base);
         background-image: var(--accent-danger-soft);
         color: var(--accent-danger);
       }
-      .pill-button.danger:hover,
-      .pill.has-action:hover .pill-button.danger {
+      .pill-button.danger:hover .pill-button__inner {
         box-shadow: 0 6px 12px rgba(210, 52, 32, 0.24);
       }
       .pill-button.overlay {
@@ -177,9 +196,13 @@
         transform: none;
         z-index: 3;
       }
-      .pill-button.overlay:hover,
-      .pill.has-action:hover .pill-button.overlay {
+      .pill-button.overlay:hover .pill-button__inner {
         transform: translateY(-2px);
+      }
+      .pill-button::before {
+        content: "";
+        position: absolute;
+        inset: -4px;
       }
       .label {
         font-size: 12px;
@@ -232,28 +255,30 @@
       .tab-buttons {
         display: flex;
         flex-wrap: wrap;
-        gap: 8px;
+        gap: 0;
         border-bottom: 1px solid var(--border);
-        padding-bottom: 8px;
+        padding-bottom: 0;
         margin-bottom: 12px;
       }
       .tab-button {
-        border: 1px solid var(--border);
-        background: #fff;
+        border: none;
+        background: none;
         color: var(--muted);
         font-weight: 700;
-        letter-spacing: 0.04em;
+        letter-spacing: 0.1em;
         text-transform: uppercase;
         font-size: 12px;
-        padding: 8px 12px;
-        border-radius: 999px;
+        padding: 6px 14px 10px;
         cursor: pointer;
-        transition: all 120ms ease;
+        transition: color 160ms ease;
+        border-bottom: 2px solid transparent;
       }
       .tab-button.active {
-        color: #2f5f16;
-        background: var(--accent-gradient-soft);
-        border-color: var(--accent-border);
+        color: var(--ink);
+        border-bottom-color: var(--accent);
+      }
+      .tab-button:hover {
+        color: var(--ink);
       }
       .tab-panel {
         display: none;
@@ -280,18 +305,45 @@
         box-shadow: inset 0 1px 2px rgba(26, 38, 45, 0.08);
       }
       .refresh-button {
-        border: 1px solid var(--accent-border);
-        background: var(--accent-gradient-soft);
-        color: #2f5f16;
+        border: 0;
+        background: none;
+        color: inherit;
         font-weight: 700;
         letter-spacing: 0.04em;
         text-transform: uppercase;
         font-size: 12px;
-        padding: 10px 16px;
+        padding: 0;
         border-radius: 999px;
         cursor: pointer;
-        box-shadow: 0 6px 12px rgba(11, 125, 109, 0.12);
         height: fit-content;
+        position: relative;
+      }
+      .refresh-button::before {
+        content: "";
+        position: absolute;
+        inset: -4px;
+      }
+      .refresh-button__inner {
+        border: 1px solid var(--accent-border);
+        background: var(--accent-gradient-soft);
+        color: #2f5f16;
+        padding: 10px 16px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: none;
+        transition:
+          transform 0.15s ease,
+          box-shadow 0.15s ease;
+      }
+      .refresh-button:hover .refresh-button__inner {
+        box-shadow: 0 6px 12px rgba(11, 125, 109, 0.2);
+        transform: translateY(-2px);
+      }
+      .refresh-button:active .refresh-button__inner {
+        transform: translateY(2px);
+        box-shadow: none;
       }
       .config-row {
         display: flex;
@@ -340,6 +392,15 @@
         transition:
           transform 120ms ease,
           box-shadow 120ms ease;
+        position: relative;
+      }
+      .link__inner {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        transition: none;
       }
       button.link {
         appearance: none;
@@ -354,6 +415,28 @@
       .link:hover {
         transform: translateY(-1px);
         box-shadow: 0 8px 18px rgba(17, 27, 32, 0.12);
+      }
+      .link:active {
+        transform: translateY(1px);
+        box-shadow: none;
+      }
+      body.suppress-hover .pill-button__inner,
+      body.suppress-hover .refresh-button__inner,
+      body.suppress-hover .link {
+        transform: translateY(0) !important;
+        box-shadow: none !important;
+      }
+      body.suppress-hover .pill-button:hover .pill-button__inner,
+      body.suppress-hover .pill-button.overlay:hover .pill-button__inner,
+      body.suppress-hover .refresh-button:hover .refresh-button__inner,
+      body.suppress-hover .link:hover {
+        transform: translateY(0) !important;
+        box-shadow: none !important;
+      }
+      .link::before {
+        content: "";
+        position: absolute;
+        inset: -4px;
       }
       .foot {
         margin-top: 18px;
@@ -412,7 +495,7 @@ __LIDARR_OPEN__
             <div class="label">Metadata API Version</div>
             <div class="value">__METADATA_VERSION__</div>
           </div>
-          <div class="__REPLICATION_PILL_CLASS__">
+          <div class="__REPLICATION_PILL_CLASS__" data-replication-pill>
             <div class="label">Last Replication</div>
             <div class="value">__REPLICATION_DATE__</div>
 __REPLICATION_BUTTON__
@@ -427,7 +510,7 @@ __REPLICATION_BUTTON__
               data-cache-action="expire"
               data-cache-url="__CACHE_EXPIRE_URL__"
             >
-              Expire Cache Tables
+              <span class="link__inner">Expire Cache Tables</span>
             </button>
             <button
               class="link link-danger"
@@ -435,7 +518,7 @@ __REPLICATION_BUTTON__
               data-cache-action="clear"
               data-cache-url="__CACHE_CLEAR_URL__"
             >
-              Clear Cache Tables
+              <span class="link__inner">Clear Cache Tables</span>
             </button>
           </div>
         </div>
@@ -457,7 +540,9 @@ __REPLICATION_BUTTON__
                 class="refresh-input"
                 placeholder="Paste release IDs, MBIDs or URLs here..."
               ></textarea>
-              <button class="refresh-button" type="button">Refresh</button>
+              <button class="refresh-button" type="button">
+                <span class="refresh-button__inner">Refresh</span>
+              </button>
             </div>
           </div>
         </div>
@@ -480,6 +565,14 @@ __REPLICATION_BUTTON__
     <script>
       const cacheButtons = document.querySelectorAll("[data-cache-action]");
       const invalidateApiKey = "__INVALIDATE_APIKEY__";
+      const replicationStatusUrl = "__REPLICATION_STATUS_URL__";
+
+      const suppressHover = () => {
+        document.body.classList.add("suppress-hover");
+        const clear = () => document.body.classList.remove("suppress-hover");
+        window.addEventListener("pointermove", clear, { once: true });
+        window.addEventListener("keydown", clear, { once: true });
+      };
 
       const runCacheAction = async (button) => {
         const action = button.dataset.cacheAction || "action";
@@ -490,8 +583,9 @@ __REPLICATION_BUTTON__
         }
         if (
           action === "clear" &&
-          !confirm("Clear all cache tables? This cannot be undone.")
+          (suppressHover(), !confirm("Clear all cache tables? This cannot be undone."))
         ) {
+          suppressHover();
           return;
         }
         const headers = {};
@@ -503,11 +597,14 @@ __REPLICATION_BUTTON__
           const response = await fetch(url, { method: "POST", headers });
           const text = await response.text();
           if (!response.ok) {
+            suppressHover();
             alert(`Error (${response.status}): ${text}`);
             return;
           }
+          suppressHover();
           alert(`OK: ${text}`);
         } catch (error) {
+            suppressHover();
           alert(`Request failed: ${error}`);
         } finally {
           button.disabled = false;
@@ -519,6 +616,64 @@ __REPLICATION_BUTTON__
       });
 
       const replicationButton = document.querySelector("[data-replication-url]");
+      const replicationPill = document.querySelector("[data-replication-pill]");
+
+      const setReplicationState = (running, started) => {
+        if (!replicationButton) {
+          return;
+        }
+        const inner = replicationButton.querySelector(".pill-button__inner");
+        if (inner) {
+          inner.textContent = running ? "Running" : "Start";
+        }
+        replicationButton.classList.toggle("danger", running);
+        replicationButton.classList.toggle("wide", running);
+        if (replicationPill) {
+          replicationPill.classList.toggle("wide-action", running);
+        }
+        if (running) {
+          replicationButton.dataset.replicationRunning = "true";
+          if (started) {
+            replicationButton.dataset.replicationStarted = started;
+          }
+        } else {
+          delete replicationButton.dataset.replicationRunning;
+          delete replicationButton.dataset.replicationStarted;
+        }
+      };
+
+      const fetchReplicationStatus = async () => {
+        if (!replicationStatusUrl) {
+          return null;
+        }
+        try {
+          const response = await fetch(replicationStatusUrl, { method: "GET" });
+          if (!response.ok) {
+            return null;
+          }
+          return await response.json();
+        } catch (error) {
+          return null;
+        }
+      };
+
+      const pollReplicationStatus = async () => {
+        let attempts = 0;
+        const maxAttempts = 15;
+        const delayMs = 2000;
+        while (attempts < maxAttempts) {
+          const status = await fetchReplicationStatus();
+          if (status && typeof status.running === "boolean") {
+            setReplicationState(status.running, status.started);
+            if (status.running) {
+              return;
+            }
+          }
+          await new Promise((resolve) => setTimeout(resolve, delayMs));
+          attempts += 1;
+        }
+      };
+
       if (replicationButton) {
         replicationButton.addEventListener("click", async () => {
           const url = replicationButton.dataset.replicationUrl;
@@ -531,6 +686,7 @@ __REPLICATION_BUTTON__
             const message = started
               ? `Replication is already running (since ${started}).`
               : "Replication is already running.";
+            suppressHover();
             alert(message);
             return;
           }
@@ -543,11 +699,15 @@ __REPLICATION_BUTTON__
             const response = await fetch(url, { method: "POST", headers });
             const text = await response.text();
             if (!response.ok) {
+              suppressHover();
               alert(`Error (${response.status}): ${text}`);
               return;
             }
+            suppressHover();
             alert("Replication started.");
+            pollReplicationStatus();
           } catch (error) {
+            suppressHover();
             alert(`Request failed: ${error}`);
           } finally {
             replicationButton.disabled = false;
@@ -611,6 +771,7 @@ __REPLICATION_BUTTON__
           const text = refreshInput.value || "";
           const { mbids, lidarrIds } = extractIds(text);
           if (!mbids.length && !lidarrIds.length) {
+            suppressHover();
             alert("No Lidarr IDs or MBIDs found.");
             return;
           }
@@ -626,6 +787,7 @@ __REPLICATION_BUTTON__
             });
             const payload = await response.json().catch(() => ({}));
             if (!response.ok || !payload.ok) {
+              suppressHover();
               alert(
                 payload.error
                   ? `Error: ${payload.error}`
@@ -636,12 +798,14 @@ __REPLICATION_BUTTON__
             const queued = payload.queued_ids?.length || 0;
             const missing = payload.missing_mbids?.length || 0;
             const errors = payload.errors?.length || 0;
+            suppressHover();
             alert(
               `Queued ${queued} refresh request(s).` +
                 (missing ? ` Missing MBIDs: ${missing}.` : "") +
                 (errors ? ` Errors: ${errors}.` : "")
             );
           } catch (error) {
+            suppressHover();
             alert(`Request failed: ${error}`);
           } finally {
             refreshButton.disabled = false;

@@ -48,10 +48,12 @@ def build_preview_html() -> str:
         "__LM_PILL_CLASS__": "pill has-action",
         "__PLUGIN_PILL_CLASS__": "pill",
         "__LM_VERSION_BUTTON__": (
-            '            <a class="pill-button update" href="https://github.com/HVR88/LM-Bridge" target="_blank" rel="noopener">1.9.7.80</a>'
+            '            <a class="pill-button update" href="https://github.com/HVR88/LM-Bridge" target="_blank" rel="noopener">'
+            '<span class="pill-button__inner">1.9.7.80</span></a>'
         ),
         "__PLUGIN_VERSION_BUTTON__": (
-            '            <a class="pill-button update overlay" href="http://localhost:8686/system/plugins" target="_blank" rel="noopener">1.9.7.80</a>'
+            '            <a class="pill-button update overlay" href="http://localhost:8686/system/plugins" target="_blank" rel="noopener">'
+            '<span class="pill-button__inner">1.9.7.80</span></a>'
         ),
         "__LIDARR_VERSION_LABEL__": "LIDARR VERSION",
         "__LIDARR_VERSION__": "3.1.2.4913",
@@ -68,9 +70,10 @@ def build_preview_html() -> str:
         "__CACHE_CLEAR_URL__": "/cache/clear",
         "__CACHE_EXPIRE_URL__": "/cache/expire",
         "__REPLICATION_START_URL__": "/replication/start",
+        "__REPLICATION_STATUS_URL__": "/replication/status",
         "__REPLICATION_BUTTON__": (
             '            <button class="pill-button" type="button" data-replication-url="/replication/start">'
-            "Start</button>"
+            '<span class="pill-button__inner">Start</span></button>'
         ),
         "__REPLICATION_PILL_CLASS__": "pill has-action",
         "__INVALIDATE_APIKEY__": "",
