@@ -497,7 +497,7 @@ __LIDARR_OPEN__
           </div>
           <div class="__REPLICATION_PILL_CLASS__" data-replication-pill>
             <div class="label">Last Replication</div>
-            <div class="value">__REPLICATION_DATE__</div>
+            <div class="value" data-replication-value>__REPLICATION_DATE__</div>
 __REPLICATION_BUTTON__
           </div>
         </div>
@@ -617,6 +617,8 @@ __REPLICATION_BUTTON__
 
       const replicationButton = document.querySelector("[data-replication-url]");
       const replicationPill = document.querySelector("[data-replication-pill]");
+      const replicationValue = document.querySelector("[data-replication-value]");
+      let replicationPollTimer = null;
 
       const setReplicationState = (running, started) => {
         if (!replicationButton) {
@@ -640,6 +642,35 @@ __REPLICATION_BUTTON__
           delete replicationButton.dataset.replicationRunning;
           delete replicationButton.dataset.replicationStarted;
         }
+        if (!running && replicationPollTimer) {
+          clearTimeout(replicationPollTimer);
+          replicationPollTimer = null;
+        }
+      };
+
+      const setReplicationLast = (last) => {
+        if (!replicationValue || !last || typeof last !== "object") {
+          return;
+        }
+        const label =
+          last.finished_label ||
+          last.finished_at ||
+          last.finished ||
+          last.date ||
+          "";
+        if (label) {
+          replicationValue.textContent = label;
+        }
+      };
+
+      const applyReplicationStatus = (status) => {
+        if (!status || typeof status.running !== "boolean") {
+          return;
+        }
+        setReplicationState(status.running, status.started);
+        if (status.last) {
+          setReplicationLast(status.last);
+        }
       };
 
       const fetchReplicationStatus = async () => {
@@ -657,6 +688,22 @@ __REPLICATION_BUTTON__
         }
       };
 
+      const startReplicationPolling = () => {
+        if (replicationPollTimer || !replicationStatusUrl) {
+          return;
+        }
+        const poll = async () => {
+          const status = await fetchReplicationStatus();
+          applyReplicationStatus(status);
+          if (status && status.running === false) {
+            replicationPollTimer = null;
+            return;
+          }
+          replicationPollTimer = setTimeout(poll, 10000);
+        };
+        poll();
+      };
+
       const pollReplicationStatus = async () => {
         let attempts = 0;
         const maxAttempts = 15;
@@ -664,8 +711,9 @@ __REPLICATION_BUTTON__
         while (attempts < maxAttempts) {
           const status = await fetchReplicationStatus();
           if (status && typeof status.running === "boolean") {
-            setReplicationState(status.running, status.started);
+            applyReplicationStatus(status);
             if (status.running) {
+              startReplicationPolling();
               return;
             }
           }
@@ -675,6 +723,17 @@ __REPLICATION_BUTTON__
       };
 
       if (replicationButton) {
+        if (replicationButton.dataset.replicationRunning === "true") {
+          startReplicationPolling();
+        }
+        if (replicationStatusUrl) {
+          fetchReplicationStatus().then((status) => {
+            applyReplicationStatus(status);
+            if (status && status.running) {
+              startReplicationPolling();
+            }
+          });
+        }
         replicationButton.addEventListener("click", async () => {
           const url = replicationButton.dataset.replicationUrl;
           if (!url) {

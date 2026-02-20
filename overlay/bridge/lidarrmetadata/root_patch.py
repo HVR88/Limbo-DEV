@@ -37,6 +37,13 @@ _LIDARR_API_KEY: Optional[str] = None
 _LIDARR_CLIENT_IP: Optional[str] = None
 _GITHUB_RELEASE_CACHE: Dict[str, Tuple[float, Optional[str]]] = {}
 _GITHUB_RELEASE_CACHE_TTL = 300.0
+_REPLICATION_NOTIFY_FILE = Path(
+    os.getenv(
+        "LMBRIDGE_REPLICATION_NOTIFY_FILE",
+        str(_STATE_DIR / "replication_status.json"),
+    )
+)
+_LAST_REPLICATION_NOTIFY: Optional[dict] = None
 
 
 def _normalize_version_string(value: Optional[str]) -> str:
@@ -253,6 +260,30 @@ def _read_replication_status() -> Tuple[bool, str]:
     return True, started
 
 
+def _read_replication_notify_state() -> Optional[dict]:
+    global _LAST_REPLICATION_NOTIFY
+    if _LAST_REPLICATION_NOTIFY is not None:
+        return _LAST_REPLICATION_NOTIFY
+    try:
+        data = json.loads(_REPLICATION_NOTIFY_FILE.read_text())
+        if isinstance(data, dict):
+            _LAST_REPLICATION_NOTIFY = data
+            return data
+    except Exception:
+        return None
+    return None
+
+
+def _write_replication_notify_state(payload: dict) -> None:
+    global _LAST_REPLICATION_NOTIFY
+    try:
+        _REPLICATION_NOTIFY_FILE.parent.mkdir(parents=True, exist_ok=True)
+        _REPLICATION_NOTIFY_FILE.write_text(json.dumps(payload))
+        _LAST_REPLICATION_NOTIFY = payload
+    except Exception:
+        return
+
+
 def _replication_remote_config() -> Tuple[bool, str, str, str]:
     use_remote = False
     base_url = os.getenv("LMBRIDGE_REPLICATION_BASE_URL") or ""
@@ -281,6 +312,17 @@ def _replication_remote_config() -> Tuple[bool, str, str, str]:
         or ""
     )
     return use_remote, start_url, status_url, (header + ":" + key if key else "")
+
+
+def _replication_auth_config(app_config: dict) -> Tuple[str, str]:
+    header = os.getenv("LMBRIDGE_REPLICATION_HEADER", "") or "X-MBMS-Key"
+    key = (
+        os.getenv("LMBRIDGE_REPLICATION_KEY")
+        or os.getenv("MBMS_ADMIN_KEY")
+        or app_config.get("INVALIDATE_APIKEY")
+        or ""
+    )
+    return header, key
 
 
 async def _fetch_replication_status_remote(status_url: str, header_pair: str) -> Optional[dict]:
@@ -514,8 +556,10 @@ def register_root_route() -> None:
 
         @upstream_app.app.route("/replication/start", methods=["POST"])
         async def _lmbridge_replication_start():
-            if request.headers.get("authorization") != upstream_app.app.config.get(
-                "INVALIDATE_APIKEY"
+            header_name, auth_key = _replication_auth_config(upstream_app.app.config)
+            if auth_key and (
+                request.headers.get(header_name) != auth_key
+                and request.headers.get("authorization") != auth_key
             ):
                 return jsonify("Unauthorized"), 401
             use_remote, start_url, _status_url, header_pair = _replication_remote_config()
@@ -566,12 +610,42 @@ def register_root_route() -> None:
             if use_remote:
                 data = await _fetch_replication_status_remote(status_url, header_pair)
                 if data is not None:
+                    notify = _read_replication_notify_state()
+                    if notify:
+                        data = dict(data)
+                        data["last"] = notify
                     return jsonify(data)
             running, started = _read_replication_status()
             payload = {"running": running}
             if started:
                 payload["started"] = started
+            notify = _read_replication_notify_state()
+            if notify:
+                payload["last"] = notify
             return jsonify(payload)
+
+    for rule in upstream_app.app.url_map.iter_rules():
+        if rule.rule == "/replication/notify":
+            break
+    else:
+
+        @upstream_app.app.route("/replication/notify", methods=["POST"])
+        async def _lmbridge_replication_notify():
+            header_name, auth_key = _replication_auth_config(upstream_app.app.config)
+            if auth_key and (
+                request.headers.get(header_name) != auth_key
+                and request.headers.get("authorization") != auth_key
+            ):
+                return jsonify("Unauthorized"), 401
+
+            payload = await request.get_json(silent=True) or {}
+            if not isinstance(payload, dict):
+                payload = {}
+            if not payload.get("finished_at"):
+                payload["finished_at"] = datetime.now(timezone.utc).isoformat()
+            payload["finished_label"] = _format_replication_date(payload["finished_at"])
+            _write_replication_notify_state(payload)
+            return jsonify({"ok": True})
 
     async def _lmbridge_root_route():
         replication_date = None
