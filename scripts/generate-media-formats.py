@@ -128,7 +128,9 @@ def _emit_python(by_type: Dict[str, List[dict]]) -> None:
     PY_OUT.write_text("\n".join(content), encoding="utf-8")
 
 
-def _emit_csharp(by_type: Dict[str, List[dict]]) -> None:
+def _emit_csharp(by_type: Dict[str, List[dict]]) -> bool:
+    if not CS_OUT.parent.exists():
+        return False
     meta_names: List[str] = []
     format_names: List[str] = []
     for type_name in ("digital", "analog"):
@@ -175,6 +177,7 @@ namespace LMBridgePlugin.Metadata.MetadataSourceOverride
 }}
 """
     CS_OUT.write_text(content, encoding="utf-8")
+    return True
 
 
 def _normalize_heading_title(title: str) -> str:
@@ -228,10 +231,11 @@ def main() -> None:
     data = _load_json_objects(SOURCE_PATH.read_text(encoding="utf-8"))
     by_type = _validate(data)
     _emit_python(by_type)
-    _emit_csharp(by_type)
+    wrote_csharp = _emit_csharp(by_type)
     _normalize_docs_headings()
     print(f"Wrote {PY_OUT}")
-    print(f"Wrote {CS_OUT}")
+    if wrote_csharp:
+        print(f"Wrote {CS_OUT}")
 
 
 if __name__ == "__main__":
