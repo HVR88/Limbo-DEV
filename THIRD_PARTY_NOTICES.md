@@ -3,12 +3,6 @@
 This project includes material from the following third-party projects. Full
 license texts are provided in the `licenses/` directory.
 
-## TypNull | Tubifarry
-
-Repository: https://github.com/TypNull/Tubifarry
-License: MIT (see `licenses/TypNull-Tubifarry-MIT.txt`)
-Notes: Portions of the plugin implementation were derived from Tubifarry.
-
 ## blampe | hearring-aid
 
 Repository: https://github.com/blampe/hearring-aid

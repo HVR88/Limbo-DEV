@@ -7,18 +7,19 @@
 **A Local API Bridge - _FAST_ queries, no remote server issues**
 
 **_This is the source repo to build the LM-Bridge project_**
-and contains two complimentary parts that run 100% locally:
+and contains the LM-Bridge container plus related tooling.
 
 1. A Lidarr Metadata Server image that bridges to a MusicBrainz mirror
-2. A Plugin to set the URL of this bridge container in Lidarr
-3. Media format filtering - remove any format from Lidarr (like vinyl)
-4. Before/After API hooks allowing third parties to insert plugin-like code to manipulate json and database queries, including addind other external databases
+2. Media format filtering - remove any format from Lidarr (like vinyl)
+3. Before/After API hooks allowing third parties to insert plugin-like code to manipulate json and database queries, including addind other external databases
 
 **_Thanks to blampe and Typnull for inspiration_** : this wouldn't have been possible without leveraging their previous work
 
 > [!IMPORTANT]
 >
 > **_For the premade Docker container: https://github.com/HVR88/LM-Bridge_**
+>
+> **Plugin status**: The Lidarr plugin has been removed from this repo and now lives at `/Users/Bruno/Documents/Code_Dev/lidarr/lm-bridge-plugin`. References here are historical; this repo no longer builds or publishes the plugin.
 
 Deploy-only files live in `deploy/` (`docker-compose.yml`, `compose/`, `.env.example`). You can copy that folder as-is, or run `scripts/export-deploy.sh` to create a bundle or sync it to a separate deploy repo (the export excludes `.env` by default).
 
@@ -30,8 +31,7 @@ Hook documentation is in `hooks_readme.md` (custom DB/MITM transforms that run a
 
 1. Builds an amd64 container image with Lidarr Metadata Server
 2. Adds a bridge config so you can point at your MusicBrainz mirror
-3. Builds a Lidarr Plugin to point Lidarr at this self-hosted API
-4. Hosts the completed plugin distribution zip as a versioned release
+3. Hosts the completed container distribution via versioned releases
 
 **What This Repo Doesn't Do**
 
@@ -43,7 +43,7 @@ Hook documentation is in `hooks_readme.md` (custom DB/MITM transforms that run a
 
 1. Running Lidarr _plugins-enabled_ branch
 2. Running MusicBrainz mirror server
-3. Building requires the lidarr source tree (submodule in plugin folder)
+3. The Lidarr plugin is no longer built from this repo
 
 **Key Defaults**
 

@@ -58,17 +58,12 @@ docker compose up -d
 
 ## LM Bridge Plugin for Lidarr
 
-To use LM Bridge, Lidarr has to have the LM Bridge plugin installed. The plugin sets the API's IP:PORT in Lidarr and allows you to configure media filtering
+The Lidarr plugin has been removed from this repo and now lives at
+`/Users/Bruno/Documents/Code_Dev/lidarr/lm-bridge-plugin`. This repo no longer
+builds or publishes the plugin. Update this section with the plugin repo URL
+once it is available.
 
-**Installing the Plugin**
-
-1. In Lidarr, open **System → Plugins**
-2. Paste `https://github.com/HVR88/LM-Bridge` into the GitHub URL box and click **Install**.
-3. Restart Lidarr when prompted.
-
-If you don't see a _System → Plugins_ page in your Lidarr, switch to the `nightly` branch, such as **[LinuxServer.io's](https://hub.docker.com/r/linuxserver/lidarr)**
-
-**Enable the Plugin**
+If you already have the plugin installed, enabling it still works the same:
 
 1. In Lidarr, open **Settings → Metadata**
 2. Click the **LM Bridge Settings** card

@@ -2,6 +2,3 @@
 	path = upstream/lidarr-metadata
 	url = https://github.com/HVR88/LidarrAPI.Metadata.git
 	branch = develop
-[submodule "lm-bridge-plugin/Submodules/Lidarr"]
-	path = lm-bridge-plugin/Submodules/Lidarr
-	url = https://github.com/Lidarr/Lidarr.git

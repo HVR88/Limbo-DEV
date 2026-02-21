@@ -11,10 +11,6 @@ on:
         description: "Publish Docker container (build/push + deploy sync)"
         required: true
         default: "true"
-      publish_plugin:
-        description: "Publish Lidarr plugin (build ZIP + deploy release)"
-        required: true
-        default: "true"
       version:
         description: "Override version (x.y.z or x.y.z.bb)"
         required: false
@@ -39,8 +35,8 @@ jobs:
 
       - name: Validate publish targets
         run: |
-          if [[ "${{ inputs.publish_container }}" != "true" && "${{ inputs.publish_plugin }}" != "true" ]]; then
-            echo "At least one of publish_container or publish_plugin must be true." >&2
+          if [[ "${{ inputs.publish_container }}" != "true" ]]; then
+            echo "publish_container must be true." >&2
             exit 1
           fi
 
@@ -58,7 +54,6 @@ jobs:
           fi
 
           export INPUT_VERSION="${{ inputs.version }}"
-          export PUBLISH_PLUGIN="${{ inputs.publish_plugin }}"
           PY_OUTPUT=$(python3 - <<'PY'
           import re
           import os
@@ -111,17 +106,6 @@ jobs:
           version_path.write_text(new_version + "\n")
           Path("deploy/VERSION").write_text(new_version + "\n")
 
-          if os.environ.get("PUBLISH_PLUGIN", "").lower() == "true":
-              csproj_path = Path("lm-bridge-plugin/plugin/LMBridgePlugin.csproj")
-              text = csproj_path.read_text()
-              text, count1 = re.subn(r"<AssemblyVersion>[^<]+</AssemblyVersion>",
-                                     f"<AssemblyVersion>{new_version}</AssemblyVersion>", text, count=1)
-              text, count2 = re.subn(r"<Version>[^<]+</Version>",
-                                     f"<Version>{new_version}</Version>", text, count=1)
-              if count1 != 1 or count2 != 1:
-                  raise SystemExit("Failed to update LMBridgePlugin.csproj version fields.")
-              csproj_path.write_text(text)
-
           readme_path = Path("deploy/README.md")
           if readme_path.exists():
             readme_text = readme_path.read_text()
@@ -150,9 +134,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add VERSION deploy/VERSION deploy/README.md lm-bridge-plugin/plugin/LMBridgePlugin.csproj \
-            overlay/bridge/lidarrmetadata/media_formats_meta.py \
-            lm-bridge-plugin/plugin/Metadata/MetadataSourceOverride/MediaFormats.generated.cs
+          git add VERSION deploy/VERSION deploy/README.md \
+            overlay/bridge/lidarrmetadata/media_formats_meta.py
           if git diff --cached --quiet; then
             echo "No version change to commit."
           else
@@ -172,54 +155,6 @@ jobs:
           fi
           git tag -a "$TAG" -m "Version $VERSION"
           git push origin "$TAG"
-
-      - name: Set up .NET
-        if: ${{ inputs.publish_plugin == 'true' }}
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: "8.0.x"
-
-      - name: Build plugin ZIP
-        if: ${{ inputs.publish_plugin == 'true' }}
-        run: |
-          chmod +x lm-bridge-plugin/build.sh
-          VERSION_OVERRIDE="${{ steps.bump.outputs.new_version }}" lm-bridge-plugin/build.sh
-
-      - name: Normalize plugin ZIP filename
-        if: ${{ inputs.publish_plugin == 'true' }}
-        run: |
-          NEW_VERSION="${{ steps.bump.outputs.new_version }}"
-          RELEASE_VERSION="${{ steps.bump.outputs.release_version }}"
-          if [[ "$NEW_VERSION" != "$RELEASE_VERSION" ]]; then
-            src="lm-bridge-plugin/dist/LMBridge_Plugin-${NEW_VERSION}-net8.0.zip"
-            dst="lm-bridge-plugin/dist/LMBridge_Plugin-${RELEASE_VERSION}-net8.0.zip"
-            if [[ -f "$src" ]]; then
-              mv "$src" "$dst"
-            else
-              echo "Plugin ZIP not found: $src" >&2
-              exit 1
-            fi
-          fi
-
-      - name: Publish plugin to deploy repo release
-        if: ${{ inputs.publish_plugin == 'true' }}
-        env:
-          GH_TOKEN: ${{ secrets.LMBRIDGE_DEPLOY_TOKEN }}
-          TAG: v${{ steps.bump.outputs.release_version }}
-          VERSION: ${{ steps.bump.outputs.release_version }}
-        run: |
-          set -euo pipefail
-          if [[ -z "${GH_TOKEN:-}" ]]; then
-            echo "LMBRIDGE_DEPLOY_TOKEN not set; skipping deploy repo release."
-            exit 0
-          fi
-          files=(lm-bridge-plugin/dist/*.zip)
-          title="LM-Bridge Plugin v${VERSION}"
-          if gh release view "${TAG}" --repo "${DEPLOY_REPO}" >/dev/null 2>&1; then
-            gh release upload "${TAG}" "${files[@]}" --repo "${DEPLOY_REPO}" --clobber
-          else
-            gh release create "${TAG}" "${files[@]}" --repo "${DEPLOY_REPO}" --title "${title}" --generate-notes
-          fi
 
       - name: Set up QEMU
         if: ${{ inputs.publish_container == 'true' }}

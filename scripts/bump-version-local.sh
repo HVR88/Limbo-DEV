@@ -76,24 +76,6 @@ else:
 version_path.write_text(new_version + "\n")
 Path("deploy/VERSION").write_text(new_version + "\n")
 
-csproj_path = Path("lm-bridge-plugin/plugin/LMBridgePlugin.csproj")
-text = csproj_path.read_text()
-text, count1 = re.subn(
-    r"<AssemblyVersion>[^<]+</AssemblyVersion>",
-    f"<AssemblyVersion>{new_version}</AssemblyVersion>",
-    text,
-    count=1,
-)
-text, count2 = re.subn(
-    r"<Version>[^<]+</Version>",
-    f"<Version>{new_version}</Version>",
-    text,
-    count=1,
-)
-if count1 != 1 or count2 != 1:
-    raise SystemExit("Failed to update LMBridgePlugin.csproj version fields.")
-csproj_path.write_text(text)
-
 readme_path = Path("deploy/README.md")
 if readme_path.exists():
     readme_text = readme_path.read_text()
