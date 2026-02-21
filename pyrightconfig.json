@@ -3,6 +3,9 @@
     "overlay/bridge",
     "upstream/lidarr-metadata"
   ],
+  "ignore": [
+    "overlay/bridge/lidarrmetadata/root_patch.py"
+  ],
   "extraPaths": [
     "upstream/lidarr-metadata"
   ]

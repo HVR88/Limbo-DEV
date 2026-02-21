@@ -5,10 +5,14 @@ from pathlib import Path
 import re
 import time
 import asyncio
+import inspect
 from datetime import datetime, timezone
 from typing import Optional, Tuple, Iterable, Dict
 
-import aiohttp
+try:
+    import aiohttp
+except Exception:  # pragma: no cover - runtime dependency may be missing
+    aiohttp = None
 import subprocess
 import lidarrmetadata
 from lidarrmetadata import provider
@@ -79,6 +83,8 @@ def _is_newer_version(current: str, latest: str) -> bool:
 
 
 async def _fetch_latest_release_version(owner: str, repo: str) -> Optional[str]:
+    if aiohttp is None:
+        return None
     key = f"{owner}/{repo}"
     now = time.time()
     cached = _GITHUB_RELEASE_CACHE.get(key)
@@ -176,13 +182,19 @@ def _postgres_cache_targets() -> Iterable[Tuple[str, object]]:
             yield name, cache
 
 
+async def _maybe_await(value: object) -> object:
+    if inspect.isawaitable(value):
+        return await value
+    return value
+
+
 async def _clear_all_cache_tables() -> dict:
     cleared = []
     skipped = []
     tasks = []
     for name, cache in _postgres_cache_targets():
         if hasattr(cache, "clear"):
-            tasks.append(cache.clear())
+            tasks.append(_maybe_await(cache.clear()))
             cleared.append(name)
         else:
             skipped.append(name)
@@ -196,7 +208,7 @@ async def _expire_all_cache_tables() -> dict:
     skipped = []
     for name, cache in _postgres_cache_targets():
         try:
-            pool = await cache._get_pool()
+            pool = await _maybe_await(cache._get_pool())
             async with pool.acquire() as conn:
                 await conn.execute(
                     f"UPDATE {cache._db_table} SET expires = current_timestamp;"
@@ -383,6 +395,8 @@ def _replication_auth_config(app_config: dict) -> Tuple[str, str]:
 async def _fetch_replication_status_remote(
     status_url: str, header_pair: str
 ) -> Optional[dict]:
+    if aiohttp is None:
+        return None
     headers = {}
     if header_pair and ":" in header_pair:
         name, value = header_pair.split(":", 1)
@@ -400,6 +414,8 @@ async def _fetch_replication_status_remote(
 
 async def _fetch_lidarr_version(base_url: str, api_key: str) -> Optional[str]:
     if not base_url or not api_key:
+        return None
+    if aiohttp is None:
         return None
     url = base_url.rstrip("/") + "/api/v1/system/status"
     headers = {"X-Api-Key": api_key}
@@ -639,6 +655,8 @@ def register_root_route() -> None:
                 start_url,
             )
             if use_remote:
+                if aiohttp is None:
+                    return jsonify({"ok": False, "error": "aiohttp not installed"}), 500
                 headers = {}
                 if header_pair and ":" in header_pair:
                     name, value = header_pair.split(":", 1)
@@ -764,7 +782,9 @@ def register_root_route() -> None:
                 provider.DataVintageMixin
             )
             if vintage_providers:
-                replication_date = await vintage_providers[0].data_vintage()
+                replication_date = await _maybe_await(
+                    vintage_providers[0].data_vintage()
+                )
         except Exception:
             replication_date = None
 
@@ -851,7 +871,7 @@ def register_root_route() -> None:
             if value is None:
                 return empty_label
             if isinstance(value, bool):
-                return "Yes" if value else "No"
+                return "ENABLED" if value else "DISABLED"
             if isinstance(value, (list, tuple)):
                 if not value:
                     return empty_label
@@ -862,15 +882,15 @@ def register_root_route() -> None:
         media_formats_url = (
             "https://github.com/HVR88/Docs-Extras/blob/master/docs/Media-Formats.md"
         )
-        exclude_label = 'Exclude <a class="config-link" href="{}" target="_blank" rel="noopener">Media Formats</a>'.format(
+        exclude_label = 'Exclude <a class="config-link" href="{}" target="_blank" rel="noopener">Media Typess</a>'.format(
             html.escape(media_formats_url)
         )
-        include_label = 'Include <a class="config-link" href="{}" target="_blank" rel="noopener">Media Formats</a>'.format(
+        include_label = 'Include <a class="config-link" href="{}" target="_blank" rel="noopener">Media Types</a>'.format(
             html.escape(media_formats_url)
         )
         config_rows = [
             (
-                "Filter by Release Format",
+                "Filter by Release Media Type",
                 fmt_config_value(config.get("enabled")),
             ),
             (
@@ -884,13 +904,13 @@ def register_root_route() -> None:
                 ),
             ),
             (
-                "Maximum Number of Release Formats",
+                "Maximum Number of Releases",
                 fmt_config_value(
                     config.get("keep_only_media_count"), empty_label="no limit"
                 ),
             ),
             (
-                "Prefered Release Format (when setting Max)",
+                "Prefered Release Media Types (when setting Max)",
                 fmt_config_value(config.get("prefer"), empty_label="any"),
             ),
         ]
