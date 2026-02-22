@@ -22,7 +22,7 @@ and contains Limbo container plus related tooling.
 > **Plugin status**:
 > References here are historical; this repo no longer builds or publishes a plugin.
 
-Deploy-only files live in `deploy/` (`docker-compose.yml`, `compose/`, `example.env`). You can copy that folder as-is, or run `scripts/export-deploy.sh` to create a bundle or sync it to a separate deploy repo (the export excludes `.env` by default).
+Package-only files live in `deploy/` (`docker-compose.yml`, `compose/`, `example.env`). You can copy that folder as-is, or run `scripts/export-deploy.sh` to create a bundle or sync it to a separate repo (the export excludes `.env` by default).
 
 Hook documentation is in `hooks_readme.md` (custom DB/MITM transforms that run after built-in processing).
 
@@ -146,7 +146,7 @@ Start the container using the provided settings file (Compose will pull the imag
 docker compose -f deploy/compose/limbo-hosted-services.yml up -d
 ```
 
-Note: Deploy files default to `espressomatic/limbo:latest`. If you build locally, set `LIMBO_IMAGE` to your tag.
+Note: Package files default to `espressomatic/limbo:latest`. If you build locally, set `LIMBO_IMAGE` to your tag.
 
 If you want to run it on the **same Docker network** as your MusicBrainz mirror and auto-run the **init container**, use the repo’s root `docker-compose.yml` (it’s already there if you cloned the repo). Then run:
 

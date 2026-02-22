@@ -8,7 +8,7 @@
 
 **_Thanks to blampe and Typnull for inspiration_** : this wouldn't have been possible without leveraging their previous work
 
-_Download the **Deploy** files from GitHub (`deploy/`) or use the root `docker-compose.yml` if you cloned the repo._
+_Download the **Package** files from GitHub (`deploy/`) or use the root `docker-compose.yml` if you cloned the repo._
 
 You should already be running a plugins-enabled [Lidarr](https://hub.docker.com/r/linuxserver/lidarr) release plus [MusicBrainz Mirror](https://github.com/metabrainz/musicbrainz-docker) server _(with materialized tables AND fully indexed db)_
 

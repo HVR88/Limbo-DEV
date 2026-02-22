@@ -80,8 +80,8 @@ readme_path = Path("deploy/README.md")
 if readme_path.exists():
     readme_text = readme_path.read_text()
     readme_text, count = re.subn(
-        r"Deploy version: `[^`]+`",
-        f"Deploy version: `{new_version}`",
+        r"Package version: `[^`]+`",
+        f"Package version: `{new_version}`",
         readme_text,
         count=1,
     )

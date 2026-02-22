@@ -119,8 +119,8 @@ jobs:
           readme_path = Path("deploy/README.md")
           if readme_path.exists():
             readme_text = readme_path.read_text()
-            readme_text, count = re.subn(r"Deploy version: `[^`]+`",
-                                         f"Deploy version: `{new_version}`", readme_text, count=1)
+          readme_text, count = re.subn(r"Package version: `[^`]+`",
+                                       f"Package version: `{new_version}`", readme_text, count=1)
             if count == 1:
               readme_path.write_text(readme_text)
 
@@ -257,24 +257,32 @@ jobs:
         if: ${{ inputs.publish_container == 'true' }}
         env:
           RELEASE_VERSION: ${{ steps.bump.outputs.release_version }}
+          NEW_VERSION: ${{ steps.bump.outputs.new_version }}
           GH_TOKEN: ${{ secrets.GH_DEPLOY_LIMBO }}
         run: |
           set -euo pipefail
           if [[ "${{ inputs.channel }}" == "test" ]]; then
-            tag="test-v${RELEASE_VERSION}"
+            tag="test-v${NEW_VERSION}"
           else
             tag="v${RELEASE_VERSION}"
           fi
           if [[ "${{ inputs.channel }}" == "test" ]]; then
-            zip_name="limbo-deploy-test-${RELEASE_VERSION}.zip"
+            zip_name="limbo-bundle-test-${NEW_VERSION}.zip"
           else
-            zip_name="limbo-deploy-${RELEASE_VERSION}.zip"
+            zip_name="limbo-bundle-${RELEASE_VERSION}.zip"
           fi
           (cd deploy-repo && zip -r "/tmp/${zip_name}" . -x ".git/*")
           if gh release view "$tag" -R "${DEPLOY_REPO}" >/dev/null 2>&1; then
             gh release upload "$tag" "/tmp/${zip_name}" -R "${DEPLOY_REPO}" --clobber
           else
+            if [[ "${{ inputs.channel }}" == "test" ]]; then
+              title="Limbo-Test Package ${NEW_VERSION}"
+              notes="Package bundle for Limbo-Test ${NEW_VERSION}."
+            else
+              title="Limbo Package ${RELEASE_VERSION}"
+              notes="Package bundle for Limbo ${RELEASE_VERSION}."
+            fi
             gh release create "$tag" "/tmp/${zip_name}" -R "${DEPLOY_REPO}" \
-              --title "Limbo Deploy ${RELEASE_VERSION}" \
-              --notes "Deploy bundle for Limbo ${RELEASE_VERSION}."
+              --title "${title}" \
+              --notes "${notes}"
           fi

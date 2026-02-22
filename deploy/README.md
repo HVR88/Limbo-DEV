@@ -78,4 +78,4 @@ Source code, docs and licenses: https://github.com/HVR88/Limbo-DEV
 
 ## Version
 
-Deploy version: `1.9.10.00`
+Package version: `1.9.10.00`
