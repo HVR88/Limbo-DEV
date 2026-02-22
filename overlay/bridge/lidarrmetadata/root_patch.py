@@ -375,7 +375,7 @@ def _replication_remote_config() -> Tuple[bool, str, str, str]:
     key = (
         os.getenv("LIMBO_REPLICATION_KEY")
         or os.getenv("MBMS_ADMIN_KEY")
-        or os.getenv("INVALIDATE_APIKEY")
+        or os.getenv("LIMBO_APIKEY")
         or ""
     )
     return use_remote, start_url, status_url, (header + ":" + key if key else "")
@@ -386,7 +386,7 @@ def _replication_auth_config(app_config: dict) -> Tuple[str, str]:
     key = (
         os.getenv("LIMBO_REPLICATION_KEY")
         or os.getenv("MBMS_ADMIN_KEY")
-        or app_config.get("INVALIDATE_APIKEY")
+        or app_config.get("LIMBO_APIKEY")
         or ""
     )
     return header, key
@@ -613,7 +613,7 @@ def register_root_route() -> None:
         @upstream_app.app.route("/cache/clear", methods=["POST"])
         async def _limbo_cache_clear():
             if request.headers.get("authorization") != upstream_app.app.config.get(
-                "INVALIDATE_APIKEY"
+                "LIMBO_APIKEY"
             ):
                 return jsonify("Unauthorized"), 401
             result = await _clear_all_cache_tables()
@@ -627,7 +627,7 @@ def register_root_route() -> None:
         @upstream_app.app.route("/cache/expire", methods=["POST"])
         async def _limbo_cache_expire():
             if request.headers.get("authorization") != upstream_app.app.config.get(
-                "INVALIDATE_APIKEY"
+                "LIMBO_APIKEY"
             ):
                 return jsonify("Unauthorized"), 401
             result = await _expire_all_cache_tables()
@@ -763,7 +763,7 @@ def register_root_route() -> None:
         async def _limbo_theme():
             if request.method == "GET":
                 return jsonify({"theme": _read_theme()})
-            auth_key = upstream_app.app.config.get("INVALIDATE_APIKEY")
+            auth_key = upstream_app.app.config.get("LIMBO_APIKEY")
             if auth_key and request.headers.get("authorization") != auth_key:
                 return jsonify("Unauthorized"), 401
             payload = await request.get_json(silent=True) or {}
@@ -987,8 +987,8 @@ def register_root_route() -> None:
             "__REPLICATION_STATUS_URL__": html.escape(replication_status_url),
             "__REPLICATION_BUTTON__": replication_button_html,
             "__REPLICATION_PILL_CLASS__": replication_pill_class,
-            "__INVALIDATE_APIKEY__": html.escape(
-                upstream_app.app.config.get("INVALIDATE_APIKEY") or ""
+            "__LIMBO_APIKEY__": html.escape(
+                upstream_app.app.config.get("LIMBO_APIKEY") or ""
             ),
             "__MBMS_URL__": html.escape(mbms_url),
             "__CONFIG_HTML__": config_html,

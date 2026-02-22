@@ -81,7 +81,7 @@ def build_preview_html() -> str:
             '<span class="pill-button__inner">Start</span></button>'
         ),
         "__REPLICATION_PILL_CLASS__": "pill has-action",
-        "__INVALIDATE_APIKEY__": "",
+        "__LIMBO_APIKEY__": "",
         "__MBMS_URL__": "https://github.com/HVR88/MBMS_PLUS",
         "__CONFIG_HTML__": config_html,
         "__MBMS_PILLS__": mbms_pills,
