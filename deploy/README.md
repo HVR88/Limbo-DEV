@@ -1,12 +1,16 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/HVR88/Limbo-DEV/main/assets/limbo-icon.png" alt="Limbo" width="500" />
+  <img src="https://raw.githubusercontent.com/HVR88/Limbo-DEV/main/assets/limbo-icon.png" alt="Limbo" width="300" />
 </p>
 
-# <p align="center">**Limbo - Metadata Handler**<br><sub>**_FAST • Local • Private_**</sub></p>
+# <p align="center">**Limbo**<br><sub>**Lidarr, but _Working_**</sub></p>
+
+# **WORK IN PROGRESS - A BIG SETUP CHANGE IS HAPPENING RIGHT NOW**
+
+**This release may not work for a few days unless you still have the old LM Bridge plugin installed - migration to plugin-free setup is coming soon**
 
 ## Introduction
 
-This is a stand-alone _Limbo_ release for existing MusicBrainz mirror installations. It should be installed onto the same host or docker network as the MusicBrainz mirror. Lidarr setup is detailed below. **WORK IN PROGRESS - A BIG SETUP CHANGE IS HAPPENING RIGHT NOW**
+This is a stand-alone _Limbo_ release for existing MusicBrainz mirror installations. It should be installed onto the same host or docker network as the MusicBrainz mirror. Lidarr setup is detailed below.
 
 **Limbo Features**
 
@@ -56,17 +60,6 @@ docker compose up -d
 >
 > The compose files are not meant to be edited. Put all overrides in `.env`.
 
-## Limbo Plugin for Lidarr
-
-Deprecated. This repo no longer publishes a plugin.
-once it is available.
-
-If you already have the plugin installed, remove it:
-
-1. In Lidarr, open **System → Plugins**
-2. Click the Trash Can icon at the far right of the **Limbo** plugin row
-3. Restart Lidarr when prompted
-
 ## Browser access / status
 
 Visit **http://HOST_IP:5001** to check the status of Limbo, including version and filter settings
@@ -87,4 +80,4 @@ Source code, docs and licenses: https://github.com/HVR88/Limbo-DEV
 
 ## Version
 
-Deploy version: `1.9.9.52`
+Deploy version: `1.9.9.53`
