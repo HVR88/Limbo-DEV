@@ -17,19 +17,19 @@ def main() -> int:
     # Default to the bridge config unless explicitly overridden
     os.environ.setdefault("LIDARR_METADATA_CONFIG", "BRIDGE")
 
-    init_state_dir = os.environ.get("LMBRIDGE_INIT_STATE_DIR", "/metadata/init-state")
+    init_state_dir = os.environ.get("LIMBO_INIT_STATE_DIR", "/metadata/init-state")
     cache_fail_flag = os.path.join(init_state_dir, "cache_init_failed")
     if os.path.exists(cache_fail_flag):
         os.environ.setdefault("USE_CACHE", "false")
         print(
-            "LM-Bridge: cache init failed; starting with USE_CACHE=false (null cache).",
+            "Limbo: cache init failed; starting with USE_CACHE=false (null cache).",
             file=sys.stderr,
         )
 
     # Map cache DB envs into upstream CACHE_CONFIG overrides (avoid upstream edits)
-    cache_user = os.environ.get("POSTGRES_CACHE_USER") or os.environ.get("LMBRIDGE_CACHE_USER")
-    cache_password = os.environ.get("POSTGRES_CACHE_PASSWORD") or os.environ.get("LMBRIDGE_CACHE_PASSWORD")
-    cache_db = os.environ.get("POSTGRES_CACHE_DB") or os.environ.get("LMBRIDGE_CACHE_DB")
+    cache_user = os.environ.get("POSTGRES_CACHE_USER") or os.environ.get("LIMBO_CACHE_USER")
+    cache_password = os.environ.get("POSTGRES_CACHE_PASSWORD") or os.environ.get("LIMBO_CACHE_PASSWORD")
+    cache_db = os.environ.get("POSTGRES_CACHE_DB") or os.environ.get("LIMBO_CACHE_DB")
     cache_table_keys = ("fanart", "tadb", "wikipedia", "artist", "album", "spotify")
     for key in cache_table_keys:
         if cache_user and f"CACHE_CONFIG__{key}__user" not in os.environ:
@@ -50,17 +50,17 @@ def main() -> int:
     config_patch.register_config_routes()
 
     # Optional runtime patches (auto-enable if MITM hook configured)
-    apply_env = os.environ.get("LMBRIDGE_APPLY_PATCHES")
+    apply_env = os.environ.get("LIMBO_APPLY_PATCHES")
     if apply_env is None:
         apply_patches = True
     else:
         apply_patches = apply_env.lower() in {"1", "true", "yes"}
 
     if apply_patches and (
-        os.environ.get("LMBRIDGE_MITM_MODULE")
-        or os.environ.get("LMBRIDGE_MITM_PATH")
-        or os.environ.get("LMBRIDGE_DB_HOOK_MODULE")
-        or os.environ.get("LMBRIDGE_DB_HOOK_PATH")
+        os.environ.get("LIMBO_MITM_MODULE")
+        or os.environ.get("LIMBO_MITM_PATH")
+        or os.environ.get("LIMBO_DB_HOOK_MODULE")
+        or os.environ.get("LIMBO_DB_HOOK_PATH")
     ):
         apply_patches = True
 

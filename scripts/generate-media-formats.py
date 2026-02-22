@@ -9,7 +9,7 @@ from typing import Dict, Iterable, List, Tuple
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE_PATH = ROOT / "data" / "media_formats_meta.json"
 PY_OUT = ROOT / "overlay" / "bridge" / "lidarrmetadata" / "media_formats_meta.py"
-CS_OUT = ROOT / "lm-bridge-plugin" / "plugin" / "Metadata" / "MetadataSourceOverride" / "MediaFormats.generated.cs"
+CS_OUT = ROOT / "limbo-plugin" / "plugin" / "Metadata" / "MetadataSourceOverride" / "MediaFormats.generated.cs"
 DOCS_OUT = ROOT / "docs" / "Media-Formats.md"
 
 _SMALL_TITLE_WORDS = {
@@ -153,7 +153,7 @@ def _emit_csharp(by_type: Dict[str, List[dict]]) -> bool:
 using System;
 using System.Collections.Generic;
 
-namespace LMBridgePlugin.Metadata.MetadataSourceOverride
+namespace LimboPlugin.Metadata.MetadataSourceOverride
 {{
     internal static class MediaFormats
     {{

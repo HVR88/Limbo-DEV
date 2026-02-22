@@ -14,7 +14,7 @@ fi
 
 mkdir -p "${OUT_DIR}"
 timestamp="$(date +%Y%m%d%H%M%S)"
-archive="${OUT_DIR}/lm-bridge-deploy-${timestamp}.tar.gz"
+archive="${OUT_DIR}/limbo-deploy-${timestamp}.tar.gz"
 
 stage="$(mktemp -d)"
 trap 'rm -rf "${stage}"' EXIT

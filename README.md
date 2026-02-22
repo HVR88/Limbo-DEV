@@ -1,13 +1,13 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/HVR88/LM-Bridge-DEV/main/assets/lmbridge-icon.png" alt="LM Bridge" width="250" />
+  <img src="https://raw.githubusercontent.com/HVR88/Limbo-DEV/main/assets/limbo-icon.png" alt="Limbo" width="250" />
 </p>
 
-# LM Bridge Development Source
+# Limbo Development Source
 
 **A Local API Bridge - _FAST_ queries, no remote server issues**
 
-**_This is the source repo to build the LM-Bridge project_**
-and contains the LM-Bridge container plus related tooling.
+**_This is the source repo to build Limbo_**
+and contains Limbo container plus related tooling.
 
 1. A Lidarr Metadata Server image that bridges to a MusicBrainz mirror
 2. Media format filtering - remove any format from Lidarr (like vinyl)
@@ -17,7 +17,7 @@ and contains the LM-Bridge container plus related tooling.
 
 > [!IMPORTANT]
 >
-> **_For the premade Docker container: https://github.com/HVR88/LM-Bridge_**
+> **_For the premade Docker container: https://github.com/HVR88/Limbo_**
 >
 > **Plugin status**:
 > References here are historical; this repo no longer builds or publishes a plugin.
@@ -48,11 +48,11 @@ Hook documentation is in `hooks_readme.md` (custom DB/MITM transforms that run a
 **Key Defaults**
 
 1. MusicBrainz DB defaults to user `musicbrainz` and password `musicbrainz`
-2. LM-BRIDGE cache DB defaults user `lmbridge` and password `lmbridge`
+2. Limbo cache DB defaults user `limbo` and password `limbo`
 
-## Configuration of the LM Bridge Container
+## Configuration of Limbo Container
 
-Edit `deploy/compose/lm-bridge-hosted-services.yml` to match your environment. This file is a standalone Compose file for the LM-Bridge container.
+Edit `deploy/compose/limbo-hosted-services.yml` to match your environment. This file is a standalone Compose file for Limbo container.
 
 Important fields:
 
@@ -62,9 +62,9 @@ Important fields:
 
 If you want to use Docker service names like `db`, `search`, or `redis`, run this container on the same Docker network as your MusicBrainz mirror.
 
-For best metadata enrichment, set API keys for TheAudioDB and Fanart.tv via `TADB_KEY` and `FANART_KEY` (in `deploy/compose/lm-bridge-hosted-services.yml` or via environment variables).
+For best metadata enrichment, set API keys for TheAudioDB and Fanart.tv via `TADB_KEY` and `FANART_KEY` (in `deploy/compose/limbo-hosted-services.yml` or via environment variables).
 
-## Initialize LMBRIDGE Cache DB and MusicBrainz Indexes
+## Initialize LIMBO Cache DB and MusicBrainz Indexes
 
 This repo includes `scripts/init-mbdb.sh` to handle the database prep that used to be done inside the mirror stack.
 If you are upgrading from the legacy cache user `lidarr` or `abc`, the script will automatically migrate ownership to the new cache user and update the password.
@@ -89,17 +89,17 @@ scripts/init-mbdb.sh
 You can change cache DB settings if needed:
 
 ```bash
-LMBRIDGE_CACHE_DB=lm_cache_db \
-LMBRIDGE_CACHE_USER=lmbridge \
-LMBRIDGE_CACHE_PASSWORD=lmbridge \
+LIMBO_CACHE_DB=lm_cache_db \
+LIMBO_CACHE_USER=limbo \
+LIMBO_CACHE_PASSWORD=limbo \
 scripts/init-mbdb.sh
 ```
 
 Optional cache schema and fail-open:
 
 ```bash
-LMBRIDGE_CACHE_SCHEMA=lm_cache \
-LMBRIDGE_CACHE_FAIL_OPEN=true \
+LIMBO_CACHE_SCHEMA=lm_cache \
+LIMBO_CACHE_FAIL_OPEN=true \
 scripts/init-mbdb.sh
 ```
 
@@ -112,17 +112,17 @@ The script also creates the cache tables (`fanart`, `tadb`, `wikipedia`, `artist
 Recommended (pulls the upstream submodule automatically):
 
 ```bash
-git clone --recurse-submodules https://github.com/HVR88/LM-Bridge.git
+git clone --recurse-submodules https://github.com/HVR88/Limbo.git
 ```
 
 If you already cloned without submodules:
 
 ```bash
-cd lm-bridge
+cd limbo
 git submodule update --init --recursive
 ```
 
-Use the helper script (defaults to `linux/amd64` and tag `lm-bridge:latest`):
+Use the helper script (defaults to `linux/amd64` and tag `limbo:latest`):
 
 ```bash
 scripts/build-image.sh
@@ -131,22 +131,22 @@ scripts/build-image.sh
 Override defaults:
 
 ```bash
-PLATFORMS=linux/amd64 LMBRIDGE_IMAGE=lm-bridge:latest scripts/build-image.sh
+PLATFORMS=linux/amd64 LIMBO_IMAGE=limbo:latest scripts/build-image.sh
 ```
 
 Multi-arch build (push required):
 
 ```bash
-PLATFORMS=linux/amd64,linux/arm64 PUSH=1 LMBRIDGE_IMAGE=lm-bridge:latest scripts/build-image.sh
+PLATFORMS=linux/amd64,linux/arm64 PUSH=1 LIMBO_IMAGE=limbo:latest scripts/build-image.sh
 ```
 
 Start the container using the provided settings file (Compose will pull the image if it doesn't exist locally):
 
 ```bash
-docker compose -f deploy/compose/lm-bridge-hosted-services.yml up -d
+docker compose -f deploy/compose/limbo-hosted-services.yml up -d
 ```
 
-Note: Deploy files default to `espressomatic/lm-bridge:latest`. If you build locally, set `LMBRIDGE_IMAGE` to your tag.
+Note: Deploy files default to `espressomatic/limbo:latest`. If you build locally, set `LIMBO_IMAGE` to your tag.
 
 If you want to run it on the **same Docker network** as your MusicBrainz mirror and auto-run the **init container**, use the repo’s root `docker-compose.yml` (it’s already there if you cloned the repo). Then run:
 
@@ -159,7 +159,7 @@ The `init` container will exit after completing setup. That is expected.
 If you use custom image tags, set them via environment:
 
 ```bash
-LMBRIDGE_IMAGE=lm-bridge:latest \
+LIMBO_IMAGE=limbo:latest \
 MB_NETWORK=musicbrainz_default \
 docker compose -f docker-compose.yml up -d
 ```
@@ -169,13 +169,13 @@ Note: `MB_DB_USER` must have permission to create roles and databases (the mirro
 If your Docker Compose version does not support `include` (used by `docker-compose.yml`), you can still run the underlying file directly:
 
 ```bash
-MB_NETWORK=musicbrainz_default docker compose -f deploy/compose/lm-bridge-docker-network.yml up -d
+MB_NETWORK=musicbrainz_default docker compose -f deploy/compose/limbo-docker-network.yml up -d
 ```
 
 If you are building from source, add the dev override:
 
 ```bash
-MB_NETWORK=musicbrainz_default docker compose -f deploy/compose/lm-bridge-docker-network.yml -f docker-compose.dev.yml up -d
+MB_NETWORK=musicbrainz_default docker compose -f deploy/compose/limbo-docker-network.yml -f docker-compose.dev.yml up -d
 ```
 
 ### Verify

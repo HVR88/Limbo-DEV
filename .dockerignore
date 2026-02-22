@@ -6,7 +6,7 @@
 **/.venv/
 .git/
 .github/
-lm-bridge-plugin/
+limbo-plugin/
 scripts/*
 !scripts/init-mbdb.sh
 research/

@@ -3,11 +3,11 @@ from pathlib import Path
 
 
 def _read_version() -> str:
-    env_version = os.environ.get("LMBRIDGE_VERSION")
+    env_version = os.environ.get("LIMBO_VERSION")
     if env_version:
         return env_version.strip()
 
-    version_path = Path(os.environ.get("LMBRIDGE_VERSION_FILE", "/metadata/VERSION"))
+    version_path = Path(os.environ.get("LIMBO_VERSION_FILE", "/metadata/VERSION"))
     try:
         return version_path.read_text().strip()
     except OSError:
@@ -23,5 +23,5 @@ def register_version_route() -> None:
             return
 
     @upstream_app.app.route("/version", methods=["GET"])
-    async def _lmbridge_version_route():
+    async def _limbo_version_route():
         return jsonify({"version": _read_version()})

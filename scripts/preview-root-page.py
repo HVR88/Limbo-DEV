@@ -44,14 +44,14 @@ def build_preview_html() -> str:
     )
 
     replacements = {
-        "__ICON_URL__": "lmbridge-icon.png",
+        "__ICON_URL__": "limbo-icon.png",
         "__LM_VERSION__": "1.9.7.10",
         "__LM_PLUGIN_VERSION__": "1.9.7.10",
-        "__LM_PLUGIN_LABEL__": "LM Bridge Plugin",
+        "__LM_PLUGIN_LABEL__": "Limbo Plugin",
         "__LM_PILL_CLASS__": "pill has-action",
         "__PLUGIN_PILL_CLASS__": "pill",
         "__LM_VERSION_BUTTON__": (
-            '            <a class="pill-button update" href="https://github.com/HVR88/LM-Bridge" target="_blank" rel="noopener">'
+            '            <a class="pill-button update" href="https://github.com/HVR88/Limbo" target="_blank" rel="noopener">'
             '<span class="pill-button__inner">1.9.7.80</span></a>'
         ),
         "__PLUGIN_VERSION_BUTTON__": (
@@ -99,7 +99,7 @@ def main() -> int:
     css_source = root / "overlay" / "bridge" / "lidarrmetadata" / "assets" / "root.css"
 
     parser = argparse.ArgumentParser(
-        description="Generate a local preview of the LM Bridge landing page."
+        description="Generate a local preview of Limbo landing page."
     )
     parser.add_argument(
         "output", nargs="?", default=str(default_output), help="Output HTML path"

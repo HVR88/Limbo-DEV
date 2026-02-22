@@ -20,18 +20,18 @@ from lidarrmetadata.app import no_cache
 from lidarrmetadata.version_patch import _read_version
 
 _START_TIME = time.time()
-_STATE_DIR = Path(os.environ.get("LMBRIDGE_INIT_STATE_DIR", "/metadata/init-state"))
+_STATE_DIR = Path(os.environ.get("LIMBO_INIT_STATE_DIR", "/metadata/init-state"))
 _LIDARR_VERSION_FILE = Path(
     os.environ.get(
-        "LMBRIDGE_LIDARR_VERSION_FILE",
+        "LIMBO_LIDARR_VERSION_FILE",
         str(_STATE_DIR / "lidarr_version.txt"),
     )
 )
 _LAST_LIDARR_VERSION: Optional[str] = None
 _PLUGIN_VERSION_FILE = Path(
     os.environ.get(
-        "LMBRIDGE_PLUGIN_VERSION_FILE",
-        str(_STATE_DIR / "lmbridge_plugin_version.txt"),
+        "LIMBO_PLUGIN_VERSION_FILE",
+        str(_STATE_DIR / "limbo_plugin_version.txt"),
     )
 )
 _LAST_PLUGIN_VERSION: Optional[str] = None
@@ -43,12 +43,12 @@ _GITHUB_RELEASE_CACHE: Dict[str, Tuple[float, Optional[str]]] = {}
 _GITHUB_RELEASE_CACHE_TTL = 300.0
 _REPLICATION_NOTIFY_FILE = Path(
     os.getenv(
-        "LMBRIDGE_REPLICATION_NOTIFY_FILE",
+        "LIMBO_REPLICATION_NOTIFY_FILE",
         str(_STATE_DIR / "replication_status.json"),
     )
 )
 _LAST_REPLICATION_NOTIFY: Optional[dict] = None
-_THEME_FILE = Path(os.getenv("LMBRIDGE_THEME_FILE", str(_STATE_DIR / "theme.txt")))
+_THEME_FILE = Path(os.getenv("LIMBO_THEME_FILE", str(_STATE_DIR / "theme.txt")))
 
 
 def _normalize_version_string(value: Optional[str]) -> str:
@@ -94,7 +94,7 @@ async def _fetch_latest_release_version(owner: str, repo: str) -> Optional[str]:
     version: Optional[str] = None
     headers = {
         "Accept": "application/vnd.github+json",
-        "User-Agent": "lm-bridge",
+        "User-Agent": "limbo",
     }
     timeout = aiohttp.ClientTimeout(total=3)
     try:
@@ -292,7 +292,7 @@ def _format_schedule_html(value: Optional[str]) -> str:
 def _read_replication_status() -> Tuple[bool, str]:
     status_path = Path(
         os.getenv(
-            "LMBRIDGE_REPLICATION_STATUS_FILE",
+            "LIMBO_REPLICATION_STATUS_FILE",
             "/metadata/init-state/replication.pid",
         )
     )
@@ -353,13 +353,13 @@ def _write_theme(theme: str) -> None:
 
 def _replication_remote_config() -> Tuple[bool, str, str, str]:
     use_remote = False
-    base_url = os.getenv("LMBRIDGE_REPLICATION_BASE_URL") or ""
-    start_url = os.getenv("LMBRIDGE_REPLICATION_URL") or ""
-    status_url = os.getenv("LMBRIDGE_REPLICATION_STATUS_URL") or ""
+    base_url = os.getenv("LIMBO_REPLICATION_BASE_URL") or ""
+    start_url = os.getenv("LIMBO_REPLICATION_URL") or ""
+    status_url = os.getenv("LIMBO_REPLICATION_STATUS_URL") or ""
 
     if base_url or start_url or status_url:
         use_remote = True
-    elif os.getenv("LMBRIDGE_REPLICATION_REMOTE", "").lower() in {"1", "true", "yes"}:
+    elif os.getenv("LIMBO_REPLICATION_REMOTE", "").lower() in {"1", "true", "yes"}:
         use_remote = True
     elif os.getenv("MBMS_ADMIN_ENABLED", "").lower() in {"1", "true", "yes"}:
         use_remote = True
@@ -371,9 +371,9 @@ def _replication_remote_config() -> Tuple[bool, str, str, str]:
     if not status_url:
         status_url = base_url.rstrip("/") + "/replication/status"
 
-    header = os.getenv("LMBRIDGE_REPLICATION_HEADER", "") or "X-MBMS-Key"
+    header = os.getenv("LIMBO_REPLICATION_HEADER", "") or "X-MBMS-Key"
     key = (
-        os.getenv("LMBRIDGE_REPLICATION_KEY")
+        os.getenv("LIMBO_REPLICATION_KEY")
         or os.getenv("MBMS_ADMIN_KEY")
         or os.getenv("INVALIDATE_APIKEY")
         or ""
@@ -382,9 +382,9 @@ def _replication_remote_config() -> Tuple[bool, str, str, str]:
 
 
 def _replication_auth_config(app_config: dict) -> Tuple[str, str]:
-    header = os.getenv("LMBRIDGE_REPLICATION_HEADER", "") or "X-MBMS-Key"
+    header = os.getenv("LIMBO_REPLICATION_HEADER", "") or "X-MBMS-Key"
     key = (
-        os.getenv("LMBRIDGE_REPLICATION_KEY")
+        os.getenv("LIMBO_REPLICATION_KEY")
         or os.getenv("MBMS_ADMIN_KEY")
         or app_config.get("INVALIDATE_APIKEY")
         or ""
@@ -579,14 +579,14 @@ def register_root_route() -> None:
     assets_dir = Path(__file__).resolve().parent / "assets"
 
     for rule in upstream_app.app.url_map.iter_rules():
-        if rule.rule == "/assets/lmbridge-icon.png":
+        if rule.rule == "/assets/limbo-icon.png":
             break
     else:
 
-        @upstream_app.app.route("/assets/lmbridge-icon.png", methods=["GET"])
-        async def _lmbridge_icon():
+        @upstream_app.app.route("/assets/limbo-icon.png", methods=["GET"])
+        async def _limbo_icon():
             return await send_file(
-                assets_dir / "lmbridge-icon.png", mimetype="image/png"
+                assets_dir / "limbo-icon.png", mimetype="image/png"
             )
 
     for rule in upstream_app.app.url_map.iter_rules():
@@ -595,14 +595,14 @@ def register_root_route() -> None:
     else:
 
         @upstream_app.app.route("/assets/root.css", methods=["GET"])
-        async def _lmbridge_root_css():
+        async def _limbo_root_css():
             return await send_file(assets_dir / "root.css", mimetype="text/css")
 
-    if not upstream_app.app.config.get("LMBRIDGE_CAPTURE_LIDARR_VERSION"):
-        upstream_app.app.config["LMBRIDGE_CAPTURE_LIDARR_VERSION"] = True
+    if not upstream_app.app.config.get("LIMBO_CAPTURE_LIDARR_VERSION"):
+        upstream_app.app.config["LIMBO_CAPTURE_LIDARR_VERSION"] = True
 
         @upstream_app.app.before_request
-        async def _lmbridge_capture_lidarr_version():
+        async def _limbo_capture_lidarr_version():
             _capture_lidarr_version(request.headers.get("User-Agent"))
 
     for rule in upstream_app.app.url_map.iter_rules():
@@ -611,7 +611,7 @@ def register_root_route() -> None:
     else:
 
         @upstream_app.app.route("/cache/clear", methods=["POST"])
-        async def _lmbridge_cache_clear():
+        async def _limbo_cache_clear():
             if request.headers.get("authorization") != upstream_app.app.config.get(
                 "INVALIDATE_APIKEY"
             ):
@@ -625,7 +625,7 @@ def register_root_route() -> None:
     else:
 
         @upstream_app.app.route("/cache/expire", methods=["POST"])
-        async def _lmbridge_cache_expire():
+        async def _limbo_cache_expire():
             if request.headers.get("authorization") != upstream_app.app.config.get(
                 "INVALIDATE_APIKEY"
             ):
@@ -639,7 +639,7 @@ def register_root_route() -> None:
     else:
 
         @upstream_app.app.route("/replication/start", methods=["POST"])
-        async def _lmbridge_replication_start():
+        async def _limbo_replication_start():
             header_name, auth_key = _replication_auth_config(upstream_app.app.config)
             if auth_key and (
                 request.headers.get(header_name) != auth_key
@@ -676,7 +676,7 @@ def register_root_route() -> None:
                     return jsonify({"ok": False, "error": str(exc)}), 500
 
             script_path = os.getenv(
-                "LMBRIDGE_REPLICATION_SCRIPT", "/admin/replicate-now"
+                "LIMBO_REPLICATION_SCRIPT", "/admin/replicate-now"
             )
             script = Path(script_path)
             if not script.exists() and not script_path.endswith(".sh"):
@@ -709,7 +709,7 @@ def register_root_route() -> None:
     else:
 
         @upstream_app.app.route("/replication/status", methods=["GET"])
-        async def _lmbridge_replication_status():
+        async def _limbo_replication_status():
             use_remote, _start_url, status_url, header_pair = (
                 _replication_remote_config()
             )
@@ -736,7 +736,7 @@ def register_root_route() -> None:
     else:
 
         @upstream_app.app.route("/replication/notify", methods=["POST"])
-        async def _lmbridge_replication_notify():
+        async def _limbo_replication_notify():
             header_name, auth_key = _replication_auth_config(upstream_app.app.config)
             if auth_key and (
                 request.headers.get(header_name) != auth_key
@@ -760,7 +760,7 @@ def register_root_route() -> None:
     else:
 
         @upstream_app.app.route("/theme", methods=["GET", "POST"])
-        async def _lmbridge_theme():
+        async def _limbo_theme():
             if request.method == "GET":
                 return jsonify({"theme": _read_theme()})
             auth_key = upstream_app.app.config.get("INVALIDATE_APIKEY")
@@ -775,7 +775,7 @@ def register_root_route() -> None:
             _write_theme(theme)
             return jsonify({"ok": True, "theme": theme})
 
-    async def _lmbridge_root_route():
+    async def _limbo_root_route():
         replication_date = None
         try:
             vintage_providers = provider.get_providers_implementing(
@@ -860,11 +860,11 @@ def register_root_route() -> None:
             f"{base_path}/replication/status" if base_path else "/replication/status"
         )
         icon_url = (
-            f"{base_path}/assets/lmbridge-icon.png"
+            f"{base_path}/assets/limbo-icon.png"
             if base_path
-            else "/assets/lmbridge-icon.png"
+            else "/assets/limbo-icon.png"
         )
-        lm_repo_url = "https://github.com/HVR88/LM-Bridge"
+        lm_repo_url = "https://github.com/HVR88/Limbo"
         mbms_url = "https://github.com/HVR88/MBMS_PLUS"
 
         def fmt_config_value(value: object, *, empty_label: str = "none") -> str:
@@ -882,7 +882,7 @@ def register_root_route() -> None:
         media_formats_url = (
             "https://github.com/HVR88/Docs-Extras/blob/master/docs/Media-Formats.md"
         )
-        exclude_label = 'Exclude <a class="config-link" href="{}" target="_blank" rel="noopener">Media Typess</a>'.format(
+        exclude_label = 'Exclude <a class="config-link" href="{}" target="_blank" rel="noopener">Media Types</a>'.format(
             html.escape(media_formats_url)
         )
         include_label = 'Include <a class="config-link" href="{}" target="_blank" rel="noopener">Media Types</a>'.format(
@@ -890,7 +890,7 @@ def register_root_route() -> None:
         )
         config_rows = [
             (
-                "Filter by Release Media Type",
+                "Filter by Release Media Types",
                 fmt_config_value(config.get("enabled")),
             ),
             (
@@ -910,7 +910,7 @@ def register_root_route() -> None:
                 ),
             ),
             (
-                "Prefered Release Media Types (when setting Max)",
+                "Preferred Media Types (when setting Max)",
                 fmt_config_value(config.get("prefer"), empty_label="any"),
             ),
         ]
@@ -1011,7 +1011,7 @@ def register_root_route() -> None:
         )
 
         lm_latest, mbms_latest = await asyncio.gather(
-            _fetch_latest_release_version("HVR88", "LM-Bridge"),
+            _fetch_latest_release_version("HVR88", "Limbo"),
             _fetch_latest_release_version("HVR88", "MBMS_PLUS"),
         )
 
@@ -1051,11 +1051,11 @@ def register_root_route() -> None:
                 '            <a class="pill-button update overlay" href="{}" target="_blank" rel="noopener">'
                 '<span class="pill-button__inner">{}</span></a>'
             ).format(html.escape(plugin_target), html.escape(plugin_update))
-            replacements["__LM_PLUGIN_LABEL__"] = "LM Bridge Plugin"
+            replacements["__LM_PLUGIN_LABEL__"] = "Limbo Plugin"
         else:
             replacements["__PLUGIN_PILL_CLASS__"] = "pill"
             replacements["__PLUGIN_VERSION_BUTTON__"] = ""
-            replacements["__LM_PLUGIN_LABEL__"] = "LM Bridge Plugin Version"
+            replacements["__LM_PLUGIN_LABEL__"] = "Limbo Plugin Version"
 
         if mbms_update:
             mbms_button = (
@@ -1076,11 +1076,11 @@ def register_root_route() -> None:
                 mbms_button,
                 "          </div>",
                 '          <div class="pill">',
-                '            <div class="label">MBMS Index Schedule</div>',
+                '            <div class="label">DB Indexing Schedule</div>',
                 f'            <div class="value">{index_schedule_html}</div>',
                 "          </div>",
                 '          <div class="pill">',
-                '            <div class="label">MBMS Replication Schedule</div>',
+                '            <div class="label">DB Replication Schedule</div>',
                 f'            <div class="value">{replication_schedule_html}</div>',
                 "          </div>",
             ]
@@ -1091,7 +1091,7 @@ def register_root_route() -> None:
             page = page.replace(key, value)
         return Response(page, mimetype="text/html")
 
-    wrapped = no_cache(_lmbridge_root_route)
+    wrapped = no_cache(_limbo_root_route)
 
     for rule in upstream_app.app.url_map.iter_rules():
         if rule.rule == "/":

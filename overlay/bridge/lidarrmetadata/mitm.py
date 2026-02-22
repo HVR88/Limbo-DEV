@@ -17,10 +17,10 @@ _CUSTOM_LOAD_ATTEMPTED = False
 def is_enabled() -> bool:
     return bool(
         _BUILTIN_TRANSFORM
-        or os.environ.get("LMBRIDGE_MITM_AFTER_MODULE")
-        or os.environ.get("LMBRIDGE_MITM_AFTER_PATH")
-        or os.environ.get("LMBRIDGE_MITM_MODULE")
-        or os.environ.get("LMBRIDGE_MITM_PATH")
+        or os.environ.get("LIMBO_MITM_AFTER_MODULE")
+        or os.environ.get("LIMBO_MITM_AFTER_PATH")
+        or os.environ.get("LIMBO_MITM_MODULE")
+        or os.environ.get("LIMBO_MITM_PATH")
     )
 
 
@@ -30,40 +30,40 @@ def _load_custom_transform() -> Optional[Callable[[Any, Dict[str, Any]], Any]]:
         return _CUSTOM_TRANSFORM
     _CUSTOM_LOAD_ATTEMPTED = True
 
-    module_name = os.environ.get("LMBRIDGE_MITM_AFTER_MODULE") or os.environ.get("LMBRIDGE_MITM_MODULE")
-    file_path = os.environ.get("LMBRIDGE_MITM_AFTER_PATH") or os.environ.get("LMBRIDGE_MITM_PATH")
+    module_name = os.environ.get("LIMBO_MITM_AFTER_MODULE") or os.environ.get("LIMBO_MITM_MODULE")
+    file_path = os.environ.get("LIMBO_MITM_AFTER_PATH") or os.environ.get("LIMBO_MITM_PATH")
 
     if module_name:
         try:
             module = importlib.import_module(module_name)
         except Exception:
-            logger.exception("LM-Bridge MITM: failed to import module %s", module_name)
+            logger.exception("Limbo MITM: failed to import module %s", module_name)
             return None
 
         transform = getattr(module, "transform_payload", None)
         if callable(transform):
             _CUSTOM_TRANSFORM = transform
             return _CUSTOM_TRANSFORM
-        logger.error("LM-Bridge MITM: module %s missing transform_payload(payload, context)", module_name)
+        logger.error("Limbo MITM: module %s missing transform_payload(payload, context)", module_name)
         return None
 
     if file_path:
         try:
-            spec = importlib.util.spec_from_file_location("lmbridge_mitm_hook", file_path)
+            spec = importlib.util.spec_from_file_location("limbo_mitm_hook", file_path)
             if spec is None or spec.loader is None:
-                logger.error("LM-Bridge MITM: cannot load hook file %s", file_path)
+                logger.error("Limbo MITM: cannot load hook file %s", file_path)
                 return None
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
         except Exception:
-            logger.exception("LM-Bridge MITM: failed to load hook file %s", file_path)
+            logger.exception("Limbo MITM: failed to load hook file %s", file_path)
             return None
 
         transform = getattr(module, "transform_payload", None)
         if callable(transform):
             _CUSTOM_TRANSFORM = transform
             return _CUSTOM_TRANSFORM
-        logger.error("LM-Bridge MITM: hook file %s missing transform_payload(payload, context)", file_path)
+        logger.error("Limbo MITM: hook file %s missing transform_payload(payload, context)", file_path)
         return None
 
     return None
@@ -84,7 +84,7 @@ async def apply_response(response):
     try:
         raw = await response.get_data()
     except Exception:
-        logger.exception("LM-Bridge MITM: failed reading response body")
+        logger.exception("Limbo MITM: failed reading response body")
         return response
 
     if not raw:
@@ -109,7 +109,7 @@ async def apply_response(response):
         try:
             updated = transform(current, context)
         except Exception:
-            logger.exception("LM-Bridge MITM: transform_payload failed")
+            logger.exception("Limbo MITM: transform_payload failed")
             continue
         if updated is not None:
             current = updated
@@ -120,7 +120,7 @@ async def apply_response(response):
     try:
         response.set_data(json.dumps(current, separators=(",", ":")))
     except Exception:
-        logger.exception("LM-Bridge MITM: failed to update response body")
+        logger.exception("Limbo MITM: failed to update response body")
         return response
 
     return response

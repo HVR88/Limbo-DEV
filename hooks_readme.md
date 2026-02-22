@@ -1,9 +1,9 @@
-# LM-Bridge Hooks (After Built-In Processing)
+# Limbo Hooks (After Built-In Processing)
 
-This file documents the hook system you can enable via environment variables to run *after* LM-Bridge’s built-in processing.
+This file documents the hook system you can enable via environment variables to run *after* Limbo’s built-in processing.
 
 ## What Hooks Are For
-Hooks let you add small, isolated transformations without modifying LM-Bridge core code. Typical uses include:
+Hooks let you add small, isolated transformations without modifying Limbo core code. Typical uses include:
 - Filtering or reshaping release data before it reaches Lidarr.
 - Adding or removing fields in JSON responses.
 - Routing specific SQL queries to a separate database.
@@ -15,12 +15,12 @@ There are two hook points:
 
 ## Execution Order
 - Built-in logic runs first.
-- Custom hooks run second (your code is always *after* LM-Bridge’s built-in transforms).
+- Custom hooks run second (your code is always *after* Limbo’s built-in transforms).
 
 ## DB Hook
 **Entry points**
-- `LMBRIDGE_DB_HOOK_AFTER_MODULE`
-- `LMBRIDGE_DB_HOOK_AFTER_PATH`
+- `LIMBO_DB_HOOK_AFTER_MODULE`
+- `LIMBO_DB_HOOK_AFTER_PATH`
 
 **Hook functions**
 Your module should implement either (or both):
@@ -36,13 +36,13 @@ Your module should implement either (or both):
 
 **Pool routing**
 `before_query` can return a `pool_key` to route a query to another DB pool configured via:
-- `LMBRIDGE_DB_POOL_<KEY>_HOST`
-- `LMBRIDGE_DB_POOL_<KEY>_PORT`
-- `LMBRIDGE_DB_POOL_<KEY>_USER`
-- `LMBRIDGE_DB_POOL_<KEY>_PASSWORD`
-- `LMBRIDGE_DB_POOL_<KEY>_DB_NAME`
+- `LIMBO_DB_POOL_<KEY>_HOST`
+- `LIMBO_DB_POOL_<KEY>_PORT`
+- `LIMBO_DB_POOL_<KEY>_USER`
+- `LIMBO_DB_POOL_<KEY>_PASSWORD`
+- `LIMBO_DB_POOL_<KEY>_DB_NAME`
 
-If a hook raises an exception, LM-Bridge logs the error and continues with the unmodified data.
+If a hook raises an exception, Limbo logs the error and continues with the unmodified data.
 
 ### DB Hook Example 1: Filter out a format in release data
 ```python
@@ -71,7 +71,7 @@ def after_query(results, context):
 ```
 Env:
 ```
-LMBRIDGE_DB_HOOK_AFTER_PATH=/config/hooks/db_filter.py
+LIMBO_DB_HOOK_AFTER_PATH=/config/hooks/db_filter.py
 ```
 
 ### DB Hook Example 2: Route a query to a separate DB pool
@@ -85,18 +85,18 @@ def before_query(sql, args, context):
 ```
 Env:
 ```
-LMBRIDGE_DB_HOOK_AFTER_PATH=/config/hooks/db_route.py
-LMBRIDGE_DB_POOL_DISCOGS_HOST=discogs-db
-LMBRIDGE_DB_POOL_DISCOGS_PORT=5432
-LMBRIDGE_DB_POOL_DISCOGS_USER=discogs
-LMBRIDGE_DB_POOL_DISCOGS_PASSWORD=secret
-LMBRIDGE_DB_POOL_DISCOGS_DB_NAME=discogs_db
+LIMBO_DB_HOOK_AFTER_PATH=/config/hooks/db_route.py
+LIMBO_DB_POOL_DISCOGS_HOST=discogs-db
+LIMBO_DB_POOL_DISCOGS_PORT=5432
+LIMBO_DB_POOL_DISCOGS_USER=discogs
+LIMBO_DB_POOL_DISCOGS_PASSWORD=secret
+LIMBO_DB_POOL_DISCOGS_DB_NAME=discogs_db
 ```
 
 ## MITM Hook (Response Transform)
 **Entry points**
-- `LMBRIDGE_MITM_AFTER_MODULE`
-- `LMBRIDGE_MITM_AFTER_PATH`
+- `LIMBO_MITM_AFTER_MODULE`
+- `LIMBO_MITM_AFTER_PATH`
 
 **Hook function**
 - `transform_payload(payload, context) -> payload | None`
@@ -107,7 +107,7 @@ LMBRIDGE_DB_POOL_DISCOGS_DB_NAME=discogs_db
 - `query`: request query params
 - `headers`: request headers
 
-This hook only runs for JSON responses. If your function returns `None`, LM-Bridge keeps the original payload.
+This hook only runs for JSON responses. If your function returns `None`, Limbo keeps the original payload.
 
 ### MITM Hook Example: Remove a field from all responses
 ```python
@@ -121,7 +121,7 @@ def transform_payload(payload, context):
 ```
 Env:
 ```
-LMBRIDGE_MITM_AFTER_PATH=/config/hooks/mitm_strip.py
+LIMBO_MITM_AFTER_PATH=/config/hooks/mitm_strip.py
 ```
 
 ## Notes

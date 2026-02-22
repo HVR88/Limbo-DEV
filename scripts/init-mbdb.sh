@@ -18,12 +18,12 @@ MB_DB_NAME=${MB_DB_NAME:-musicbrainz_db}
 MB_ADMIN_DB=${MB_ADMIN_DB:-postgres}
 MB_DB_NETWORK=${MB_DB_NETWORK:-}
 
-LMBRIDGE_CACHE_DB=${LMBRIDGE_CACHE_DB:-lm_cache_db}
-LMBRIDGE_CACHE_USER=${LMBRIDGE_CACHE_USER:-lmbridge}
-LMBRIDGE_CACHE_PASSWORD=${LMBRIDGE_CACHE_PASSWORD:-lmbridge}
-LMBRIDGE_CACHE_SCHEMA=${LMBRIDGE_CACHE_SCHEMA:-public}
-LMBRIDGE_CACHE_FAIL_OPEN=${LMBRIDGE_CACHE_FAIL_OPEN:-false}
-LMBRIDGE_INIT_STATE_DIR=${LMBRIDGE_INIT_STATE_DIR:-/metadata/init-state}
+LIMBO_CACHE_DB=${LIMBO_CACHE_DB:-lm_cache_db}
+LIMBO_CACHE_USER=${LIMBO_CACHE_USER:-limbo}
+LIMBO_CACHE_PASSWORD=${LIMBO_CACHE_PASSWORD:-limbo}
+LIMBO_CACHE_SCHEMA=${LIMBO_CACHE_SCHEMA:-public}
+LIMBO_CACHE_FAIL_OPEN=${LIMBO_CACHE_FAIL_OPEN:-false}
+LIMBO_INIT_STATE_DIR=${LIMBO_INIT_STATE_DIR:-/metadata/init-state}
 
 TMP_SQL="$(mktemp)"
 CACHE_SQL="$(mktemp)"
@@ -42,14 +42,14 @@ if [[ "$use_docker" -eq 0 ]] && command -v psql >/dev/null 2>&1; then
     PGPASSWORD="$MB_DB_PASSWORD" psql -h "$MB_DB_HOST" -p "$MB_DB_PORT" -U "$MB_DB_USER" -d "$1" "${@:2}"
   }
   psql_run_cache() {
-    PGPASSWORD="$LMBRIDGE_CACHE_PASSWORD" psql -h "$MB_DB_HOST" -p "$MB_DB_PORT" -U "$LMBRIDGE_CACHE_USER" -d "$1" "${@:2}"
+    PGPASSWORD="$LIMBO_CACHE_PASSWORD" psql -h "$MB_DB_HOST" -p "$MB_DB_PORT" -U "$LIMBO_CACHE_USER" -d "$1" "${@:2}"
   }
   SQL_PATH="$TMP_SQL"
   CACHE_SQL_PATH="$CACHE_SQL"
 else
   POSTGRES_IMAGE=${POSTGRES_IMAGE:-postgres:16-alpine}
   docker_args_mb=(--rm -e PGPASSWORD="$MB_DB_PASSWORD" -v "$TMP_SQL":/sql/CreateIndices.sql:ro -v "$CACHE_SQL":/sql/cache.sql:ro)
-  docker_args_cache=(--rm -e PGPASSWORD="$LMBRIDGE_CACHE_PASSWORD" -v "$TMP_SQL":/sql/CreateIndices.sql:ro -v "$CACHE_SQL":/sql/cache.sql:ro)
+  docker_args_cache=(--rm -e PGPASSWORD="$LIMBO_CACHE_PASSWORD" -v "$TMP_SQL":/sql/CreateIndices.sql:ro -v "$CACHE_SQL":/sql/cache.sql:ro)
   if [[ -n "$MB_DB_NETWORK" ]]; then
     docker_args_mb+=(--network "$MB_DB_NETWORK")
     docker_args_cache+=(--network "$MB_DB_NETWORK")
@@ -60,15 +60,15 @@ else
   }
   psql_run_cache() {
     docker run "${docker_args_cache[@]}" "$POSTGRES_IMAGE" \
-      psql -h "$MB_DB_HOST" -p "$MB_DB_PORT" -U "$LMBRIDGE_CACHE_USER" -d "$1" "${@:2}"
+      psql -h "$MB_DB_HOST" -p "$MB_DB_PORT" -U "$LIMBO_CACHE_USER" -d "$1" "${@:2}"
   }
   SQL_PATH="/sql/CreateIndices.sql"
   CACHE_SQL_PATH="/sql/cache.sql"
 fi
 
 wait_for_db() {
-  local attempts="${LMBRIDGE_DB_WAIT_ATTEMPTS:-30}"
-  local sleep_secs="${LMBRIDGE_DB_WAIT_DELAY:-2}"
+  local attempts="${LIMBO_DB_WAIT_ATTEMPTS:-30}"
+  local sleep_secs="${LIMBO_DB_WAIT_DELAY:-2}"
   local attempt=1
   until psql_run "$MB_ADMIN_DB" -tAc "SELECT 1" >/dev/null 2>&1; do
     if (( attempt >= attempts )); then
@@ -94,15 +94,15 @@ migrate_legacy_cache_role() {
   local tables_owned
   local func_owned
 
-  db_exists="$(psql_run "$MB_ADMIN_DB" -tAc "SELECT 1 FROM pg_database WHERE datname='${LMBRIDGE_CACHE_DB}'" | tr -d '[:space:]')"
+  db_exists="$(psql_run "$MB_ADMIN_DB" -tAc "SELECT 1 FROM pg_database WHERE datname='${LIMBO_CACHE_DB}'" | tr -d '[:space:]')"
   if [[ "$db_exists" != "1" ]]; then
     return
   fi
 
-  new_exists="$(psql_run "$MB_ADMIN_DB" -tAc "SELECT 1 FROM pg_roles WHERE rolname='${LMBRIDGE_CACHE_USER}'" | tr -d '[:space:]')"
-  db_owner="$(psql_run "$MB_ADMIN_DB" -tAc "SELECT pg_get_userbyid(datdba) FROM pg_database WHERE datname='${LMBRIDGE_CACHE_DB}'" | tr -d '[:space:]')"
+  new_exists="$(psql_run "$MB_ADMIN_DB" -tAc "SELECT 1 FROM pg_roles WHERE rolname='${LIMBO_CACHE_USER}'" | tr -d '[:space:]')"
+  db_owner="$(psql_run "$MB_ADMIN_DB" -tAc "SELECT pg_get_userbyid(datdba) FROM pg_database WHERE datname='${LIMBO_CACHE_DB}'" | tr -d '[:space:]')"
   for legacy_user in "${LEGACY_CACHE_USERS[@]}"; do
-    if [[ "$LMBRIDGE_CACHE_USER" == "$legacy_user" ]]; then
+    if [[ "$LIMBO_CACHE_USER" == "$legacy_user" ]]; then
       return
     fi
 
@@ -116,12 +116,12 @@ migrate_legacy_cache_role() {
       legacy_owns=1
     fi
 
-    tables_owned="$(psql_run "$LMBRIDGE_CACHE_DB" -tAc "SELECT 1 FROM pg_tables WHERE schemaname='${LMBRIDGE_CACHE_SCHEMA}' AND tableowner='${legacy_user}' LIMIT 1;" | tr -d '[:space:]')"
+    tables_owned="$(psql_run "$LIMBO_CACHE_DB" -tAc "SELECT 1 FROM pg_tables WHERE schemaname='${LIMBO_CACHE_SCHEMA}' AND tableowner='${legacy_user}' LIMIT 1;" | tr -d '[:space:]')"
     if [[ "$tables_owned" == "1" ]]; then
       legacy_owns=1
     fi
 
-    func_owned="$(psql_run "$LMBRIDGE_CACHE_DB" -tAc "SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE p.proname='cache_updated' AND n.nspname='${LMBRIDGE_CACHE_SCHEMA}' AND pg_get_userbyid(p.proowner)='${legacy_user}' LIMIT 1;" | tr -d '[:space:]')"
+    func_owned="$(psql_run "$LIMBO_CACHE_DB" -tAc "SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE p.proname='cache_updated' AND n.nspname='${LIMBO_CACHE_SCHEMA}' AND pg_get_userbyid(p.proowner)='${legacy_user}' LIMIT 1;" | tr -d '[:space:]')"
     if [[ "$func_owned" == "1" ]]; then
       legacy_owns=1
     fi
@@ -131,47 +131,47 @@ migrate_legacy_cache_role() {
     fi
 
     if [[ "$new_exists" != "1" ]]; then
-      echo "Migrating legacy cache role ${legacy_user} -> ${LMBRIDGE_CACHE_USER}..."
+      echo "Migrating legacy cache role ${legacy_user} -> ${LIMBO_CACHE_USER}..."
       psql_run "$MB_ADMIN_DB" -v ON_ERROR_STOP=1 \
-        -c "ALTER ROLE \"${legacy_user}\" RENAME TO \"${LMBRIDGE_CACHE_USER}\";"
+        -c "ALTER ROLE \"${legacy_user}\" RENAME TO \"${LIMBO_CACHE_USER}\";"
     else
-      echo "Reassigning cache ownership from ${legacy_user} to ${LMBRIDGE_CACHE_USER}..."
+      echo "Reassigning cache ownership from ${legacy_user} to ${LIMBO_CACHE_USER}..."
       if [[ "$db_owner" == "$legacy_user" ]]; then
         psql_run "$MB_ADMIN_DB" -v ON_ERROR_STOP=1 \
-          -c "ALTER DATABASE \"${LMBRIDGE_CACHE_DB}\" OWNER TO \"${LMBRIDGE_CACHE_USER}\";"
+          -c "ALTER DATABASE \"${LIMBO_CACHE_DB}\" OWNER TO \"${LIMBO_CACHE_USER}\";"
       fi
-      schema_owner="$(psql_run "$LMBRIDGE_CACHE_DB" -tAc "SELECT nspowner::regrole::text FROM pg_namespace WHERE nspname='${LMBRIDGE_CACHE_SCHEMA}'" | tr -d '[:space:]')"
+      schema_owner="$(psql_run "$LIMBO_CACHE_DB" -tAc "SELECT nspowner::regrole::text FROM pg_namespace WHERE nspname='${LIMBO_CACHE_SCHEMA}'" | tr -d '[:space:]')"
       if [[ "$schema_owner" == "$legacy_user" ]]; then
-        psql_run "$LMBRIDGE_CACHE_DB" -v ON_ERROR_STOP=1 \
-          -c "ALTER SCHEMA \"${LMBRIDGE_CACHE_SCHEMA}\" OWNER TO \"${LMBRIDGE_CACHE_USER}\";"
+        psql_run "$LIMBO_CACHE_DB" -v ON_ERROR_STOP=1 \
+          -c "ALTER SCHEMA \"${LIMBO_CACHE_SCHEMA}\" OWNER TO \"${LIMBO_CACHE_USER}\";"
       fi
-      psql_run "$LMBRIDGE_CACHE_DB" -v ON_ERROR_STOP=1 \
-        -c "REASSIGN OWNED BY \"${legacy_user}\" TO \"${LMBRIDGE_CACHE_USER}\";"
+      psql_run "$LIMBO_CACHE_DB" -v ON_ERROR_STOP=1 \
+        -c "REASSIGN OWNED BY \"${legacy_user}\" TO \"${LIMBO_CACHE_USER}\";"
     fi
 
     psql_run "$MB_ADMIN_DB" -v ON_ERROR_STOP=1 \
-      -c "ALTER ROLE \"${LMBRIDGE_CACHE_USER}\" LOGIN PASSWORD '${LMBRIDGE_CACHE_PASSWORD}';"
+      -c "ALTER ROLE \"${LIMBO_CACHE_USER}\" LOGIN PASSWORD '${LIMBO_CACHE_PASSWORD}';"
     return
   done
 }
 
 ensure_role() {
-  if ! psql_run "$MB_ADMIN_DB" -tAc "SELECT 1 FROM pg_roles WHERE rolname='${LMBRIDGE_CACHE_USER}'" | grep -q 1; then
-    echo "Creating role: ${LMBRIDGE_CACHE_USER}"
+  if ! psql_run "$MB_ADMIN_DB" -tAc "SELECT 1 FROM pg_roles WHERE rolname='${LIMBO_CACHE_USER}'" | grep -q 1; then
+    echo "Creating role: ${LIMBO_CACHE_USER}"
     psql_run "$MB_ADMIN_DB" -v ON_ERROR_STOP=1 \
-      -c "CREATE ROLE \"${LMBRIDGE_CACHE_USER}\" LOGIN PASSWORD '${LMBRIDGE_CACHE_PASSWORD}';"
+      -c "CREATE ROLE \"${LIMBO_CACHE_USER}\" LOGIN PASSWORD '${LIMBO_CACHE_PASSWORD}';"
   else
-    echo "Role exists: ${LMBRIDGE_CACHE_USER}"
+    echo "Role exists: ${LIMBO_CACHE_USER}"
   fi
 }
 
 ensure_db() {
-  if ! psql_run "$MB_ADMIN_DB" -tAc "SELECT 1 FROM pg_database WHERE datname='${LMBRIDGE_CACHE_DB}'" | grep -q 1; then
-    echo "Creating database: ${LMBRIDGE_CACHE_DB} (owner: ${LMBRIDGE_CACHE_USER})"
+  if ! psql_run "$MB_ADMIN_DB" -tAc "SELECT 1 FROM pg_database WHERE datname='${LIMBO_CACHE_DB}'" | grep -q 1; then
+    echo "Creating database: ${LIMBO_CACHE_DB} (owner: ${LIMBO_CACHE_USER})"
     psql_run "$MB_ADMIN_DB" -v ON_ERROR_STOP=1 \
-      -c "CREATE DATABASE \"${LMBRIDGE_CACHE_DB}\" OWNER \"${LMBRIDGE_CACHE_USER}\";"
+      -c "CREATE DATABASE \"${LIMBO_CACHE_DB}\" OWNER \"${LIMBO_CACHE_USER}\";"
   else
-    echo "Database exists: ${LMBRIDGE_CACHE_DB}"
+    echo "Database exists: ${LIMBO_CACHE_DB}"
   fi
 }
 
@@ -184,25 +184,25 @@ ensure_db
 # Ensure cache DB permissions so cache tables can be created
 echo "Ensuring cache DB permissions..."
 psql_run "$MB_ADMIN_DB" -v ON_ERROR_STOP=1 \
-  -c "GRANT CONNECT ON DATABASE \"${LMBRIDGE_CACHE_DB}\" TO \"${LMBRIDGE_CACHE_USER}\";"
-psql_run "$LMBRIDGE_CACHE_DB" -v ON_ERROR_STOP=1 \
-  -c "GRANT USAGE, CREATE ON SCHEMA public TO \"${LMBRIDGE_CACHE_USER}\";"
+  -c "GRANT CONNECT ON DATABASE \"${LIMBO_CACHE_DB}\" TO \"${LIMBO_CACHE_USER}\";"
+psql_run "$LIMBO_CACHE_DB" -v ON_ERROR_STOP=1 \
+  -c "GRANT USAGE, CREATE ON SCHEMA public TO \"${LIMBO_CACHE_USER}\";"
 
-if [[ "$LMBRIDGE_CACHE_SCHEMA" != "public" ]]; then
-  psql_run "$LMBRIDGE_CACHE_DB" -v ON_ERROR_STOP=1 \
-    -c "CREATE SCHEMA IF NOT EXISTS \"${LMBRIDGE_CACHE_SCHEMA}\" AUTHORIZATION \"${LMBRIDGE_CACHE_USER}\";"
-  psql_run "$LMBRIDGE_CACHE_DB" -v ON_ERROR_STOP=1 \
-    -c "GRANT USAGE, CREATE ON SCHEMA \"${LMBRIDGE_CACHE_SCHEMA}\" TO \"${LMBRIDGE_CACHE_USER}\";"
-  psql_run "$LMBRIDGE_CACHE_DB" -v ON_ERROR_STOP=1 \
-    -c "ALTER ROLE \"${LMBRIDGE_CACHE_USER}\" IN DATABASE \"${LMBRIDGE_CACHE_DB}\" SET search_path = \"${LMBRIDGE_CACHE_SCHEMA}\", public;"
+if [[ "$LIMBO_CACHE_SCHEMA" != "public" ]]; then
+  psql_run "$LIMBO_CACHE_DB" -v ON_ERROR_STOP=1 \
+    -c "CREATE SCHEMA IF NOT EXISTS \"${LIMBO_CACHE_SCHEMA}\" AUTHORIZATION \"${LIMBO_CACHE_USER}\";"
+  psql_run "$LIMBO_CACHE_DB" -v ON_ERROR_STOP=1 \
+    -c "GRANT USAGE, CREATE ON SCHEMA \"${LIMBO_CACHE_SCHEMA}\" TO \"${LIMBO_CACHE_USER}\";"
+  psql_run "$LIMBO_CACHE_DB" -v ON_ERROR_STOP=1 \
+    -c "ALTER ROLE \"${LIMBO_CACHE_USER}\" IN DATABASE \"${LIMBO_CACHE_DB}\" SET search_path = \"${LIMBO_CACHE_SCHEMA}\", public;"
 fi
 
 # Create indexes on musicbrainz_db
 psql_run "$MB_DB_NAME" -v ON_ERROR_STOP=1 -f "$SQL_PATH"
 
 {
-  if [[ "$LMBRIDGE_CACHE_SCHEMA" != "public" ]]; then
-    echo "SET search_path TO \"${LMBRIDGE_CACHE_SCHEMA}\", public;"
+  if [[ "$LIMBO_CACHE_SCHEMA" != "public" ]]; then
+    echo "SET search_path TO \"${LIMBO_CACHE_SCHEMA}\", public;"
   fi
   cat <<'SQL'
 DO $do$
@@ -233,21 +233,21 @@ cache_tables=(fanart tadb wikipedia artist album spotify)
 
 # Try to align ownership/privileges for existing cache tables/functions.
 for table in "${cache_tables[@]}"; do
-  owner="$(psql_run "$LMBRIDGE_CACHE_DB" -tAc "SELECT tableowner FROM pg_tables WHERE schemaname = current_schema() AND tablename = '${table}';" | tr -d '[:space:]')"
-  if [[ -n "$owner" && "$owner" != "$LMBRIDGE_CACHE_USER" ]]; then
-    if ! psql_run "$LMBRIDGE_CACHE_DB" -v ON_ERROR_STOP=1 -c "ALTER TABLE \"${table}\" OWNER TO \"${LMBRIDGE_CACHE_USER}\";" ; then
+  owner="$(psql_run "$LIMBO_CACHE_DB" -tAc "SELECT tableowner FROM pg_tables WHERE schemaname = current_schema() AND tablename = '${table}';" | tr -d '[:space:]')"
+  if [[ -n "$owner" && "$owner" != "$LIMBO_CACHE_USER" ]]; then
+    if ! psql_run "$LIMBO_CACHE_DB" -v ON_ERROR_STOP=1 -c "ALTER TABLE \"${table}\" OWNER TO \"${LIMBO_CACHE_USER}\";" ; then
       echo "WARNING: Unable to change owner for table ${table}; will grant privileges and skip indexes/triggers if not owner." >&2
     fi
   fi
   if [[ -n "$owner" ]]; then
-    psql_run "$LMBRIDGE_CACHE_DB" -v ON_ERROR_STOP=1 \
-      -c "GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE \"${table}\" TO \"${LMBRIDGE_CACHE_USER}\";"
+    psql_run "$LIMBO_CACHE_DB" -v ON_ERROR_STOP=1 \
+      -c "GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE \"${table}\" TO \"${LIMBO_CACHE_USER}\";"
   fi
 done
 
-func_owner="$(psql_run "$LMBRIDGE_CACHE_DB" -tAc "SELECT pg_get_userbyid(p.proowner) FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE p.proname = 'cache_updated' AND n.nspname = current_schema();" | tr -d '[:space:]')"
-if [[ -n "$func_owner" && "$func_owner" != "$LMBRIDGE_CACHE_USER" ]]; then
-  if ! psql_run "$LMBRIDGE_CACHE_DB" -v ON_ERROR_STOP=1 -c "ALTER FUNCTION cache_updated() OWNER TO \"${LMBRIDGE_CACHE_USER}\";" ; then
+func_owner="$(psql_run "$LIMBO_CACHE_DB" -tAc "SELECT pg_get_userbyid(p.proowner) FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE p.proname = 'cache_updated' AND n.nspname = current_schema();" | tr -d '[:space:]')"
+if [[ -n "$func_owner" && "$func_owner" != "$LIMBO_CACHE_USER" ]]; then
+  if ! psql_run "$LIMBO_CACHE_DB" -v ON_ERROR_STOP=1 -c "ALTER FUNCTION cache_updated() OWNER TO \"${LIMBO_CACHE_USER}\";" ; then
     echo "WARNING: Unable to change owner for function cache_updated; will avoid replacing it." >&2
   fi
 fi
@@ -275,18 +275,18 @@ SQL
 done
 
 # Ensure cache tables exist in lm_cache_db
-mkdir -p "$LMBRIDGE_INIT_STATE_DIR"
-if ! psql_run_cache "$LMBRIDGE_CACHE_DB" -v ON_ERROR_STOP=1 -f "$CACHE_SQL_PATH"; then
-  echo "ERROR: cache table creation failed for database ${LMBRIDGE_CACHE_DB}." >&2
-  echo "Common cause: ${LMBRIDGE_CACHE_USER} lacks CREATE on schema ${LMBRIDGE_CACHE_SCHEMA}." >&2
-  echo "Suggested fix: GRANT USAGE, CREATE ON SCHEMA ${LMBRIDGE_CACHE_SCHEMA} TO ${LMBRIDGE_CACHE_USER};" >&2
-  if [[ "$LMBRIDGE_CACHE_FAIL_OPEN" == "true" || "$LMBRIDGE_CACHE_FAIL_OPEN" == "1" ]]; then
+mkdir -p "$LIMBO_INIT_STATE_DIR"
+if ! psql_run_cache "$LIMBO_CACHE_DB" -v ON_ERROR_STOP=1 -f "$CACHE_SQL_PATH"; then
+  echo "ERROR: cache table creation failed for database ${LIMBO_CACHE_DB}." >&2
+  echo "Common cause: ${LIMBO_CACHE_USER} lacks CREATE on schema ${LIMBO_CACHE_SCHEMA}." >&2
+  echo "Suggested fix: GRANT USAGE, CREATE ON SCHEMA ${LIMBO_CACHE_SCHEMA} TO ${LIMBO_CACHE_USER};" >&2
+  if [[ "$LIMBO_CACHE_FAIL_OPEN" == "true" || "$LIMBO_CACHE_FAIL_OPEN" == "1" ]]; then
     echo "Cache fail-open enabled. API will start with cache disabled." >&2
-    touch "$LMBRIDGE_INIT_STATE_DIR/cache_init_failed"
+    touch "$LIMBO_INIT_STATE_DIR/cache_init_failed"
     exit 0
   fi
   exit 3
 fi
-rm -f "$LMBRIDGE_INIT_STATE_DIR/cache_init_failed"
+rm -f "$LIMBO_INIT_STATE_DIR/cache_init_failed"
 
 echo "Done."

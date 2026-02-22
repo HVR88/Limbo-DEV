@@ -6,20 +6,20 @@ research/
 
 # Local noise
 **/.DS_Store
-lm-bridge.code-workspace
+limbo.code-workspace
 .vscode/
 
 # Deploy outputs
 dist/
 
 # Plugin local backup
-lm-bridge-plugin/Submodules/Lidarr.bak/
+limbo-plugin/Submodules/Lidarr.bak/
 
 # Plugin build output
-lm-bridge-plugin/plugin/bin/
-lm-bridge-plugin/plugin/obj/
-lm-bridge-plugin/dist/
-lm-bridge-plugin/plugin/PluginInfo.cs
+limbo-plugin/plugin/bin/
+limbo-plugin/plugin/obj/
+limbo-plugin/dist/
+limbo-plugin/plugin/PluginInfo.cs
 
 # never commit upstream edits; Dockerfile is tracked upstream
 !upstream/lidarr-metadata/Dockerfile

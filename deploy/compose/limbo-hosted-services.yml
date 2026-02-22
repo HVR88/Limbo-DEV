@@ -2,9 +2,9 @@
 services:
   api:
     # Use a local tag or set via env
-    image: ${LMBRIDGE_IMAGE:-espressomatic/lm-bridge:latest}
+    image: ${LIMBO_IMAGE:-espressomatic/limbo:latest}
     ports:
-      - "${LMBRIDGE_PORT:-5001}:5001"
+      - "${LIMBO_PORT:-5001}:5001"
     environment:
       # --- General ---
       DEBUG: "${DEBUG:-false}"
@@ -29,12 +29,12 @@ services:
 
       # --- Postgres cache (lm_cache_db) ---
       # Uses lidarr:lidarr by default in upstream; ensure that user exists or adjust.
-      POSTGRES_CACHE_HOST: "${LMBRIDGE_CACHE_HOST:-db}"
-      POSTGRES_CACHE_PORT: "${LMBRIDGE_CACHE_PORT:-5432}"
-      POSTGRES_CACHE_DB: "${LMBRIDGE_CACHE_DB:-lm_cache_db}"
-      POSTGRES_CACHE_USER: "${LMBRIDGE_CACHE_USER:-lmbridge}"
-      POSTGRES_CACHE_PASSWORD: "${LMBRIDGE_CACHE_PASSWORD:-lmbridge}"
-      POSTGRES_CACHE_SCHEMA: "${LMBRIDGE_CACHE_SCHEMA:-public}"
+      POSTGRES_CACHE_HOST: "${LIMBO_CACHE_HOST:-db}"
+      POSTGRES_CACHE_PORT: "${LIMBO_CACHE_PORT:-5432}"
+      POSTGRES_CACHE_DB: "${LIMBO_CACHE_DB:-lm_cache_db}"
+      POSTGRES_CACHE_USER: "${LIMBO_CACHE_USER:-limbo}"
+      POSTGRES_CACHE_PASSWORD: "${LIMBO_CACHE_PASSWORD:-limbo}"
+      POSTGRES_CACHE_SCHEMA: "${LIMBO_CACHE_SCHEMA:-public}"
 
       # --- External providers (fill in later) ---
       FANART_KEY: "${FANART_KEY:-}"

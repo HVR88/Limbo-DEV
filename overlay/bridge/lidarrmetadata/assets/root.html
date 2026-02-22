@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>LM Bridge</title>
+    <title>Lmbo</title>
     <link rel="stylesheet" href="/assets/root.css" />
   </head>
   <body>
@@ -21,15 +21,15 @@
         <button
           class="corner-button"
           type="button"
-          aria-label="LM Bridge Settings"
+          aria-label="Limbo Settings"
           aria-pressed="false"
           data-settings-button
         >
           <span class="corner-button__inner"></span>
         </button>
         <div class="hero">
-          <img src="__ICON_URL__" alt="LM Bridge" width="500" />
-          <h1 class="hero-title">LM Bridge</h1>
+          <img src="__ICON_URL__" alt="Limbo" width="200" />
+          <h1 class="hero-title">Limbo</h1>
           <span class="hero-sub"><em>FAST • Local • Private</em></span>
         </div>
 
@@ -114,57 +114,47 @@
 
         <div class="grid">
           <div class="__LM_PILL_CLASS__">
-            <div class="label">LM Bridge Version</div>
+            <div class="label">Limbo Version</div>
             <div class="value">__LM_VERSION__</div>
-            __LM_VERSION_BUTTON__
           </div>
-          <div class="__PLUGIN_PILL_CLASS__">
-            <div class="label">__LM_PLUGIN_LABEL__</div>
-            <div class="value">__LM_PLUGIN_VERSION__</div>
-            __PLUGIN_VERSION_BUTTON__
-          </div>
+
           <div class="__LIDARR_PILL_CLASS__">
             <div class="label">__LIDARR_VERSION_LABEL__</div>
             <div class="value">__LIDARR_VERSION__</div>
-            __LIDARR_OPEN__
           </div>
           __MBMS_PILLS__
-          <div class="pill">
-            <div class="label">Uptime</div>
-            <div class="value">__UPTIME__</div>
-          </div>
-          <div class="pill">
-            <div class="label">Metadata API Version</div>
-            <div class="value">__METADATA_VERSION__</div>
-          </div>
+
           <div class="__REPLICATION_PILL_CLASS__" data-replication-pill>
             <div class="label">Last Replication</div>
             <div class="value replication-date" data-replication-value>
               __REPLICATION_DATE_HTML__
             </div>
-            __REPLICATION_BUTTON__
           </div>
         </div>
         <div class="links">
           <div class="links-left"></div>
           <div class="links-right"></div>
         </div>
-
         <div class="foot">
-          Tip: Use
-          <a class="accent" href="album/9d148b20-c055-4f0d-9020-ae5c9ae08466"
-            >/album/&lt;mbid&gt;</a
-          >
-          to fetch release group JSON or
-          <a class="accent" href="artist/8434409e-baa9-4e12-b4aa-566a91c7d7cf"
-            >/artist/&lt;mbid&gt;</a
-          >
-          to fetch artist JSON
+          UPTIME:
+          <div class="value">__UPTIME__</div>
           <a class="credit" href="https://github.com/HVR88"
             >Espressomatic @ HVR88</a
           >
         </div>
       </section>
+
+      <div class="foot">
+        Tip: Use
+        <a class="accent" href="album/9d148b20-c055-4f0d-9020-ae5c9ae08466"
+          >/album/&lt;mbid&gt;</a
+        >
+        to fetch release group JSON or
+        <a class="accent" href="artist/8434409e-baa9-4e12-b4aa-566a91c7d7cf"
+          >/artist/&lt;mbid&gt;</a
+        >
+        to fetch artist JSON
+      </div>
     </main>
     <div class="settings-modal" data-settings-modal aria-hidden="true">
       <div class="settings-modal__backdrop" data-settings-backdrop></div>
@@ -172,7 +162,7 @@
         class="settings-modal__panel"
         role="dialog"
         aria-modal="true"
-        aria-label="LM Bridge Settings"
+        aria-label="Limbo Settings"
       >
         <button
           class="settings-modal__close"
@@ -184,7 +174,7 @@
         </button>
         <div class="settings-modal__content">
           <h2 class="settings-modal__title">Settings</h2>
-          <p class="settings-modal__subtitle">Configure LM Bridge options.</p>
+          <p class="settings-modal__subtitle">Configure Limbo options.</p>
         </div>
       </div>
     </div>
@@ -1117,10 +1107,10 @@
           );
         }
       };
-      const storedTheme = localStorage.getItem("lmbridge-theme");
+      const storedTheme = localStorage.getItem("limbo-theme");
       if (serverTheme === "dark" || serverTheme === "light") {
         applyTheme(serverTheme);
-        localStorage.setItem("lmbridge-theme", serverTheme);
+        localStorage.setItem("limbo-theme", serverTheme);
       } else if (storedTheme === "dark" || storedTheme === "light") {
         applyTheme(storedTheme);
       } else if (
@@ -1134,7 +1124,7 @@
           const next =
             document.body.dataset.theme === "dark" ? "light" : "dark";
           applyTheme(next);
-          localStorage.setItem("lmbridge-theme", next);
+          localStorage.setItem("limbo-theme", next);
           fetch("/theme", {
             method: "POST",
             headers: {

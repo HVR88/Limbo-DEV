@@ -17,7 +17,7 @@ _CUSTOM_BEFORE: Optional[Callable[[str, Tuple[Any, ...], Dict[str, Any]], Tuple[
 _CUSTOM_AFTER: Optional[Callable[[Any, Dict[str, Any]], Any]] = None
 _BUILTIN_LOAD_ATTEMPTED = False
 _CUSTOM_LOAD_ATTEMPTED = False
-_SQL_FILE = contextvars.ContextVar("lmbridge_sql_file", default=None)
+_SQL_FILE = contextvars.ContextVar("limbo_sql_file", default=None)
 
 
 def is_enabled() -> bool:
@@ -33,7 +33,7 @@ def _load_builtin() -> None:
     try:
         module = importlib.import_module(_DEFAULT_HOOK_MODULE)
     except Exception:
-        logger.exception("LM-Bridge DB hooks: failed to import built-in module %s", _DEFAULT_HOOK_MODULE)
+        logger.exception("Limbo DB hooks: failed to import built-in module %s", _DEFAULT_HOOK_MODULE)
         return
 
     before = getattr(module, "before_query", None)
@@ -46,7 +46,7 @@ def _load_builtin() -> None:
 
     if _BUILTIN_BEFORE is None and _BUILTIN_AFTER is None:
         logger.error(
-            "LM-Bridge DB hooks: built-in module must define before_query(sql, args, context) or "
+            "Limbo DB hooks: built-in module must define before_query(sql, args, context) or "
             "after_query(results, context)"
         )
 
@@ -57,13 +57,13 @@ def _load_custom() -> None:
         return
     _CUSTOM_LOAD_ATTEMPTED = True
 
-    module_name_env = os.environ.get("LMBRIDGE_DB_HOOK_AFTER_MODULE") or os.environ.get("LMBRIDGE_DB_HOOK_MODULE")
-    file_path = os.environ.get("LMBRIDGE_DB_HOOK_AFTER_PATH") or os.environ.get("LMBRIDGE_DB_HOOK_PATH")
+    module_name_env = os.environ.get("LIMBO_DB_HOOK_AFTER_MODULE") or os.environ.get("LIMBO_DB_HOOK_MODULE")
+    file_path = os.environ.get("LIMBO_DB_HOOK_AFTER_PATH") or os.environ.get("LIMBO_DB_HOOK_PATH")
 
     if module_name_env == _DEFAULT_HOOK_MODULE and not file_path:
         logger.warning(
-            "LM-Bridge DB hooks: %s is built-in and applied automatically; "
-            "use LMBRIDGE_DB_HOOK_AFTER_MODULE for custom hooks.",
+            "Limbo DB hooks: %s is built-in and applied automatically; "
+            "use LIMBO_DB_HOOK_AFTER_MODULE for custom hooks.",
             _DEFAULT_HOOK_MODULE,
         )
         return
@@ -71,20 +71,20 @@ def _load_custom() -> None:
     module = None
     if file_path:
         try:
-            spec = importlib.util.spec_from_file_location("lmbridge_db_hooks", file_path)
+            spec = importlib.util.spec_from_file_location("limbo_db_hooks", file_path)
             if spec is None or spec.loader is None:
-                logger.error("LM-Bridge DB hooks: cannot load hook file %s", file_path)
+                logger.error("Limbo DB hooks: cannot load hook file %s", file_path)
                 return
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
         except Exception:
-            logger.exception("LM-Bridge DB hooks: failed to load hook file %s", file_path)
+            logger.exception("Limbo DB hooks: failed to load hook file %s", file_path)
             return
     elif module_name_env:
         try:
             module = importlib.import_module(module_name_env)
         except Exception:
-            logger.exception("LM-Bridge DB hooks: failed to import module %s", module_name_env)
+            logger.exception("Limbo DB hooks: failed to import module %s", module_name_env)
             return
 
     if module is None:
@@ -100,7 +100,7 @@ def _load_custom() -> None:
 
     if _CUSTOM_BEFORE is None and _CUSTOM_AFTER is None:
         logger.error(
-            "LM-Bridge DB hooks: module must define before_query(sql, args, context) or "
+            "Limbo DB hooks: module must define before_query(sql, args, context) or "
             "after_query(results, context)"
         )
 
@@ -130,7 +130,7 @@ def _apply_before_hook(
     try:
         result = hook(sql, args, context)
     except Exception:
-        logger.exception("LM-Bridge DB hooks: before_query failed")
+        logger.exception("Limbo DB hooks: before_query failed")
         return sql, args, pool_key
 
     if result is None:
@@ -139,7 +139,7 @@ def _apply_before_hook(
     try:
         new_sql, new_args, *rest = result
     except Exception:
-        logger.error("LM-Bridge DB hooks: before_query must return (sql, args) or None")
+        logger.error("Limbo DB hooks: before_query must return (sql, args) or None")
         return sql, args, pool_key
 
     if not isinstance(new_args, tuple):
@@ -187,7 +187,7 @@ def apply_after(results: Any, context: Dict[str, Any]) -> Any:
         try:
             updated = hook(current, context)
         except Exception:
-            logger.exception("LM-Bridge DB hooks: after_query failed")
+            logger.exception("Limbo DB hooks: after_query failed")
             continue
         if updated is not None:
             current = updated
@@ -197,22 +197,22 @@ def apply_after(results: Any, context: Dict[str, Any]) -> Any:
 
 def _pool_env(pool_key: str, suffix: str) -> Optional[str]:
     key = pool_key.upper()
-    return os.environ.get(f"LMBRIDGE_DB_POOL_{key}_{suffix}")
+    return os.environ.get(f"LIMBO_DB_POOL_{key}_{suffix}")
 
 
 async def get_pool(provider, pool_key: str):
     if pool_key == "default":
         return await provider._get_pool()
 
-    pools = getattr(provider, "_lmbridge_pools", None)
+    pools = getattr(provider, "_limbo_pools", None)
     if pools is None:
         pools = {}
-        provider._lmbridge_pools = pools
+        provider._limbo_pools = pools
 
-    locks = getattr(provider, "_lmbridge_pool_locks", None)
+    locks = getattr(provider, "_limbo_pool_locks", None)
     if locks is None:
         locks = {}
-        provider._lmbridge_pool_locks = locks
+        provider._limbo_pool_locks = locks
 
     if pool_key in pools:
         return pools[pool_key]
@@ -234,7 +234,7 @@ async def get_pool(provider, pool_key: str):
 
         if not host or not db_name:
             logger.error(
-                "LM-Bridge DB hooks: pool %s missing HOST or DB_NAME; falling back to default",
+                "Limbo DB hooks: pool %s missing HOST or DB_NAME; falling back to default",
                 pool_key,
             )
             return await provider._get_pool()
@@ -251,7 +251,7 @@ async def get_pool(provider, pool_key: str):
                 statement_cache_size=0,
             )
         except Exception:
-            logger.exception("LM-Bridge DB hooks: failed to create pool %s", pool_key)
+            logger.exception("Limbo DB hooks: failed to create pool %s", pool_key)
             return await provider._get_pool()
 
         pools[pool_key] = pool

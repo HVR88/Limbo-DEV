@@ -1,6 +1,6 @@
 # Media Formats Reference
 
-This page lists the MusicBrainz release formats grouped into the meta-format buckets used by LM Bridge filtering.
+This page lists the MusicBrainz release formats grouped into the meta-format buckets used by Limbo filtering.
 
 Notes:
 

@@ -11,10 +11,10 @@ from lidarrmetadata import app as upstream_app
 from lidarrmetadata import release_filters
 from lidarrmetadata import root_patch
 
-_STATE_DIR = Path(os.environ.get("LMBRIDGE_INIT_STATE_DIR", "/metadata/init-state"))
+_STATE_DIR = Path(os.environ.get("LIMBO_INIT_STATE_DIR", "/metadata/init-state"))
 _STATE_FILE = Path(
     os.environ.get(
-        "LMBRIDGE_RELEASE_FILTER_STATE_FILE",
+        "LIMBO_RELEASE_FILTER_STATE_FILE",
         str(_STATE_DIR / "release-filter.json"),
     )
 )
@@ -28,7 +28,7 @@ def register_config_routes() -> None:
     _load_persisted_config()
 
     @upstream_app.app.route("/config/release-filter", methods=["GET", "POST"])
-    async def _lmbridge_release_filter_config():
+    async def _limbo_release_filter_config():
         if request.method == "GET":
             prefer_value = _prefer_to_value(release_filters.get_runtime_media_prefer())
             data = {
@@ -57,7 +57,7 @@ def register_config_routes() -> None:
         lidarr_api_key, api_key_provided = _extract_lidarr_api_key(payload)
         lidarr_client_ip = _extract_client_ip(request)
         if lidarr_client_ip:
-            upstream_app.app.logger.info("LM-Bridge config sync from Lidarr at %s", lidarr_client_ip)
+            upstream_app.app.logger.info("Limbo config sync from Lidarr at %s", lidarr_client_ip)
         if lidarr_client_ip and (not base_url_provided or _is_localhost_url(lidarr_base_url)):
             scheme = "https" if lidarr_use_ssl else "http"
             port = lidarr_port or (6868 if lidarr_use_ssl else 8686)
@@ -122,7 +122,7 @@ def register_config_routes() -> None:
             return
 
     @upstream_app.app.route("/config/refresh-releases", methods=["POST"])
-    async def _lmbridge_refresh_releases():
+    async def _limbo_refresh_releases():
         payload = await request.get_json(silent=True) or {}
         lidarr_ids = _parse_int_list(payload.get("lidarr_ids") or payload.get("lidarrIds"))
         mbids = _parse_mbid_list(payload.get("mbids") or payload.get("mbid") or payload.get("foreignAlbumIds"))
@@ -283,13 +283,13 @@ def _extract_plugin_version(payload: Dict[str, Any]) -> str:
     if value is None:
         value = payload.get("pluginVersion")
     if value is None:
-        value = payload.get("lmbridge_plugin_version")
+        value = payload.get("limbo_plugin_version")
     if value is None:
-        value = payload.get("lmbridgePluginVersion")
+        value = payload.get("limboPluginVersion")
     if value is None:
-        value = payload.get("lmbridge_version")
+        value = payload.get("limbo_version")
     if value is None:
-        value = payload.get("lmbridgeVersion")
+        value = payload.get("limboVersion")
     return str(value).strip() if value else ""
 
 

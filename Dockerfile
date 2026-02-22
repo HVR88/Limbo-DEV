@@ -6,7 +6,7 @@ WORKDIR /metadata
 
 ARG APP_VERSION=dev
 LABEL org.opencontainers.image.version=$APP_VERSION
-ENV LMBRIDGE_VERSION=$APP_VERSION
+ENV LIMBO_VERSION=$APP_VERSION
 
 # Runtime hygiene
 ENV PYTHONUNBUFFERED=1 \
@@ -31,7 +31,7 @@ COPY overlay/bridge/lidarrmetadata /metadata/lidarrmetadata
 COPY overlay/bridge/bridge_launcher.py /metadata/bridge_launcher.py
 RUN chmod +x /metadata/bridge_launcher.py
 
-# Init assets (used by lm-bridge-init service)
+# Init assets (used by limbo-init service)
 COPY scripts/init-mbdb.sh /metadata/init/init-mbdb.sh
 COPY upstream/lidarr-metadata/lidarrmetadata/sql/CreateIndices.sql /metadata/init/CreateIndices.sql
 RUN chmod +x /metadata/init/init-mbdb.sh

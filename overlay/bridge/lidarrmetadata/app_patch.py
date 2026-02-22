@@ -1,7 +1,7 @@
 import os
 import contextvars
 
-_CACHE_STATUS = contextvars.ContextVar("lmbridge_cache_status", default=None)
+_CACHE_STATUS = contextvars.ContextVar("limbo_cache_status", default=None)
 
 
 def _record_cache_event(hit: bool) -> None:
@@ -47,13 +47,13 @@ def apply() -> None:
     from lidarrmetadata import release_filters
     if mitm.is_enabled():
         @upstream_app.app.after_request
-        async def _lmbridge_mitm_hook(response):
+        async def _limbo_mitm_hook(response):
             return await mitm.apply_response(response)
 
-    if not getattr(api_mod.get_release_group_info, "_lmbridge_release_filter_wrapped", False):
+    if not getattr(api_mod.get_release_group_info, "_limbo_release_filter_wrapped", False):
         original_release_group_info = api_mod.get_release_group_info
 
-        async def _lmbridge_get_release_group_info(*args, **kwargs):
+        async def _limbo_get_release_group_info(*args, **kwargs):
             release_group, expiry = await original_release_group_info(*args, **kwargs)
             try:
                 release_group = release_filters.apply_release_group_filters(release_group)
@@ -61,13 +61,13 @@ def apply() -> None:
                 pass
             return release_group, expiry
 
-        _lmbridge_get_release_group_info._lmbridge_release_filter_wrapped = True
-        api_mod.get_release_group_info = _lmbridge_get_release_group_info
+        _limbo_get_release_group_info._limbo_release_filter_wrapped = True
+        api_mod.get_release_group_info = _limbo_get_release_group_info
 
-    if not getattr(api_mod.get_release_group_info_basic, "_lmbridge_cache_status", False):
+    if not getattr(api_mod.get_release_group_info_basic, "_limbo_cache_status", False):
         original_release_group_info_basic = api_mod.get_release_group_info_basic
 
-        async def _lmbridge_get_release_group_info_basic(mbid, *args, **kwargs):
+        async def _limbo_get_release_group_info_basic(mbid, *args, **kwargs):
             try:
                 cached, expiry = await util.ALBUM_CACHE.get(mbid)
                 now = provider_api.utcnow()
@@ -79,45 +79,45 @@ def apply() -> None:
                 pass
             return await original_release_group_info_basic(mbid, *args, **kwargs)
 
-        _lmbridge_get_release_group_info_basic._lmbridge_cache_status = True
-        api_mod.get_release_group_info_basic = _lmbridge_get_release_group_info_basic
+        _limbo_get_release_group_info_basic._limbo_cache_status = True
+        api_mod.get_release_group_info_basic = _limbo_get_release_group_info_basic
 
-    if not getattr(upstream_app.app, "_lmbridge_cache_header", False):
+    if not getattr(upstream_app.app, "_limbo_cache_header", False):
 
         @upstream_app.app.before_request
-        async def _lmbridge_cache_header_reset():
+        async def _limbo_cache_header_reset():
             _reset_cache_status()
 
         @upstream_app.app.after_request
-        async def _lmbridge_cache_header(response):
+        async def _limbo_cache_header(response):
             status = _get_cache_status()
             if status:
-                response.headers["X-LMBridge-Cache"] = status
+                response.headers["X-Limbo-Cache"] = status
             _reset_cache_status()
             return response
 
-        upstream_app.app._lmbridge_cache_header = True
+        upstream_app.app._limbo_cache_header = True
 
     if db_hooks.is_enabled():
         from lidarrmetadata import provider as provider_mod
 
         original_query_from_file = provider_mod.MusicbrainzDbProvider.query_from_file
-        if not getattr(original_query_from_file, "_lmbridge_sql_file_hooked", False):
+        if not getattr(original_query_from_file, "_limbo_sql_file_hooked", False):
 
-            async def _lmbridge_query_from_file(self, sql_file, *args):
+            async def _limbo_query_from_file(self, sql_file, *args):
                 token = db_hooks.set_sql_file(sql_file)
                 try:
                     return await original_query_from_file(self, sql_file, *args)
                 finally:
                     db_hooks.reset_sql_file(token)
 
-            _lmbridge_query_from_file._lmbridge_sql_file_hooked = True
-            provider_mod.MusicbrainzDbProvider.query_from_file = _lmbridge_query_from_file
+            _limbo_query_from_file._limbo_sql_file_hooked = True
+            provider_mod.MusicbrainzDbProvider.query_from_file = _limbo_query_from_file
 
         original = provider_mod.MusicbrainzDbProvider.map_query
-        if not getattr(original, "_lmbridge_db_hooked", False):
+        if not getattr(original, "_limbo_db_hooked", False):
 
-            async def _lmbridge_map_query(self, sql, *args, _conn=None):
+            async def _limbo_map_query(self, sql, *args, _conn=None):
                 context = {
                     "provider": self.__class__.__name__,
                     "sql": sql,
@@ -138,10 +138,10 @@ def apply() -> None:
                     results = await original(self, new_sql, *new_args, _conn=_conn)
                 return db_hooks.apply_after(results, context)
 
-            _lmbridge_map_query._lmbridge_db_hooked = True
-            provider_mod.MusicbrainzDbProvider.map_query = _lmbridge_map_query
+            _limbo_map_query._limbo_db_hooked = True
+            provider_mod.MusicbrainzDbProvider.map_query = _limbo_map_query
 
-    if os.environ.get("LMBRIDGE_PATCH_SPOTIFY_CACHE", "").lower() in {"1", "true", "yes"}:
+    if os.environ.get("LIMBO_PATCH_SPOTIFY_CACHE", "").lower() in {"1", "true", "yes"}:
         # Placeholder: wire safe_spotify_set into call sites if/when needed.
         # Intentionally no behavior change today.
         return

@@ -1,4 +1,4 @@
-name: lm-bridge
+name: limbo
 
 include:
-  - deploy/compose/lm-bridge-docker-network.yml
+  - deploy/compose/limbo-docker-network.yml
