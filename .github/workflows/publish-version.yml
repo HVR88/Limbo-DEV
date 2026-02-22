@@ -118,11 +118,15 @@ jobs:
 
           readme_path = Path("deploy/README.md")
           if readme_path.exists():
-            readme_text = readme_path.read_text()
-          readme_text, count = re.subn(r"Package version: `[^`]+`",
-                                       f"Package version: `{new_version}`", readme_text, count=1)
-            if count == 1:
-              readme_path.write_text(readme_text)
+              readme_text = readme_path.read_text()
+              readme_text, count = re.subn(
+                  r"Package version: `[^`]+`",
+                  f"Package version: `{new_version}`",
+                  readme_text,
+                  count=1,
+              )
+              if count == 1:
+                  readme_path.write_text(readme_text)
 
           release_version = _release_version(new_version)
           docker_version = _docker_version(new_version)
@@ -254,7 +258,7 @@ jobs:
           git -C deploy-repo push origin "${DEPLOY_BRANCH}"
 
       - name: Create deploy zip release
-        if: ${{ inputs.publish_container == 'true' }}
+        if: ${{ inputs.publish_container == 'true' && inputs.channel == 'stable' }}
         env:
           RELEASE_VERSION: ${{ steps.bump.outputs.release_version }}
           NEW_VERSION: ${{ steps.bump.outputs.new_version }}
