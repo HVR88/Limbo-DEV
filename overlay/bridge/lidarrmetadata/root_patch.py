@@ -577,6 +577,14 @@ def register_root_route() -> None:
     from quart import Response, request, send_file, jsonify
 
     assets_dir = Path(__file__).resolve().parent / "assets"
+    limbo_api_key = (
+        os.getenv("LIMBO_APIKEY")
+        or upstream_app.app.config.get("LIMBO_APIKEY")
+        or upstream_app.app.config.get("INVALIDATE_APIKEY")
+    )
+    if limbo_api_key:
+        upstream_app.app.config["LIMBO_APIKEY"] = limbo_api_key
+        upstream_app.app.config["INVALIDATE_APIKEY"] = limbo_api_key
 
     for rule in upstream_app.app.url_map.iter_rules():
         if rule.rule == "/assets/limbo-icon.png":

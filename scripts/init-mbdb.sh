@@ -81,7 +81,7 @@ wait_for_db() {
   done
 }
 
-LEGACY_CACHE_USERS=("lidarr" "abc")
+LEGACY_CACHE_USERS=("lmbridge" "lidarr" "abc")
 
 migrate_legacy_cache_role() {
   local legacy_user
