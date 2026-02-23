@@ -13,7 +13,9 @@ def build_preview_html() -> str:
         root / "overlay" / "bridge" / "lidarrmetadata" / "assets" / "root.html"
     )
     template = template_path.read_text(encoding="utf-8")
-    template = template.replace('href="/assets/root.css"', 'href="assets/root.css"')
+    template = template.replace(
+        'href="/assets/root.css"', 'href="assets/root.css?v=preview"'
+    )
     svg_dir = template_path.parent
 
     def read_svg(name: str) -> str:

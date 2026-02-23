@@ -995,6 +995,10 @@ def register_root_route() -> None:
 
         template_path = assets_dir / "root.html"
         template = template_path.read_text(encoding="utf-8")
+        css_version = html.escape(info["version"])
+        template = template.replace(
+            'href="/assets/root.css"', f'href="/assets/root.css?v={css_version}"'
+        )
         use_remote, _start_url, status_url, header_pair = _replication_remote_config()
         replication_running = False
         replication_started = ""
