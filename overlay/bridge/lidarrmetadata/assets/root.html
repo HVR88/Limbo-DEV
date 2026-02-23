@@ -4,6 +4,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Lmbo</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Teko:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="/assets/root.css" />
   </head>
   <body>
@@ -17,10 +21,16 @@
           data-theme-toggle
         >
           <span class="corner-button__inner">
-            <span class="corner-button__icon corner-button__icon--light" aria-hidden="true">
+            <span
+              class="corner-button__icon corner-button__icon--light"
+              aria-hidden="true"
+            >
               __THEME_ICON_DARK__
             </span>
-            <span class="corner-button__icon corner-button__icon--dark" aria-hidden="true">
+            <span
+              class="corner-button__icon corner-button__icon--dark"
+              aria-hidden="true"
+            >
               __THEME_ICON_LIGHT__
             </span>
           </span>
@@ -30,7 +40,7 @@
           type="button"
           aria-label="Limbo Settings"
           aria-pressed="false"
-          data-settings-button
+          data-modal-open="settings"
         >
           <span class="corner-button__inner">
             <span class="corner-button__icon" aria-hidden="true">
@@ -39,9 +49,11 @@
           </span>
         </button>
         <div class="hero">
-          <img src="__ICON_URL__" alt="Limbo" width="200" />
-          <h1 class="hero-title">Limbo</h1>
-          <span class="hero-sub"><em>FAST • Local • Private</em></span>
+          <img src="__ICON_URL__" alt="Limbo" />
+          <div class="hero-text">
+            <h1 class="hero-title">Limbo</h1>
+            <span class="hero-sub"><em>FAST • Local • Private</em></span>
+          </div>
         </div>
 
         <div class="tabs" data-tabs>
@@ -66,8 +78,8 @@
                   <span class="action-button__inner">Reset</span>
                 </button>
                 <div class="tabs-footnote">
-                  Exclude or include the type of media a release is issued on:
-                  CD, Vinyl LP, Cassette, etc.
+                  Exclude or include selected media types, Vinyl LP, Cassette,
+                  CD, etc.
                 </div>
               </div>
             </div>
@@ -83,7 +95,7 @@
                   <span class="action-button__inner">Refresh</span>
                 </button>
                 <div class="tabs-footnote">
-                  Paste what you want, no special formatting is needed
+                  Free-form, no special formatting is needed
                 </div>
               </div>
             </div>
@@ -124,9 +136,7 @@
         </div>
 
         <div class="grid">
-          __LM_PILL_HTML__
-          __LIDARR_PILL_HTML__
-          __MBMS_PILLS__
+          __LM_PILL_HTML__ __LIDARR_PILL_HTML__ __MBMS_PILLS__
           __REPLICATION_PILL_HTML__
         </div>
         <div class="links">
@@ -154,25 +164,116 @@
         to fetch artist JSON
       </div>
     </main>
-    <div class="settings-modal" data-settings-modal aria-hidden="true">
-      <div class="settings-modal__backdrop" data-settings-backdrop></div>
+    <div class="modal settings-modal" data-modal="settings" aria-hidden="true">
+      <div class="modal__backdrop" data-modal-backdrop></div>
       <div
-        class="settings-modal__panel"
+        class="modal__panel settings-modal__panel"
         role="dialog"
         aria-modal="true"
         aria-label="Limbo Settings"
       >
         <button
-          class="settings-modal__close"
+          class="modal__close settings-modal__close"
           type="button"
           aria-label="Close settings"
-          data-settings-close
+          data-modal-close
         >
-          <span class="settings-modal__close-inner"></span>
+          <span class="modal__close-inner settings-modal__close-inner"></span>
         </button>
         <div class="settings-modal__content">
           <h2 class="settings-modal__title">Settings</h2>
           <p class="settings-modal__subtitle">Configure Limbo options.</p>
+        </div>
+      </div>
+    </div>
+    <div
+      class="modal schedule-modal"
+      data-modal="schedule-indexer"
+      aria-hidden="true"
+    >
+      <div class="modal__backdrop" data-modal-backdrop></div>
+      <div
+        class="modal__panel schedule-modal__panel"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Indexing Schedule"
+      >
+        <button
+          class="modal__close schedule-modal__close"
+          type="button"
+          aria-label="Close indexing schedule"
+          data-modal-close
+        >
+          <span class="modal__close-inner schedule-modal__close-inner"></span>
+        </button>
+        <div class="schedule-modal__content">
+          <h2 class="settings-modal__title">Indexing Schedule</h2>
+          <p class="settings-modal__subtitle">
+            Configure database indexing timing.
+          </p>
+        </div>
+      </div>
+    </div>
+    <div
+      class="modal schedule-modal"
+      data-modal="schedule-replication"
+      aria-hidden="true"
+    >
+      <div class="modal__backdrop" data-modal-backdrop></div>
+      <div
+        class="modal__panel schedule-modal__panel"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Replication Schedule"
+      >
+        <button
+          class="modal__close schedule-modal__close"
+          type="button"
+          aria-label="Close replication schedule"
+          data-modal-close
+        >
+          <span class="modal__close-inner schedule-modal__close-inner"></span>
+        </button>
+        <div class="schedule-modal__content">
+          <h2 class="settings-modal__title">Replication Schedule</h2>
+          <p class="settings-modal__subtitle">
+            Configure database replication timing.
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="modal confirm-modal" data-modal="confirm-action" aria-hidden="true">
+      <div class="modal__backdrop" data-modal-backdrop></div>
+      <div
+        class="modal__panel confirm-modal__panel"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Confirm action"
+      >
+        <div class="confirm-modal__content">
+          <h2 class="settings-modal__title">Confirm</h2>
+          <p class="settings-modal__subtitle" data-confirm-message></p>
+          <div class="confirm-modal__actions">
+            <a href="#" class="modal-link" data-confirm-cancel>Cancel</a>
+            <a href="#" class="modal-link" data-confirm-ok>OK</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal info-modal" data-modal="info-action" aria-hidden="true">
+      <div class="modal__backdrop" data-modal-backdrop></div>
+      <div
+        class="modal__panel info-modal__panel"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Information"
+      >
+        <div class="info-modal__content">
+          <h2 class="settings-modal__title">Info</h2>
+          <p class="settings-modal__subtitle" data-info-message></p>
+          <div class="info-modal__actions">
+            <a href="#" class="modal-link" data-info-close>Close</a>
+          </div>
         </div>
       </div>
     </div>
@@ -193,7 +294,7 @@
         const action = button.dataset.cacheAction || "action";
         const url = button.dataset.cacheUrl;
         if (!url) {
-          alert("Missing cache endpoint.");
+          openInfo("Missing cache endpoint.");
           return;
         }
         if (
@@ -211,48 +312,117 @@
         button.disabled = true;
         try {
           const response = await fetch(url, { method: "POST", headers });
-          const text = await response.text();
-          if (!response.ok) {
+            const text = await response.text();
+            if (!response.ok) {
+              suppressHover();
+              openInfo(`Error (${response.status}): ${text}`);
+              return;
+            }
             suppressHover();
-            alert(`Error (${response.status}): ${text}`);
-            return;
+            openInfo(`OK: ${text}`);
+          } catch (error) {
+            suppressHover();
+            openInfo(`Request failed: ${error}`);
+          } finally {
+            button.disabled = false;
           }
-          suppressHover();
-          alert(`OK: ${text}`);
-        } catch (error) {
-          suppressHover();
-          alert(`Request failed: ${error}`);
-        } finally {
-          button.disabled = false;
-        }
-      };
+        };
 
       cacheButtons.forEach((button) => {
         button.addEventListener("click", () => runCacheAction(button));
       });
 
-      const replicationButton = document.querySelector(
-        "[data-replication-url]",
-      );
-        const replicationPill = document.querySelector("[data-replication-pill]");
+      const replicationPill = document.querySelector("[data-replication-pill]");
       const replicationValue = document.querySelector(
         "[data-replication-value]",
       );
       let replicationPollTimer = null;
 
-      const setReplicationState = (running, started) => {
-        if (!replicationButton) {
+      const openModal = (modal) => {
+        if (!modal) {
           return;
         }
-        const inner = replicationButton.querySelector(".pill-button__inner");
-        if (inner) {
-          inner.textContent = running ? "Running" : "Start";
+        modal.classList.add("open");
+        modal.setAttribute("aria-hidden", "false");
+      };
+      const closeModal = (modal) => {
+        if (!modal) {
+          return;
         }
-        replicationButton.classList.toggle("danger", running);
-        replicationButton.classList.toggle("wide", running);
+        modal.classList.remove("open");
+        modal.setAttribute("aria-hidden", "true");
+      };
+
+      const setReplicationState = (running, started) => {
         if (replicationPill) {
           replicationPill.classList.toggle("wide-action", running);
         }
+        if (!running && replicationPollTimer) {
+          clearTimeout(replicationPollTimer);
+          replicationPollTimer = null;
+        }
+      };
+
+      let pendingConfirmAction = null;
+      const confirmModal = document.querySelector('[data-modal="confirm-action"]');
+      const confirmMessage = confirmModal?.querySelector("[data-confirm-message]");
+      const confirmOk = confirmModal?.querySelector("[data-confirm-ok]");
+      const confirmCancel = confirmModal?.querySelector("[data-confirm-cancel]");
+      const infoModal = document.querySelector('[data-modal="info-action"]');
+      const infoMessage = infoModal?.querySelector("[data-info-message]");
+      const infoClose = infoModal?.querySelector("[data-info-close]");
+
+      const openConfirm = (message, action) => {
+        if (!confirmModal || !confirmMessage) {
+          return;
+        }
+        confirmMessage.textContent = message;
+        pendingConfirmAction = action;
+        openModal(confirmModal);
+      };
+      const closeConfirm = () => {
+        if (!confirmModal) {
+          return;
+        }
+        closeModal(confirmModal);
+        pendingConfirmAction = null;
+      };
+      const openInfo = (message) => {
+        if (!infoModal || !infoMessage) {
+          return;
+        }
+        infoMessage.textContent = message;
+        openModal(infoModal);
+      };
+      const closeInfo = () => {
+        if (!infoModal) {
+          return;
+        }
+        closeModal(infoModal);
+      };
+
+      if (confirmCancel) {
+        confirmCancel.addEventListener("click", (event) => {
+          event.preventDefault();
+          closeConfirm();
+        });
+      }
+      if (confirmOk) {
+        confirmOk.addEventListener("click", (event) => {
+          event.preventDefault();
+          const action = pendingConfirmAction;
+          closeConfirm();
+          if (action) {
+            action();
+          }
+        });
+      }
+      if (infoClose) {
+        infoClose.addEventListener("click", (event) => {
+          event.preventDefault();
+          closeInfo();
+        });
+      }
 
       document.addEventListener("click", (event) => {
         const pillButton = event.target.closest("[data-pill-href]");
@@ -263,26 +433,37 @@
         if (!target) {
           return;
         }
+        if (pillButton.hasAttribute("data-replication-pill")) {
+          openConfirm("Start replication now?", () => {
+            const headers = {};
+            if (invalidateApiKey) {
+              headers.Authorization = invalidateApiKey;
+            }
+            fetch(target, { method: "POST", headers })
+              .then(async (response) => {
+                const text = await response.text();
+              if (!response.ok) {
+                suppressHover();
+                openInfo(`Error (${response.status}): ${text}`);
+                return;
+              }
+              suppressHover();
+              openInfo("Replication started.");
+              pollReplicationStatus();
+            })
+            .catch((error) => {
+              suppressHover();
+              openInfo(`Request failed: ${error}`);
+            });
+          });
+          return;
+        }
         if (target.startsWith("/")) {
           window.location.href = target;
           return;
         }
         window.open(target, "_blank", "noopener");
       });
-        if (running) {
-          replicationButton.dataset.replicationRunning = "true";
-          if (started) {
-            replicationButton.dataset.replicationStarted = started;
-          }
-        } else {
-          delete replicationButton.dataset.replicationRunning;
-          delete replicationButton.dataset.replicationStarted;
-        }
-        if (!running && replicationPollTimer) {
-          clearTimeout(replicationPollTimer);
-          replicationPollTimer = null;
-        }
-      };
 
       const escapeHtml = (value) => {
         const map = {
@@ -380,8 +561,8 @@
         }
       };
 
-      if (replicationButton) {
-        if (replicationButton.dataset.replicationRunning === "true") {
+      if (replicationPill) {
+        if (replicationPill.dataset.replicationRunning === "true") {
           startReplicationPolling();
         }
         if (replicationStatusUrl) {
@@ -392,44 +573,6 @@
             }
           });
         }
-        replicationButton.addEventListener("click", async () => {
-          const url = replicationButton.dataset.replicationUrl;
-          if (!url) {
-            alert("Missing replication endpoint.");
-            return;
-          }
-          if (replicationButton.dataset.replicationRunning === "true") {
-            const started = replicationButton.dataset.replicationStarted;
-            const message = started
-              ? `Replication is already running (since ${started}).`
-              : "Replication is already running.";
-            suppressHover();
-            alert(message);
-            return;
-          }
-          const headers = {};
-          if (invalidateApiKey) {
-            headers.Authorization = invalidateApiKey;
-          }
-          replicationButton.disabled = true;
-          try {
-            const response = await fetch(url, { method: "POST", headers });
-            const text = await response.text();
-            if (!response.ok) {
-              suppressHover();
-              alert(`Error (${response.status}): ${text}`);
-              return;
-            }
-            suppressHover();
-            alert("Replication started.");
-            pollReplicationStatus();
-          } catch (error) {
-            suppressHover();
-            alert(`Request failed: ${error}`);
-          } finally {
-            replicationButton.disabled = false;
-          }
-        });
       }
 
       const tabRoot = document.querySelector("[data-tabs]");
@@ -475,9 +618,10 @@
           });
         };
         tabButtons.forEach((button) => {
-          button.addEventListener("click", () =>
-            setActiveTab(button.dataset.tab),
-          );
+          button.addEventListener("click", () => {
+            tabRoot.classList.add("tabs-animated");
+            setActiveTab(button.dataset.tab);
+          });
         });
 
         requestAnimationFrame(syncTabMinHeight);
@@ -518,49 +662,74 @@
         };
       };
 
+      const runRefreshRequest = async (mbids, lidarrIds) => {
+        refreshButton.disabled = true;
+        try {
+          const response = await fetch("/config/refresh-releases", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              mbids,
+              lidarr_ids: lidarrIds,
+            }),
+          });
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok || !payload.ok) {
+            suppressHover();
+            openInfo(
+              payload.error
+                ? `Error: ${payload.error}`
+                : `Error (${response.status})`,
+            );
+            return;
+          }
+          const queued = payload.queued_ids?.length || 0;
+          const missing = payload.missing_mbids?.length || 0;
+          const errors = payload.errors?.length || 0;
+          suppressHover();
+          openInfo(
+            `Queued ${queued} refresh request(s).` +
+              (missing ? ` Missing MBIDs: ${missing}.` : "") +
+              (errors ? ` Errors: ${errors}.` : ""),
+          );
+        } catch (error) {
+          suppressHover();
+          openInfo(`Request failed: ${error}`);
+        } finally {
+          refreshButton.disabled = false;
+        }
+      };
+
       if (refreshInput && refreshButton) {
-        refreshButton.addEventListener("click", async () => {
+        refreshButton.addEventListener("click", () => {
           const text = refreshInput.value || "";
           const { mbids, lidarrIds } = extractIds(text);
           if (!mbids.length && !lidarrIds.length) {
             suppressHover();
-            alert("No Lidarr IDs or MBIDs found.");
+            openInfo("No Lidarr IDs or MBIDs found.");
             return;
           }
-          refreshButton.disabled = true;
-          try {
-            const response = await fetch("/config/refresh-releases", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                mbids,
-                lidarr_ids: lidarrIds,
-              }),
-            });
-            const payload = await response.json().catch(() => ({}));
-            if (!response.ok || !payload.ok) {
-              suppressHover();
-              alert(
-                payload.error
-                  ? `Error: ${payload.error}`
-                  : `Error (${response.status})`,
+          const totalIds = mbids.length + lidarrIds.length;
+          if (totalIds >= 10) {
+            const parts = [];
+            if (mbids.length) {
+              parts.push(
+                `${mbids.length} MBID${mbids.length === 1 ? "" : "s"}`,
               );
-              return;
             }
-            const queued = payload.queued_ids?.length || 0;
-            const missing = payload.missing_mbids?.length || 0;
-            const errors = payload.errors?.length || 0;
-            suppressHover();
-            alert(
-              `Queued ${queued} refresh request(s).` +
-                (missing ? ` Missing MBIDs: ${missing}.` : "") +
-                (errors ? ` Errors: ${errors}.` : ""),
+            if (lidarrIds.length) {
+              parts.push(
+                `${lidarrIds.length} Lidarr ID${
+                  lidarrIds.length === 1 ? "" : "s"
+                }`,
+              );
+            }
+            openConfirm(
+              `Queue refresh for ${parts.join(" and ")}?`,
+              () => runRefreshRequest(mbids, lidarrIds),
             );
-          } catch (error) {
-            suppressHover();
-            alert(`Request failed: ${error}`);
-          } finally {
-            refreshButton.disabled = false;
+          } else {
+            runRefreshRequest(mbids, lidarrIds);
           }
         });
       }
@@ -1006,15 +1175,15 @@
             if (!response.ok) {
               const text = await response.text();
               suppressHover();
-              alert(`Error (${response.status}): ${text}`);
+              openInfo(`Error (${response.status}): ${text}`);
               return;
             }
             saveAppliedState();
             suppressHover();
-            alert("Filter settings applied.");
+            openInfo("Filter settings applied.");
           } catch (error) {
             suppressHover();
-            alert(`Request failed: ${error}`);
+            openInfo(`Request failed: ${error}`);
           }
         });
       }
@@ -1137,6 +1306,7 @@
         themeToggle.addEventListener("click", () => {
           const next =
             document.body.dataset.theme === "dark" ? "light" : "dark";
+          document.body.classList.add("theme-transition");
           applyTheme(next);
           localStorage.setItem("limbo-theme", next);
           fetch("/theme", {
@@ -1147,54 +1317,43 @@
             },
             body: JSON.stringify({ theme: next }),
           }).catch(() => {});
+          window.setTimeout(() => {
+            document.body.classList.remove("theme-transition");
+          }, 800);
         });
       }
+      const getModalById = (id) =>
+        document.querySelector(`[data-modal="${id}"]`);
 
-      const settingsButton = document.querySelector("[data-settings-button]");
-      const settingsModal = document.querySelector("[data-settings-modal]");
-      const settingsClose = document.querySelector("[data-settings-close]");
-      const settingsBackdrop = document.querySelector(
-        "[data-settings-backdrop]",
-      );
-      const settingsPanel = settingsModal?.querySelector(
-        ".settings-modal__panel",
-      );
-
-      const openSettings = () => {
-        if (!settingsModal) {
-          return;
-        }
-        settingsModal.classList.add("open");
-        settingsModal.setAttribute("aria-hidden", "false");
-      };
-      const closeSettings = () => {
-        if (!settingsModal) {
-          return;
-        }
-        settingsModal.classList.remove("open");
-        settingsModal.setAttribute("aria-hidden", "true");
-      };
-
-      if (settingsButton) {
-        settingsButton.addEventListener("click", (event) => {
-          event.stopPropagation();
-          openSettings();
+      document.querySelectorAll("[data-modal-open]").forEach((button) => {
+        button.addEventListener("click", (event) => {
+          event.preventDefault();
+          const target = button.getAttribute("data-modal-open");
+          openModal(getModalById(target));
         });
-      }
-      if (settingsClose) {
-        settingsClose.addEventListener("click", closeSettings);
-      }
-      if (settingsBackdrop) {
-        settingsBackdrop.addEventListener("click", closeSettings);
-      }
-      document.addEventListener("click", (event) => {
-        if (!settingsModal || !settingsModal.classList.contains("open")) {
+      });
+
+      document.querySelectorAll("[data-modal-close]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const modal = button.closest("[data-modal]");
+          closeModal(modal);
+        });
+      });
+
+      document.querySelectorAll("[data-modal-backdrop]").forEach((backdrop) => {
+        backdrop.addEventListener("click", () => {
+          const modal = backdrop.closest("[data-modal]");
+          closeModal(modal);
+        });
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key !== "Escape") {
           return;
         }
-        if (settingsPanel && settingsPanel.contains(event.target)) {
-          return;
-        }
-        closeSettings();
+        document.querySelectorAll("[data-modal].open").forEach((modal) => {
+          closeModal(modal);
+        });
       });
     </script>
   </body>

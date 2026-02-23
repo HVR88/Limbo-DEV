@@ -1008,9 +1008,6 @@ def register_root_route() -> None:
         if not use_remote:
             replication_running, replication_started = _read_replication_status()
         replication_button_label = "Running" if replication_running else "Start"
-        replication_button_class = (
-            "pill-button danger wide" if replication_running else "pill-button"
-        )
         replication_pill_class = (
             "pill has-action wide-action" if replication_running else "pill has-action"
         )
@@ -1023,11 +1020,6 @@ def register_root_route() -> None:
             )
         replication_button_attr_text = (
             " " + " ".join(replication_button_attrs) if replication_button_attrs else ""
-        )
-        replication_button_html = (
-            f'            <button class="{replication_button_class}" type="button" '
-            f'data-replication-url="{html.escape(replication_start_url)}"{replication_button_attr_text}>'
-            f'<span class="pill-button__inner">{html.escape(replication_button_label)}</span></button>'
         )
 
         settings_svg = _read_inline_svg("limbo-settings.svg")
@@ -1054,7 +1046,6 @@ def register_root_route() -> None:
             "__CACHE_EXPIRE_URL__": html.escape(cache_expire_url),
             "__REPLICATION_START_URL__": html.escape(replication_start_url),
             "__REPLICATION_STATUS_URL__": html.escape(replication_status_url),
-            "__REPLICATION_BUTTON__": replication_button_html,
             "__REPLICATION_PILL_CLASS__": replication_pill_class,
             "__LIMBO_APIKEY__": html.escape(
                 upstream_app.app.config.get("LIMBO_APIKEY") or ""
@@ -1068,20 +1059,17 @@ def register_root_route() -> None:
         }
         lidarr_ui_url = get_lidarr_base_url()
         if "last seen" in lidarr_version_label.lower():
-            replacements["__LIDARR_OPEN__"] = ""
             lidarr_pill_class = "pill"
             lidarr_pill_href = ""
+            lidarr_arrow = ""
         elif not lidarr_ui_url:
-            replacements["__LIDARR_OPEN__"] = ""
             lidarr_pill_class = "pill"
             lidarr_pill_href = ""
+            lidarr_arrow = ""
         else:
-            replacements["__LIDARR_OPEN__"] = (
-                '            <a class="pill-button" href="{}" target="_blank" rel="noopener">'
-                '<span class="pill-button__inner">Open</span></a>'
-            ).format(html.escape(lidarr_ui_url))
             lidarr_pill_class = "pill has-action"
             lidarr_pill_href = html.escape(lidarr_ui_url)
+            lidarr_arrow = f'<span class="pill-arrow" aria-hidden="true">{tall_arrow_svg}</span>'
         lidarr_plugins_url = (
             f"{lidarr_ui_url.rstrip('/')}/system/plugins" if lidarr_ui_url else ""
         )
@@ -1106,65 +1094,53 @@ def register_root_route() -> None:
             if mbms_latest and _is_newer_version(info["mbms_plus_version"], mbms_latest)
             else None
         )
+        def _format_version_value(
+            current: str, update: Optional[str]
+        ) -> Tuple[str, bool]:
+            if not update:
+                return current, False
+            return (
+                f'<span class="version-current">{current}</span>'
+                f'<span class="version-update">&rarr; NEW {html.escape(update)}</span>',
+                True,
+            )
 
         if lm_update:
             lm_pill_class = "pill has-action"
-            replacements["__LM_VERSION_BUTTON__"] = (
-                '            <a class="pill-button update" href="{}" target="_blank" rel="noopener">'
-                '<span class="pill-button__inner">{}</span></a>'
-            ).format(html.escape(lm_repo_url), html.escape(lm_update))
             lm_pill_href = html.escape(lm_repo_url)
         else:
             lm_pill_class = "pill has-action"
-            replacements["__LM_VERSION_BUTTON__"] = (
-                '            <a class="pill-button" href="{}" target="_blank" rel="noopener">'
-                '<span class="pill-button__inner">JSON</span></a>'
-            ).format(html.escape(version_url))
             lm_pill_href = html.escape(version_url)
 
         if plugin_update:
             replacements["__PLUGIN_PILL_CLASS__"] = "pill"
-            plugin_target = lidarr_plugins_url or lm_repo_url
-            replacements["__PLUGIN_VERSION_BUTTON__"] = (
-                '            <a class="pill-button update overlay" href="{}" target="_blank" rel="noopener">'
-                '<span class="pill-button__inner">{}</span></a>'
-            ).format(html.escape(plugin_target), html.escape(plugin_update))
             replacements["__LM_PLUGIN_LABEL__"] = "Limbo Plugin"
         else:
             replacements["__PLUGIN_PILL_CLASS__"] = "pill"
-            replacements["__PLUGIN_VERSION_BUTTON__"] = ""
             replacements["__LM_PLUGIN_LABEL__"] = "Limbo Plugin Version"
 
-        if mbms_update:
-            mbms_button = (
-                '            <a class="pill-button update" href="{}" target="_blank" rel="noopener">'
-                '<span class="pill-button__inner">{}</span></a>'
-            ).format(html.escape(mbms_url), html.escape(mbms_update))
-        else:
-            mbms_button = (
-                '            <a class="pill-button" href="{}" target="_blank" rel="noopener">'
-                '<span class="pill-button__inner">Git</span></a>'
-            ).format(html.escape(mbms_url))
-
+        mbms_version_value, mbms_has_update = _format_version_value(
+            safe["mbms_plus_version"], mbms_update
+        )
+        mbms_value_class = "value has-update" if mbms_has_update else "value"
         mbms_pills = "\n".join(
             [
                 '          <button type="button" class="pill has-action" data-pill-href="{}">'.format(
                     html.escape(mbms_url)
                 ),
                 '            <div class="label">MBMS PLUS VERSION</div>',
-                f'            <div class="value">{safe["mbms_plus_version"]}</div>',
-                mbms_button,
+                f'            <div class="{mbms_value_class}">{mbms_version_value}</div>',
                 f'            <span class="pill-arrow" aria-hidden="true">{tall_arrow_svg}</span>',
                 "          </button>",
-                '          <button type="button" class="pill" data-pill-href="">',
+                '          <button type="button" class="pill" data-pill-href="" data-modal-open="schedule-indexer">',
                 '            <div class="label">DB Indexing Schedule</div>',
                 f'            <div class="value">{index_schedule_html}</div>',
                 f'            <span class="pill-arrow" aria-hidden="true">{tall_arrow_svg}</span>',
                 "          </button>",
-                '          <button type="button" class="pill" data-pill-href="">',
+                '          <button type="button" class="pill" data-pill-href="" data-modal-open="schedule-replication">',
                 '            <div class="label">DB Replication Schedule</div>',
                 f'            <div class="value">{replication_schedule_html}</div>',
-                f'            <span class="pill-arrow" aria-hidden="true">{tall_arrow_svg}</span>',
+                f"            {lidarr_arrow}",
                 "          </button>",
             ]
         )
@@ -1177,11 +1153,15 @@ def register_root_route() -> None:
             lm_pill_tag_open = '<button type="button" class="{}" disabled>'.format(
                 lm_pill_class
             )
+        lm_version_value, lm_has_update = _format_version_value(
+            safe["version"], lm_update
+        )
+        lm_value_class = "value has-update" if lm_has_update else "value"
         lm_pill_html = "\n".join(
             [
                 f"          {lm_pill_tag_open}",
                 '            <div class="label">Limbo Version</div>',
-                f'            <div class="value">{safe["version"]}</div>',
+                f'            <div class="{lm_value_class}">{lm_version_value}</div>',
                 f'            <span class="pill-arrow" aria-hidden="true">{tall_arrow_svg}</span>',
                 "          </button>",
             ]
