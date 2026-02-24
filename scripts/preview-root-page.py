@@ -30,11 +30,11 @@ def build_preview_html() -> str:
     menu_icon = read_svg("limbo-arrows-updn.svg")
     config_html = "\n".join(
         [
-            f'          <div class="config-row"><div class="config-label">Filtering Enabled</div><div class="config-value"><span class="config-value-text">Yes</span><button class="config-action" type="button" aria-label="More" data-config-menu><span class="config-action__inner">{menu_icon}</span></button></div></div>',
-            f'          <div class="config-row"><div class="config-label">Exclude Media Formats</div><div class="config-value"><span class="config-value-text">vinyl, cassette</span><button class="config-action" type="button" aria-label="More" data-config-menu><span class="config-action__inner">{menu_icon}</span></button></div></div>',
-            f'          <div class="config-row"><div class="config-label">Include Media Formats</div><div class="config-value"><span class="config-value-text">all</span><button class="config-action" type="button" aria-label="More" data-config-menu><span class="config-action__inner">{menu_icon}</span></button></div></div>',
+            f'          <div class="config-row"><div class="config-label"><span data-filter-label-enabled>Filtering Enabled</span><span data-filter-label-disabled style="display:none">Filtering Disabled</span></div><div class="config-value"><label class="config-toggle"><input type="checkbox" data-config-enabled checked /><span class="config-toggle__track" aria-hidden="true"><span class="config-toggle__thumb"></span></span></label></div></div>',
             f'          <div class="config-row"><div class="config-label">Max Media Count</div><div class="config-value"><span class="config-value-text">no limit</span><button class="config-action" type="button" aria-label="More" data-config-menu><span class="config-action__inner">{menu_icon}</span></button></div></div>',
             f'          <div class="config-row"><div class="config-label">Prefer Media Type</div><div class="config-value"><span class="config-value-text">digital</span><button class="config-action" type="button" aria-label="More" data-config-menu><span class="config-action__inner">{menu_icon}</span></button></div></div>',
+            f'          <div class="config-row"><div class="config-label">Media Types</div><div class="config-value"><span class="config-value-text">vinyl, cassette</span><button class="config-action" type="button" aria-label="More" data-config-menu><span class="config-action__inner">{menu_icon}</span></button></div></div>',
+            '          <div class="config-row"><div class="config-label">&nbsp;</div><div class="config-value"><span class="config-value-text">&nbsp;</span></div></div>',
         ]
     )
 
@@ -66,7 +66,7 @@ def build_preview_html() -> str:
         "__LM_PLUGIN_LABEL__": "Limbo Plugin",
         "__LM_PILL_HTML__": "\n".join(
             [
-                '          <button type="button" class="pill has-action" data-pill-href="https://github.com/HVR88/Limbo">',
+                '          <button type="button" class="pill has-action" data-pill-href="https://github.com/HVR88/Limbo_Bridge">',
                 '            <div class="label">Limbo Version</div>',
                 '            <div class="value has-update"><span class="version-current">1.9.7.10</span><span class="version-update">&rarr; NEW 1.9.7.12</span></div>',
                 f"            <span class=\"pill-arrow\" aria-hidden=\"true\">{read_svg('limbo-tall-arrow.svg')}</span>",
@@ -155,6 +155,9 @@ def main() -> int:
             (assets_dir / svg_path.name).write_text(
                 svg_path.read_text(encoding="utf-8"), encoding="utf-8"
             )
+        icon_path = css_source.parent / "limbo-icon.png"
+        if icon_path.exists():
+            (assets_dir / icon_path.name).write_bytes(icon_path.read_bytes())
     print(output_path)
     if args.open:
         try:

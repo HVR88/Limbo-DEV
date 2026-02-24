@@ -4,7 +4,7 @@ cd "$(dirname "$0")/.."
 
 # Default to amd64; override with PLATFORMS=linux/amd64,linux/arm64
 PLATFORMS="${PLATFORMS:-linux/amd64}"
-IMAGE="${LIMBO_IMAGE:-${IMAGE:-limbo:latest}}"
+IMAGE="${LIMBO_IMAGE:-${IMAGE:-espressomatic/limbo-bridge:latest}}"
 PUSH="${PUSH:-0}"
 
 load_flag=(--load)

@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/HVR88/Limbo-DEV/main/assets/limbo-icon.png" alt="Limbo" width="300" />
+  <img src="https://raw.githubusercontent.com/HVR88/Limbo_Bridge_DEV/main/assets/limbo-icon.png" alt="Limbo" width="300" />
 </p>
 
 # <p align="center">**Limbo**<br><sub>**Lidarr, but _Working_**</sub></p>
@@ -38,8 +38,8 @@ You should already be running a _nightly_ branch [Lidarr](https://hub.docker.com
 ```
 mkdir -p /opt/docker/
 cd /opt/docker/
-git clone https://github.com/HVR88/Limbo.git
-cd /opt/docker/Limbo
+git clone https://github.com/HVR88/Limbo_Bridge.git
+cd /opt/docker/Limbo_Bridge
 ```
 
 ### 3. Optionally Configure .env file
@@ -71,7 +71,7 @@ Visit **http://HOST_IP:5001** to check the status of Limbo, including version an
   <br>
   <br>
 
-Source code, docs and licenses: https://github.com/HVR88/Limbo-DEV
+Source code, docs and licenses: https://github.com/HVR88/Limbo_Bridge_DEV
 
 > <br>**_Thanks to blampe and Typnull for inspiration_** : this wouldn't have been possible without leveraging knowledge from their previous work
 > <br><br>

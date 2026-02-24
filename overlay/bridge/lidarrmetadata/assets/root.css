@@ -155,17 +155,29 @@ body.theme-transition .link {
   margin: -12px 0 18px;
   text-align: left;
 }
-.hero img {
+.hero-logo {
   width: 180px;
-  max-width: 180px;
-  height: auto;
+  height: 80px;
   flex: 0 0 auto;
+  background: url("limbo-icon.png") center / contain no-repeat;
+  display: inline-block;
 }
 .hero-text {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   transform: translateY(-6px);
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 .hero-title {
   margin: 0 0 6px 0;
@@ -457,9 +469,19 @@ body[data-theme="dark"] .action-button__inner {
 }
 .modal-link {
   color: var(--ink);
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  text-decoration: none;
   font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  font-family: "Space Grotesk", "IBM Plex Sans", "Source Sans 3", sans-serif;
+}
+.modal-link-text {
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  appearance: none;
 }
 .modal-link:hover {
   color: var(--accent);
@@ -572,6 +594,9 @@ body[data-theme="dark"] .corner-button__inner {
   border-bottom: 1px solid var(--border);
   padding-bottom: 0;
   margin-bottom: 12px;
+  max-width: 100%;
+  overflow: hidden;
+  justify-content: flex-start;
 }
 .tab-button {
   border: none;
@@ -585,6 +610,11 @@ body[data-theme="dark"] .corner-button__inner {
   cursor: pointer;
   transition: color 160ms ease;
   border-bottom: 2px solid transparent;
+  flex: 0 0 auto;
+  min-width: 0;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 .tab-button.active {
   color: var(--ink);
@@ -664,23 +694,117 @@ body[data-theme="dark"] .corner-button__inner {
   align-self: flex-end;
   /* outline: 1px dashed teal; */
 }
-.refresh-input {
+.refresh-input-wrap {
+  position: relative;
+  width: 100%;
+  min-height: 220px;
+}
+.refresh-modal__panel {
+  width: min(852px, 94vw);
+  max-width: min(852px, 94vw);
+  min-width: min(852px, 94vw);
+}
+.refresh-modal__content {
+  display: grid;
+  gap: 16px;
+}
+.refresh-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+}
+.modal-link-primary {
+  font-weight: 700;
+  color: var(--accent);
+}
+.refresh-editor {
   width: 100%;
   min-height: 220px;
   border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--panel);
+  --refresh-token-gap: 5px;
   padding: 12px;
   font-size: 14px;
   font-family: "IBM Plex Sans", "Source Sans 3", sans-serif;
-  color: var(--ink);
+  line-height: 1.4;
+  color: var(--muted);
   resize: vertical;
   box-shadow: var(--soft-shadow);
   /* outline: 1px dashed purple; */
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow: auto;
 }
-.refresh-input:focus-visible {
+.refresh-editor:empty::before {
+  content: attr(data-placeholder);
+  color: var(--muted);
+}
+.refresh-editor:focus-visible {
   outline: none;
   box-shadow: inset 0 1px 2px rgba(26, 38, 45, 0.08);
+}
+.refresh-editor::-webkit-scrollbar {
+  width: 10px;
+}
+.refresh-editor::-webkit-scrollbar-thumb {
+  background: rgba(31, 44, 51, 0.25);
+  border-radius: 999px;
+}
+.refresh-editor::-webkit-scrollbar-track {
+  background: transparent;
+}
+.refresh-editor .token {
+  padding: 0 var(--refresh-token-gap);
+  font-weight: 400;
+  display: inline-block;
+}
+.refresh-editor .token-text {
+  padding: 0 2px;
+  border-radius: 4px;
+  display: inline-block;
+}
+.refresh-editor .token-pending {
+  color: #8a5200;
+}
+.refresh-editor .token-valid {
+  color: #2c5d00;
+}
+.refresh-editor .token-invalid {
+  color: #7b230e;
+  text-decoration: line-through;
+}
+.refresh-editor .token-pending .token-text {
+  background: rgba(255, 138, 0, 0.35);
+}
+.refresh-editor .token-valid .token-text {
+  background: rgba(109, 208, 0, 0.36);
+}
+.refresh-editor .token-invalid .token-text {
+  background: rgba(211, 72, 30, 0.38);
+}
+.refresh-editor .token-duplicate {
+  animation: token-duplicate-glow 0.6s ease;
+}
+@keyframes token-duplicate-glow {
+  0% {
+    box-shadow: 0 0 0 rgba(255, 138, 0, 0.6);
+  }
+  40% {
+    box-shadow: 0 0 12px rgba(255, 138, 0, 0.9);
+  }
+  100% {
+    box-shadow: 0 0 0 rgba(255, 138, 0, 0);
+  }
+}
+body[data-theme="dark"] .refresh-editor .token-pending {
+  color: #ffd7a3;
+}
+body[data-theme="dark"] .refresh-editor .token-valid {
+  color: #c9ff9b;
+}
+body[data-theme="dark"] .refresh-editor .token-invalid {
+  color: #ffb7a1;
 }
 
 .action-button {
@@ -733,6 +857,7 @@ body[data-theme="dark"] .corner-button__inner {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  min-width: 0;
   padding-top: calc(var(--config-row-pad) + var(--config-row-shift));
   padding-bottom: calc(var(--config-row-pad) - var(--config-row-shift));
 }
@@ -741,6 +866,62 @@ body[data-theme="dark"] .corner-button__inner {
 }
 .config-value {
   padding-top: 0;
+}
+.config-value-text--hidden {
+  display: none;
+}
+.filters-disabled .config-row:not(:first-child) {
+  opacity: 0.25;
+  pointer-events: none;
+}
+.filters-disabled .config-row:not(:first-child) .config-action__inner,
+.filters-disabled .config-row:not(:first-child) .config-menu,
+.filters-disabled .config-row:not(:first-child) .config-menu-check,
+.filters-disabled .config-row:not(:first-child) .config-menu button {
+  pointer-events: none;
+}
+.config-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 54px;
+  height: 30px;
+}
+.config-toggle input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  margin: 0;
+  cursor: pointer;
+}
+.config-toggle__track {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+  background: rgba(130, 140, 150, 0.35);
+  border: 1px solid rgba(130, 140, 150, 0.45);
+  transition:
+    background 160ms ease,
+    border-color 160ms ease;
+}
+.config-toggle__thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--panel);
+  box-shadow: 0 2px 6px rgba(20, 30, 35, 0.25);
+  transition: transform 160ms ease;
+}
+.config-toggle input:checked + .config-toggle__track {
+  background: rgba(109, 208, 0, 0.5);
+  border-color: rgba(109, 208, 0, 0.6);
+}
+.config-toggle input:checked + .config-toggle__track .config-toggle__thumb {
+  transform: translateX(24px);
 }
 .config-label {
   font-size: 14px;
@@ -768,12 +949,48 @@ body[data-theme="dark"] .corner-button__inner {
   gap: 8px;
   white-space: nowrap;
   word-break: break-word;
+  flex: 1 1 50%;
+  min-width: 0;
 }
 .config-value-text {
   text-align: right;
   font-size: 12px;
   font-weight: 500;
   text-transform: uppercase;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 360px;
+  display: inline-block;
+}
+.config-value-text.media-types-value {
+}
+.media-types-value {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+.media-types-value .media-type-token {
+  color: #f7e9e5;
+  position: relative;
+  z-index: 1;
+  padding: 2px 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+}
+.media-types-value .media-type-token::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: rgba(211, 72, 30, 0.4);
+  z-index: -1;
+}
+.config-label {
+  flex: 1 1 50%;
+  min-width: 0;
 }
 .config-action {
   border: 0;
@@ -833,22 +1050,75 @@ body[data-theme="dark"] .config-action__inner svg {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  width: max-content;
+  min-width: 220px;
+  max-width: calc(100vw - 20px);
   z-index: 5;
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transform: translateY(6px) scale(0.98);
+  transform: translateY(6px) scale(0.98)
+    translate(var(--menu-shift-x, 0px), var(--menu-shift-y, 0px));
   transform-origin: 100% 100%;
   transition:
     opacity 1200ms cubic-bezier(0.16, 1, 0.3, 1),
     transform 1200ms cubic-bezier(0.16, 1, 0.3, 1),
     visibility 0ms linear 1200ms;
 }
+.config-menu-compact {
+  min-width: 180px;
+  max-width: 280px;
+}
+.config-menu-narrow {
+  min-width: 140px;
+  max-width: 160px;
+}
+.config-menu-narrow .config-menu-item {
+  text-align: left !important;
+  width: 100%;
+  display: block;
+}
+.config-menu-narrow button {
+  text-align: left !important;
+}
+.config-menu-compact .config-menu-grid {
+  gap: 12px;
+  padding: 4px 4px 2px;
+  grid-template-columns: 1fr 1fr;
+}
+.config-menu-compact .config-menu-col {
+  align-items: stretch;
+  width: 100%;
+}
+.config-menu-compact .config-menu-item {
+  width: 100%;
+  text-align: right;
+  padding-right: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.config-menu-grid {
+  display: grid;
+  grid-template-columns: max-content max-content;
+  gap: 10px;
+  padding: 4px 6px 2px;
+  align-items: start;
+}
+.config-menu-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: max-content;
+}
+.config-menu-col .config-menu-item,
+.config-menu-col .config-menu-check {
+  width: 100%;
+}
 .config-menu.open {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
-  transform: translateY(0) scale(1);
+  transform: translateY(0) scale(1)
+    translate(var(--menu-shift-x, 0px), var(--menu-shift-y, 0px));
   transition:
     opacity 1000ms cubic-bezier(0.16, 1, 0.3, 1),
     transform 1000ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -883,6 +1153,37 @@ body[data-theme="dark"] .config-action__inner svg {
   margin-top: 4px;
   border-top: 1px dashed var(--border);
   padding-top: 8px;
+}
+.config-menu-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16px;
+  margin-top: 6px;
+  border-top: 1px dashed var(--border);
+  padding: 8px 6px 2px;
+}
+.config-menu-text {
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 6px 8px;
+  line-height: 1.2;
+  min-height: 22px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+}
+.config-menu-text:hover {
+  background: rgba(11, 125, 109, 0.12);
+}
+.config-menu-text:active {
+  background: rgba(11, 125, 109, 0.2);
 }
 .config-menu-check {
   display: flex;

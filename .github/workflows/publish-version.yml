@@ -24,8 +24,8 @@ permissions:
   contents: write
 
 env:
-  IMAGE_NAME: espressomatic/limbo
-  DEPLOY_REPO: ${{ github.repository_owner }}/Limbo
+  IMAGE_NAME: espressomatic/limbo-bridge
+  DEPLOY_REPO: ${{ github.repository_owner }}/Limbo_Bridge
   DEPLOY_BRANCH: ${{ inputs.channel == 'test' && 'test' || 'main' }}
   DOCKER_CHANNEL_TAG: ${{ inputs.channel == 'test' && 'test' || 'latest' }}
 
@@ -225,7 +225,7 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN_LIMBO }}
-          repository: espressomatic/limbo
+          repository: espressomatic/limbo-bridge
           readme-filepath: DOCKERHUB_DESCRIPTION.md
 
       - name: Checkout deploy repo
@@ -271,20 +271,20 @@ jobs:
             tag="v${RELEASE_VERSION}"
           fi
           if [[ "${{ inputs.channel }}" == "test" ]]; then
-            zip_name="limbo-bundle-test-${NEW_VERSION}.zip"
+            zip_name="limbo-bridge-test-${NEW_VERSION}.zip"
           else
-            zip_name="limbo-bundle-${RELEASE_VERSION}.zip"
+            zip_name="limbo-bridge-${RELEASE_VERSION}.zip"
           fi
           (cd deploy-repo && zip -r "/tmp/${zip_name}" . -x ".git/*")
           if gh release view "$tag" -R "${DEPLOY_REPO}" >/dev/null 2>&1; then
             gh release upload "$tag" "/tmp/${zip_name}" -R "${DEPLOY_REPO}" --clobber
           else
             if [[ "${{ inputs.channel }}" == "test" ]]; then
-              title="Limbo-Test Package ${NEW_VERSION}"
-              notes="Package bundle for Limbo-Test ${NEW_VERSION}."
+              title="Limbo Bridge Test Package ${NEW_VERSION}"
+              notes="Package bundle for Limbo Bridge Test ${NEW_VERSION}."
             else
-              title="Limbo Package ${RELEASE_VERSION}"
-              notes="Package bundle for Limbo ${RELEASE_VERSION}."
+              title="Limbo Bridge Package ${RELEASE_VERSION}"
+              notes="Package bundle for Limbo Bridge ${RELEASE_VERSION}."
             fi
             gh release create "$tag" "/tmp/${zip_name}" -R "${DEPLOY_REPO}" \
               --title "${title}" \

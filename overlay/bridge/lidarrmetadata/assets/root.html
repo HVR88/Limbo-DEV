@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Lmbo</title>
+    <title>Limbo</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Teko:wght@400;700&display=swap"
       rel="stylesheet"
@@ -49,7 +49,13 @@
           </span>
         </button>
         <div class="hero">
-          <img src="__ICON_URL__" alt="Limbo" />
+          <span
+            class="hero-logo"
+            role="img"
+            aria-label="Limbo"
+            alt="Limbo Logo"
+          >
+          </span>
           <div class="hero-text">
             <h1 class="hero-title">Limbo</h1>
             <span class="hero-sub"><em>FAST • Local • Private</em></span>
@@ -61,46 +67,46 @@
             <button class="tab-button active" data-tab="filter-details">
               Media Filters
             </button>
-            <button class="tab-button" data-tab="refresh-releases">
-              Bulk Refresh
+            <button class="tab-button" data-tab="releasesplitting">
+              Release Splitting
             </button>
-            <button class="tab-button" data-tab="artwork">Services</button>
+            <button class="tab-button" data-tab="stats">Stats</button>
             <button class="tab-button" data-tab="tools">Tools</button>
           </div>
           <div class="tab-panel active" data-tab-panel="filter-details">
             <div class="tab_inside-box">
               <div class="filters_box">__CONFIG_HTML__</div>
               <div class="actions_box">
-                <button class="action-button" type="button">
-                  <span class="action-button__inner">Apply</span>
+                <button
+                  class="action-button"
+                  type="button"
+                  data-modal-open="refresh-modal"
+                >
+                  <span class="action-button__inner">REFRESH</span>
                 </button>
-                <button class="action-button" type="button">
-                  <span class="action-button__inner">Reset</span>
-                </button>
+                <div class="tabs-footnote">
+                  Free-form, no special formatting needed
+                </div>
                 <div class="tabs-footnote">
                   Exclude or include selected media types, Vinyl LP, Cassette,
                   CD, etc.
                 </div>
+                <button class="action-button" type="button" data-reset-button>
+                  <span class="action-button__inner">Reset</span>
+                </button>
               </div>
             </div>
           </div>
-          <div class="tab-panel" data-tab-panel="refresh-releases">
+          <div class="tab-panel" data-tab-panel="releasesplitting">
             <div class="tab_inside-box">
-              <textarea
-                class="refresh-input"
-                placeholder="Paste artist or release IDs, MBIDs, Lidarr or MusicBrainz URLs here..."
-              ></textarea>
               <div class="actions_box">
-                <button class="action-button" type="button" data-refresh-button>
-                  <span class="action-button__inner">Refresh</span>
-                </button>
                 <div class="tabs-footnote">
-                  Free-form, no special formatting is needed
+                  Free-form, no special formatting needed
                 </div>
               </div>
             </div>
           </div>
-          <div class="tab-panel" data-tab-panel="artwork">
+          <div class="tab-panel" data-tab-panel="stats">
             <div class="filters_box">
               <div class="links">
                 <div class="links-left"></div>
@@ -242,7 +248,11 @@
         </div>
       </div>
     </div>
-    <div class="modal confirm-modal" data-modal="confirm-action" aria-hidden="true">
+    <div
+      class="modal confirm-modal"
+      data-modal="confirm-action"
+      aria-hidden="true"
+    >
       <div class="modal__backdrop" data-modal-backdrop></div>
       <div
         class="modal__panel confirm-modal__panel"
@@ -254,7 +264,7 @@
           <h2 class="settings-modal__title">Confirm</h2>
           <p class="settings-modal__subtitle" data-confirm-message></p>
           <div class="confirm-modal__actions">
-            <a href="#" class="modal-link" data-confirm-cancel>Cancel</a>
+            <a href="#" class="modal-link" data-confirm-cancel>CANCEL</a>
             <a href="#" class="modal-link" data-confirm-ok>OK</a>
           </div>
         </div>
@@ -273,6 +283,54 @@
           <p class="settings-modal__subtitle" data-info-message></p>
           <div class="info-modal__actions">
             <a href="#" class="modal-link" data-info-close>Close</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="modal refresh-modal"
+      data-modal="refresh-modal"
+      aria-hidden="true"
+      data-modal-static
+    >
+      <div class="modal__backdrop" data-modal-backdrop></div>
+      <div
+        class="modal__panel refresh-modal__panel"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Bulk Refresh"
+      >
+        <div class="refresh-modal__content">
+          <h2 class="settings-modal__title">Bulk Refresh</h2>
+          <p class="settings-modal__subtitle">
+            Paste any number of Artist or Album IDs, MBIDs, Lidarr URLs or
+            MusicBrainz URLs.
+          </p>
+          <div class="refresh-input-wrap">
+            <div
+              class="refresh-editor"
+              contenteditable="true"
+              role="textbox"
+              aria-multiline="true"
+              data-refresh-editor
+              data-placeholder="Paste artist or release IDs, MBIDs, Lidarr or MusicBrainz URLs here..."
+            ></div>
+          </div>
+          <div class="refresh-modal__actions">
+            <button
+              class="modal-link modal-link-text"
+              type="button"
+              data-modal-close
+            >
+              CANCEL
+            </button>
+            <button
+              class="modal-link modal-link-primary modal-link-text"
+              type="button"
+              data-refresh-button
+            >
+              SUBMIT
+            </button>
           </div>
         </div>
       </div>
@@ -312,21 +370,21 @@
         button.disabled = true;
         try {
           const response = await fetch(url, { method: "POST", headers });
-            const text = await response.text();
-            if (!response.ok) {
-              suppressHover();
-              openInfo(`Error (${response.status}): ${text}`);
-              return;
-            }
+          const text = await response.text();
+          if (!response.ok) {
             suppressHover();
-            openInfo(`OK: ${text}`);
-          } catch (error) {
-            suppressHover();
-            openInfo(`Request failed: ${error}`);
-          } finally {
-            button.disabled = false;
+            openInfo(`Error (${response.status}): ${text}`);
+            return;
           }
-        };
+          suppressHover();
+          openInfo(`OK: ${text}`);
+        } catch (error) {
+          suppressHover();
+          openInfo(`Request failed: ${error}`);
+        } finally {
+          button.disabled = false;
+        }
+      };
 
       cacheButtons.forEach((button) => {
         button.addEventListener("click", () => runCacheAction(button));
@@ -364,20 +422,32 @@
       };
 
       let pendingConfirmAction = null;
-      const confirmModal = document.querySelector('[data-modal="confirm-action"]');
-      const confirmMessage = confirmModal?.querySelector("[data-confirm-message]");
+      const confirmModal = document.querySelector(
+        '[data-modal="confirm-action"]',
+      );
+      const confirmMessage = confirmModal?.querySelector(
+        "[data-confirm-message]",
+      );
       const confirmOk = confirmModal?.querySelector("[data-confirm-ok]");
-      const confirmCancel = confirmModal?.querySelector("[data-confirm-cancel]");
+      const confirmCancel = confirmModal?.querySelector(
+        "[data-confirm-cancel]",
+      );
       const infoModal = document.querySelector('[data-modal="info-action"]');
       const infoMessage = infoModal?.querySelector("[data-info-message]");
       const infoClose = infoModal?.querySelector("[data-info-close]");
 
-      const openConfirm = (message, action) => {
+      const openConfirm = (message, action, options = {}) => {
         if (!confirmModal || !confirmMessage) {
           return;
         }
         confirmMessage.textContent = message;
         pendingConfirmAction = action;
+        if (confirmOk) {
+          confirmOk.textContent = options.okLabel || "OK";
+        }
+        if (confirmCancel) {
+          confirmCancel.textContent = options.cancelLabel || "CANCEL";
+        }
         openModal(confirmModal);
       };
       const closeConfirm = () => {
@@ -442,19 +512,19 @@
             fetch(target, { method: "POST", headers })
               .then(async (response) => {
                 const text = await response.text();
-              if (!response.ok) {
+                if (!response.ok) {
+                  suppressHover();
+                  openInfo(`Error (${response.status}): ${text}`);
+                  return;
+                }
                 suppressHover();
-                openInfo(`Error (${response.status}): ${text}`);
-                return;
-              }
-              suppressHover();
-              openInfo("Replication started.");
-              pollReplicationStatus();
-            })
-            .catch((error) => {
-              suppressHover();
-              openInfo(`Request failed: ${error}`);
-            });
+                openInfo("Replication started.");
+                pollReplicationStatus();
+              })
+              .catch((error) => {
+                suppressHover();
+                openInfo(`Request failed: ${error}`);
+              });
           });
           return;
         }
@@ -630,35 +700,546 @@
         });
       }
 
-      const refreshInput = document.querySelector(".refresh-input");
+      const refreshEditor = document.querySelector("[data-refresh-editor]");
       const refreshButton = document.querySelector("[data-refresh-button]");
-      const extractIds = (text) => {
-        const mbidRegex =
-          /[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/g;
-        const mbids = new Set(text.match(mbidRegex) || []);
-        const stripped = text.replace(mbidRegex, " ");
-        const ids = new Set();
+      const mbidTokenRegex =
+        /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+      const mbidMatchRegex =
+        /[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/;
+      const tokenRegex =
+        /[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}|\b[0-9]{2,9}\b/g;
+      const refreshTokenState = new Map();
+      let refreshValidateTimer = null;
+      let refreshValidateController = null;
+      let refreshInputGuard = false;
 
-        const urlAlbumRegex = /\/album\/(\d+)(?:[/?#]|$)/gi;
-        for (const match of stripped.matchAll(urlAlbumRegex)) {
-          ids.add(match[1]);
+      const normalizeRefreshText = (value) => {
+        if (!value) {
+          return "";
         }
-        const queryRegex = /[?&](?:albumId|albumIds|id)=([0-9,]+)/gi;
-        for (const match of stripped.matchAll(queryRegex)) {
-          match[1]
-            .split(",")
-            .map((value) => value.trim())
-            .filter(Boolean)
-            .forEach((value) => ids.add(value));
-        }
-        const tokenRegex = /(?:^|[^0-9])([0-9]{1,9})(?=[^0-9]|$)/g;
-        for (const match of stripped.matchAll(tokenRegex)) {
-          ids.add(match[1]);
-        }
+        let text = String(value);
+        text = text.replace(/https?:\/\//gi, " https://");
+        text = text.replace(/https?:\/\/\S+/gi, (url) => {
+          const mbidMatch = url.match(mbidMatchRegex);
+          if (mbidMatch) {
+            return mbidMatch[0];
+          }
+          const pathMatch = url.match(/\/(?:album|artist)\/([0-9]+)/i);
+          if (pathMatch) {
+            return pathMatch[1];
+          }
+          const queryMatch = url.match(
+            /[?&](?:albumId|albumIds|id)=([0-9,]+)/i,
+          );
+          if (queryMatch) {
+            return queryMatch[1];
+          }
+          return url;
+        });
+        text = text.replace(/[?&](?:albumId|albumIds|id)=([0-9,]+)/gi, " $1 ");
+        return text;
+      };
 
+      const getTokenKey = (token) =>
+        mbidTokenRegex.test(token)
+          ? `mbid:${token.toLowerCase()}`
+          : `lidarr:${token}`;
+
+      const statusClassForToken = (token) => {
+        const key = getTokenKey(token);
+        const status = refreshTokenState.get(key) || "pending";
+        if (status === "valid") {
+          return "token-valid";
+        }
+        if (status === "invalid") {
+          return "token-invalid";
+        }
+        return "token-pending";
+      };
+
+      const createTokenElement = (token) => {
+        const span = document.createElement("span");
+        span.className = `token ${statusClassForToken(token)}`;
+        const normalizedToken = mbidTokenRegex.test(token)
+          ? token.toUpperCase()
+          : token;
+        span.dataset.token = normalizedToken;
+        span.dataset.tokenKey = getTokenKey(normalizedToken);
+        const text = document.createElement("span");
+        text.className = "token-text";
+        text.textContent = normalizedToken;
+        span.appendChild(text);
+        span.contentEditable = "false";
+        return span;
+      };
+      const createSeparatorNode = () => document.createTextNode("\u200B");
+
+      const getEditorTokens = () => {
+        if (!refreshEditor) {
+          return [];
+        }
+        return Array.from(refreshEditor.querySelectorAll(".token")).map(
+          (node) => node.dataset.token || "",
+        );
+      };
+
+      const getTokenSets = () => {
+        const mbids = new Set();
+        const lidarrIds = new Set();
+        getEditorTokens().forEach((token) => {
+          if (mbidTokenRegex.test(token)) {
+            mbids.add(token.toLowerCase());
+          } else if (token) {
+            lidarrIds.add(token);
+          }
+        });
+        return { mbids, lidarrIds };
+      };
+
+      const updateTokenClasses = () => {
+        if (!refreshEditor) {
+          return;
+        }
+        refreshEditor.querySelectorAll(".token").forEach((node) => {
+          const token = node.dataset.token || "";
+          const duplicate = node.classList.contains("token-duplicate");
+          node.className = `token ${statusClassForToken(token)}${
+            duplicate ? " token-duplicate" : ""
+          }`;
+        });
+      };
+
+      const normalizeWhitespaceBetweenTokens = () => {
+        if (!refreshEditor) {
+          return;
+        }
+        const nodes = Array.from(refreshEditor.childNodes);
+        const hasNonWhitespaceText = nodes.some(
+          (node) =>
+            node.nodeType === Node.TEXT_NODE &&
+            node.textContent.replace(/\s/g, "").length > 0 &&
+            node.textContent !== "\u200B",
+        );
+        if (hasNonWhitespaceText) {
+          return;
+        }
+        const tokens = nodes.filter(
+          (node) =>
+            node.nodeType === Node.ELEMENT_NODE &&
+            node.classList.contains("token"),
+        );
+        if (!tokens.length) {
+          refreshEditor.textContent = "";
+          return;
+        }
+        refreshEditor.innerHTML = "";
+        tokens.forEach((token) => {
+          refreshEditor.appendChild(token);
+          refreshEditor.appendChild(createSeparatorNode());
+        });
+      };
+
+      const scheduleDuplicateRemoval = (tokenEl) => {
+        if (!tokenEl || tokenEl.dataset.duplicateScheduled) {
+          return;
+        }
+        tokenEl.dataset.duplicateScheduled = "true";
+        setTimeout(() => {
+          removeTokenElement(tokenEl);
+        }, 650);
+      };
+
+      const markDuplicateTokens = () => {
+        if (!refreshEditor) {
+          return;
+        }
+        const seen = new Set();
+        refreshEditor.querySelectorAll(".token").forEach((node) => {
+          const key = node.dataset.tokenKey || "";
+          if (seen.has(key)) {
+            node.classList.add("token-duplicate");
+            scheduleDuplicateRemoval(node);
+          } else {
+            node.classList.remove("token-duplicate");
+            seen.add(key);
+          }
+        });
+      };
+
+      const getCaretOffset = (element) => {
+        const selection = window.getSelection();
+        if (!selection || selection.rangeCount === 0) {
+          return element.textContent.length;
+        }
+        const range = selection.getRangeAt(0);
+        if (!element.contains(range.startContainer)) {
+          return element.textContent.length;
+        }
+        const preRange = range.cloneRange();
+        preRange.selectNodeContents(element);
+        preRange.setEnd(range.startContainer, range.startOffset);
+        return preRange.toString().length;
+      };
+
+      const setCaretOffset = (element, offset) => {
+        const selection = window.getSelection();
+        if (!selection) {
+          return;
+        }
+        const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+        let current = walker.nextNode();
+        let remaining = offset;
+        while (current) {
+          const length = current.textContent.length;
+          if (remaining <= length) {
+            const range = document.createRange();
+            range.setStart(current, remaining);
+            range.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            return;
+          }
+          remaining -= length;
+          current = walker.nextNode();
+        }
+        const range = document.createRange();
+        range.selectNodeContents(element);
+        range.collapse(false);
+        selection.removeAllRanges();
+        selection.addRange(range);
+      };
+
+      const rebuildEditorFromText = (text, caretOffset) => {
+        if (!refreshEditor) {
+          return;
+        }
+        refreshInputGuard = true;
+        const normalized = normalizeRefreshText(text);
+        const fragment = document.createDocumentFragment();
+        let lastIndex = 0;
+        for (const match of normalized.matchAll(tokenRegex)) {
+          const start = match.index ?? 0;
+          const token = match[0];
+          const before = normalized.slice(lastIndex, start);
+          if (before) {
+            fragment.appendChild(document.createTextNode(before));
+          }
+          fragment.appendChild(createTokenElement(token));
+          lastIndex = start + token.length;
+        }
+        const after = normalized.slice(lastIndex);
+        if (after) {
+          fragment.appendChild(document.createTextNode(after));
+        }
+        refreshEditor.innerHTML = "";
+        refreshEditor.appendChild(fragment);
+        normalizeWhitespaceBetweenTokens();
+        markDuplicateTokens();
+        updateTokenClasses();
+        if (typeof caretOffset === "number") {
+          const safeOffset = Math.min(
+            caretOffset,
+            refreshEditor.textContent.length,
+          );
+          setCaretOffset(refreshEditor, safeOffset);
+        }
+        refreshInputGuard = false;
+      };
+
+      const appendTokensToEditor = (tokens) => {
+        if (!refreshEditor || !tokens.length) {
+          return;
+        }
+        tokens.forEach((token) => {
+          const tokenEl = createTokenElement(token);
+          refreshEditor.appendChild(tokenEl);
+          refreshEditor.appendChild(createSeparatorNode());
+        });
+        normalizeWhitespaceBetweenTokens();
+        markDuplicateTokens();
+        updateTokenClasses();
+        setCaretOffset(refreshEditor, refreshEditor.textContent.length);
+      };
+
+      const removeTokenElement = (tokenEl) => {
+        if (!refreshEditor || !tokenEl || !tokenEl.parentNode) {
+          return;
+        }
+        const parent = tokenEl.parentNode;
+        const prev = tokenEl.previousSibling;
+        const next = tokenEl.nextSibling;
+        if (prev && prev.nodeType === Node.TEXT_NODE) {
+          parent.removeChild(prev);
+        }
+        if (next && next.nodeType === Node.TEXT_NODE) {
+          parent.removeChild(next);
+        }
+        parent.removeChild(tokenEl);
+        normalizeWhitespaceBetweenTokens();
+        updateTokenClasses();
+        setCaretOffset(refreshEditor, refreshEditor.textContent.length);
+        updateRefreshState();
+      };
+
+      const scheduleRefreshValidation = (mbids, lidarrIds) => {
+        if (refreshValidateTimer) {
+          clearTimeout(refreshValidateTimer);
+        }
+        refreshValidateTimer = setTimeout(() => {
+          runRefreshValidation(mbids, lidarrIds);
+        }, 450);
+      };
+
+      const runRefreshValidation = async (mbids, lidarrIds) => {
+        if (!mbids.size && !lidarrIds.size) {
+          return;
+        }
+        if (refreshValidateController) {
+          refreshValidateController.abort();
+        }
+        refreshValidateController = new AbortController();
+        const payload = {
+          mbids: Array.from(mbids),
+          lidarr_ids: Array.from(lidarrIds).map((value) => Number(value)),
+        };
+        const applySimulatedValidation = () => {
+          Array.from(mbids).forEach((mbid) => {
+            const last = mbid.slice(-1).toLowerCase();
+            const isValid = "02468ace".includes(last);
+            refreshTokenState.set(
+              `mbid:${mbid.toLowerCase()}`,
+              isValid ? "valid" : "invalid",
+            );
+          });
+          Array.from(lidarrIds).forEach((value) => {
+            const numeric = Number(value);
+            const isValid = Number.isFinite(numeric) && numeric % 2 === 0;
+            refreshTokenState.set(
+              `lidarr:${value}`,
+              isValid ? "valid" : "invalid",
+            );
+          });
+          updateTokenClasses();
+        };
+        try {
+          const response = await fetch("/config/validate-ids", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+            signal: refreshValidateController.signal,
+          });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok || !data.ok) {
+            applySimulatedValidation();
+            return;
+          }
+          (data.mbid_valid || []).forEach((mbid) => {
+            refreshTokenState.set(
+              `mbid:${String(mbid).toLowerCase()}`,
+              "valid",
+            );
+          });
+          (data.mbid_invalid || []).forEach((mbid) => {
+            refreshTokenState.set(
+              `mbid:${String(mbid).toLowerCase()}`,
+              "invalid",
+            );
+          });
+          (data.lidarr_valid || []).forEach((value) => {
+            refreshTokenState.set(`lidarr:${value}`, "valid");
+          });
+          (data.lidarr_invalid || []).forEach((value) => {
+            refreshTokenState.set(`lidarr:${value}`, "invalid");
+          });
+          updateTokenClasses();
+        } catch (error) {
+          if (error && error.name === "AbortError") {
+            return;
+          }
+          applySimulatedValidation();
+        }
+      };
+
+      const updateRefreshState = () => {
+        if (!refreshEditor) {
+          return;
+        }
+        const { mbids, lidarrIds } = getTokenSets();
+        const liveKeys = new Set();
+        mbids.forEach((mbid) => {
+          const key = `mbid:${mbid}`;
+          liveKeys.add(key);
+          if (!refreshTokenState.has(key)) {
+            refreshTokenState.set(key, "pending");
+          }
+        });
+        lidarrIds.forEach((value) => {
+          const key = `lidarr:${value}`;
+          liveKeys.add(key);
+          if (!refreshTokenState.has(key)) {
+            refreshTokenState.set(key, "pending");
+          }
+        });
+        Array.from(refreshTokenState.keys()).forEach((key) => {
+          if (!liveKeys.has(key)) {
+            refreshTokenState.delete(key);
+          }
+        });
+        scheduleRefreshValidation(mbids, lidarrIds);
+      };
+
+      const handleRefreshPaste = (event) => {
+        if (!refreshEditor) {
+          return;
+        }
+        event.preventDefault();
+        const text = event.clipboardData?.getData("text") || "";
+        const normalized = normalizeRefreshText(text);
+        const tokens = Array.from(normalized.matchAll(tokenRegex)).map(
+          (match) => match[0],
+        );
+        if (tokens.length) {
+          appendTokensToEditor(tokens);
+          updateRefreshState();
+          return;
+        }
+        const caret = getCaretOffset(refreshEditor);
+        rebuildEditorFromText(normalized, caret);
+        updateRefreshState();
+      };
+
+      const handleRefreshInput = () => {
+        if (!refreshEditor || refreshInputGuard) {
+          return;
+        }
+        const caret = getCaretOffset(refreshEditor);
+        const text = refreshEditor.textContent || "";
+        rebuildEditorFromText(text, caret);
+        updateRefreshState();
+      };
+
+      const getAdjacentToken = (range, direction) => {
+        if (!refreshEditor) {
+          return null;
+        }
+        if (range.startContainer.nodeType === Node.TEXT_NODE) {
+          if (direction === "left" && range.startOffset === 0) {
+            return range.startContainer.previousSibling;
+          }
+          if (
+            direction === "right" &&
+            range.startOffset === range.startContainer.textContent.length
+          ) {
+            return range.startContainer.nextSibling;
+          }
+          return null;
+        }
+        if (range.startContainer === refreshEditor) {
+          const index = range.startOffset;
+          const nodes = refreshEditor.childNodes;
+          if (direction === "left" && index > 0) {
+            return nodes[index - 1];
+          }
+          if (direction === "right" && index < nodes.length) {
+            return nodes[index];
+          }
+        }
+        return null;
+      };
+
+      const handleRefreshKeydown = (event) => {
+        if (!refreshEditor) {
+          return;
+        }
+        if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+          const selection = window.getSelection();
+          if (!selection || selection.rangeCount === 0) {
+            return;
+          }
+          const range = selection.getRangeAt(0);
+          if (
+            !refreshEditor.contains(range.startContainer) ||
+            !range.collapsed
+          ) {
+            return;
+          }
+          if (
+            range.startContainer.nodeType === Node.TEXT_NODE &&
+            range.startContainer.textContent === "\u200B"
+          ) {
+            const current = range.startContainer;
+            const next =
+              event.key === "ArrowRight"
+                ? current.nextSibling?.nextSibling
+                : current.previousSibling?.previousSibling;
+            if (next && next.nodeType === Node.TEXT_NODE) {
+              event.preventDefault();
+              const nextRange = document.createRange();
+              nextRange.setStart(next, 0);
+              nextRange.collapse(true);
+              selection.removeAllRanges();
+              selection.addRange(nextRange);
+            }
+          }
+          return;
+        }
+        if (event.key !== "Backspace" && event.key !== "Delete") {
+          return;
+        }
+        const selection = window.getSelection();
+        if (!selection || selection.rangeCount === 0) {
+          return;
+        }
+        const range = selection.getRangeAt(0);
+        if (!refreshEditor.contains(range.startContainer)) {
+          return;
+        }
+        if (range.startContainer.nodeType === Node.TEXT_NODE) {
+          const direction = event.key === "Backspace" ? "left" : "right";
+          const gapNode = range.startContainer;
+          const adjacent =
+            direction === "left"
+              ? gapNode.previousSibling
+              : gapNode.nextSibling;
+          if (
+            adjacent &&
+            adjacent.classList &&
+            adjacent.classList.contains("token")
+          ) {
+            event.preventDefault();
+            removeTokenElement(adjacent);
+          }
+          return;
+        }
+        if (!range.collapsed) {
+          const tokens = Array.from(
+            refreshEditor.querySelectorAll(".token"),
+          ).filter((node) => range.intersectsNode(node));
+          if (tokens.length) {
+            event.preventDefault();
+            tokens.forEach((token) => removeTokenElement(token));
+            updateRefreshState();
+          }
+          return;
+        }
+        const direction = event.key === "Backspace" ? "left" : "right";
+        const adjacent = getAdjacentToken(range, direction);
+        if (
+          adjacent &&
+          adjacent.classList &&
+          adjacent.classList.contains("token")
+        ) {
+          event.preventDefault();
+          removeTokenElement(adjacent);
+          updateRefreshState();
+        }
+      };
+
+      const extractIds = () => {
+        const { mbids, lidarrIds } = getTokenSets();
         return {
           mbids: Array.from(mbids),
-          lidarrIds: Array.from(ids).map((value) => Number(value)),
+          lidarrIds: Array.from(lidarrIds).map((value) => Number(value)),
         };
       };
 
@@ -700,10 +1281,23 @@
         }
       };
 
-      if (refreshInput && refreshButton) {
+      if (refreshEditor && refreshButton) {
+        refreshEditor.addEventListener("paste", handleRefreshPaste);
+        refreshEditor.addEventListener("input", handleRefreshInput);
+        refreshEditor.addEventListener("keydown", handleRefreshKeydown);
+        refreshEditor.addEventListener("blur", () => {
+          if (refreshEditor.textContent.trim() === "") {
+            refreshEditor.textContent = "";
+          }
+        });
+        requestAnimationFrame(() => {
+          const caret = getCaretOffset(refreshEditor);
+          rebuildEditorFromText(refreshEditor.textContent || "", caret);
+          updateRefreshState();
+        });
+
         refreshButton.addEventListener("click", () => {
-          const text = refreshInput.value || "";
-          const { mbids, lidarrIds } = extractIds(text);
+          const { mbids, lidarrIds } = extractIds();
           if (!mbids.length && !lidarrIds.length) {
             suppressHover();
             openInfo("No Lidarr IDs or MBIDs found.");
@@ -724,9 +1318,8 @@
                 }`,
               );
             }
-            openConfirm(
-              `Queue refresh for ${parts.join(" and ")}?`,
-              () => runRefreshRequest(mbids, lidarrIds),
+            openConfirm(`Queue refresh for ${parts.join(" and ")}?`, () =>
+              runRefreshRequest(mbids, lidarrIds),
             );
           } else {
             runRefreshRequest(mbids, lidarrIds);
@@ -735,7 +1328,7 @@
       }
 
       const menuConfigForIndex = (index) => {
-        const mediaItems = [
+        const mediaItemsLeft = [
           { label: "ALL ANALOG", value: "all analog" },
           { label: "ALL DIGITAL", value: "all digital" },
           { label: "VINYL", value: "vinyl" },
@@ -745,50 +1338,49 @@
           { label: "CASSETTE", value: "cassette" },
           { label: "DIGITAL MEDIA", value: "digital media" },
         ];
+        const mediaItemsRight = [
+          { label: "PLACEHOLDER A", value: "placeholder a" },
+          { label: "PLACEHOLDER B", value: "placeholder b" },
+          { label: "PLACEHOLDER C", value: "placeholder c" },
+          { label: "PLACEHOLDER D", value: "placeholder d" },
+        ];
         if (index === 0) {
           return {
             type: "single",
-            items: [
-              { label: "ENABLED", value: "enabled" },
-              { label: "DISABLED", value: "disabled" },
-            ],
+            special: { label: "NO LIMIT", value: "no limit" },
+            columns: 2,
+            compact: true,
+            itemsLeft: Array.from({ length: 10 }, (_, i) => {
+              const value = `${i + 1}`;
+              return { label: value, value };
+            }),
+            itemsRight: Array.from({ length: 10 }, (_, i) => {
+              const value = `${i + 11}`;
+              return { label: value, value };
+            }),
           };
         }
         if (index === 1) {
           return {
-            type: "multi",
-            special: { label: "NONE", value: "none" },
-            items: mediaItems,
-          };
-        }
-        if (index === 2) {
-          return {
-            type: "multi",
-            special: { label: "ALL", value: "all" },
-            items: mediaItems,
-          };
-        }
-        if (index === 3) {
-          return {
             type: "single",
-            items: [
-              { label: "NO LIMIT", value: "no limit" },
-              ...Array.from({ length: 20 }, (_, i) => {
-                const value = `${20 - i}`;
-                return { label: value, value };
-              }),
-              { label: "NO LIMIT", value: "no limit" },
-            ],
-          };
-        }
-        if (index === 4) {
-          return {
-            type: "single",
+            compact: true,
+            narrow: true,
             items: [
               { label: "ANY", value: "any" },
               { label: "DIGITAL", value: "digital" },
               { label: "ANALOG", value: "analog" },
             ],
+          };
+        }
+        if (index === 2) {
+          return {
+            type: "multi",
+            special: { label: "ALL", value: "none" },
+            inverse: true,
+            columns: 2,
+            footer: "apply",
+            itemsLeft: mediaItemsLeft,
+            itemsRight: mediaItemsRight,
           };
         }
         return null;
@@ -797,6 +1389,12 @@
       const buildMenu = (config) => {
         const menu = document.createElement("div");
         menu.className = "config-menu";
+        if (config.compact) {
+          menu.classList.add("config-menu-compact");
+        }
+        if (config.narrow) {
+          menu.classList.add("config-menu-narrow");
+        }
         menu.dataset.menuType = config.type;
         if (config.special) {
           const special = document.createElement("button");
@@ -806,34 +1404,85 @@
           special.className = "config-menu-item config-menu-special";
           menu.appendChild(special);
         }
-        if (config.type === "single") {
+        const buildSingleButton = (item) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.textContent = item.label;
+          button.dataset.value = item.value;
+          button.className = "config-menu-item";
+          return button;
+        };
+        const buildMultiLabel = (item) => {
+          const label = document.createElement("label");
+          label.className = "config-menu-check";
+          const input = document.createElement("input");
+          input.type = "checkbox";
+          input.dataset.value = item.value;
+          const text = document.createElement("span");
+          text.textContent = item.label;
+          label.appendChild(input);
+          label.appendChild(text);
+          return label;
+        };
+        if (config.columns === 2) {
+          const grid = document.createElement("div");
+          grid.className = "config-menu-grid";
+          const left = document.createElement("div");
+          left.className = "config-menu-col";
+          const right = document.createElement("div");
+          right.className = "config-menu-col";
+          if (config.type === "single") {
+            (config.itemsLeft || []).forEach((item) =>
+              left.appendChild(buildSingleButton(item)),
+            );
+            (config.itemsRight || []).forEach((item) =>
+              right.appendChild(buildSingleButton(item)),
+            );
+          }
+          if (config.type === "multi") {
+            (config.itemsLeft || []).forEach((item) =>
+              left.appendChild(buildMultiLabel(item)),
+            );
+            (config.itemsRight || []).forEach((item) =>
+              right.appendChild(buildMultiLabel(item)),
+            );
+          }
+          grid.appendChild(left);
+          grid.appendChild(right);
+          menu.appendChild(grid);
+        } else if (config.type === "single") {
           config.items.forEach((item) => {
-            const button = document.createElement("button");
-            button.type = "button";
-            button.textContent = item.label;
-            button.dataset.value = item.value;
-            button.className = "config-menu-item";
-            menu.appendChild(button);
+            menu.appendChild(buildSingleButton(item));
+          });
+        } else if (config.type === "multi") {
+          config.items.forEach((item) => {
+            menu.appendChild(buildMultiLabel(item));
           });
         }
-        if (config.type === "multi") {
-          config.items.forEach((item) => {
-            const label = document.createElement("label");
-            label.className = "config-menu-check";
-            const input = document.createElement("input");
-            input.type = "checkbox";
-            input.dataset.value = item.value;
-            const text = document.createElement("span");
-            text.textContent = item.label;
-            label.appendChild(input);
-            label.appendChild(text);
-            menu.appendChild(label);
-          });
-          const cancel = document.createElement("button");
-          cancel.type = "button";
-          cancel.textContent = "CANCEL";
-          cancel.className = "config-menu-item config-menu-cancel";
-          menu.appendChild(cancel);
+        if (config.type === "multi" || config.type === "single") {
+          if (config.footer === "apply") {
+            const footer = document.createElement("div");
+            footer.className = "config-menu-footer";
+            const cancel = document.createElement("span");
+            cancel.textContent = "CANCEL";
+            cancel.className = "config-menu-text config-menu-cancel";
+            cancel.setAttribute("role", "button");
+            cancel.setAttribute("tabindex", "0");
+            const apply = document.createElement("span");
+            apply.textContent = "APPLY";
+            apply.className = "config-menu-text config-menu-apply";
+            apply.setAttribute("role", "button");
+            apply.setAttribute("tabindex", "0");
+            footer.appendChild(cancel);
+            footer.appendChild(apply);
+            menu.appendChild(footer);
+          } else {
+            const cancel = document.createElement("button");
+            cancel.type = "button";
+            cancel.textContent = "CANCEL";
+            cancel.className = "config-menu-item config-menu-cancel";
+            menu.appendChild(cancel);
+          }
         }
         menu.addEventListener("click", (event) => {
           event.stopPropagation();
@@ -844,9 +1493,19 @@
       const configButtons = Array.from(
         document.querySelectorAll("[data-config-menu]"),
       );
+      const configEnabledToggle = document.querySelector(
+        "[data-config-enabled]",
+      );
+      let configEnabledBaseline = configEnabledToggle
+        ? configEnabledToggle.checked
+        : true;
       const configMenuState = new Map();
       const configInitialState = [];
       const configAppliedState = [];
+      const configBaselineState = [];
+      const filterDetailsPanel = document.querySelector(
+        '[data-tab-panel="filter-details"]',
+      );
 
       const resetMultiMenu = (index) => {
         const state = configMenuState.get(index);
@@ -854,11 +1513,22 @@
           return;
         }
         const { menu, valueText, config } = state;
+        const specialButton = menu.querySelector(".config-menu-special");
+        if (config.inverse) {
+          menu.querySelectorAll('input[type="checkbox"]').forEach((input) => {
+            input.checked = true;
+            input.closest(".config-menu-check")?.classList.add("selected");
+          });
+          specialButton?.classList.add("selected");
+          if (valueText && config.special) {
+            valueText.textContent = config.special.value;
+          }
+          return;
+        }
         menu.querySelectorAll('input[type="checkbox"]').forEach((input) => {
           input.checked = false;
           input.closest(".config-menu-check")?.classList.remove("selected");
         });
-        const specialButton = menu.querySelector(".config-menu-special");
         specialButton?.classList.add("selected");
         if (valueText && config.special) {
           valueText.textContent = config.special.value;
@@ -895,6 +1565,41 @@
       const applyMultiSnapshot = (state, snapshot) => {
         const { menu, valueText, config } = state;
         const specialButton = menu.querySelector(".config-menu-special");
+        if (config.inverse) {
+          const allValues = []
+            .concat(config.itemsLeft || [])
+            .concat(config.itemsRight || [])
+            .map((item) => item.value);
+          const allChecked =
+            snapshot.specialSelected ||
+            snapshot.checked.length === 0 ||
+            snapshot.checked.length === allValues.length;
+          menu.querySelectorAll('input[type="checkbox"]').forEach((input) => {
+            const value = input.dataset.value || "";
+            const checked = allChecked
+              ? true
+              : snapshot.checked.includes(value);
+            input.checked = checked;
+            input
+              .closest(".config-menu-check")
+              ?.classList.toggle("selected", checked);
+          });
+          const unchecked = allValues.filter(
+            (value) => !snapshot.checked.includes(value),
+          );
+          if (allChecked || unchecked.length === 0) {
+            specialButton?.classList.add("selected");
+            if (valueText && config.special) {
+              valueText.textContent = config.special.value;
+            }
+          } else {
+            specialButton?.classList.remove("selected");
+            if (valueText) {
+              valueText.textContent = unchecked.join(", ");
+            }
+          }
+          return;
+        }
         if (snapshot.specialSelected || !snapshot.checked.length) {
           menu.querySelectorAll('input[type="checkbox"]').forEach((input) => {
             input.checked = false;
@@ -919,6 +1624,76 @@
         }
       };
 
+      const updateMediaTypesStrike = () => {
+        const state = configMenuState.get(2);
+        if (!state?.valueText) {
+          return;
+        }
+        const raw = state.valueText.textContent || "";
+        const parts = raw
+          .split(",")
+          .map((value) => value.trim())
+          .filter(Boolean);
+        if (!parts.length) {
+          state.valueText.textContent = "";
+          return;
+        }
+        state.valueText.innerHTML = parts
+          .map((part) => {
+            const safe = part
+              .replace(/&/g, "&amp;")
+              .replace(/</g, "&lt;")
+              .replace(/>/g, "&gt;");
+            return `<span class="media-type-token">${safe}</span>`;
+          })
+          .join("");
+      };
+
+      const adjustMenuPosition = (menu) => {
+        if (!menu) {
+          return;
+        }
+        const rect = menu.getBoundingClientRect();
+        const viewport = window.visualViewport || null;
+        const viewportW = viewport
+          ? viewport.width
+          : window.innerWidth || document.documentElement.clientWidth;
+        const viewportH = viewport
+          ? viewport.height
+          : window.innerHeight || document.documentElement.clientHeight;
+        const viewportX = viewport ? viewport.offsetLeft : 0;
+        const viewportY = viewport ? viewport.offsetTop : 0;
+        const margin = 30;
+        let shiftX = 0;
+        let shiftY = 0;
+        if (rect.right > viewportX + viewportW) {
+          shiftX -= rect.right - (viewportX + viewportW) + margin;
+        }
+        if (rect.left + shiftX < viewportX + margin) {
+          shiftX += -(rect.left + shiftX) + (viewportX + margin);
+        }
+        if (rect.bottom > viewportY + viewportH - margin) {
+          shiftY -= rect.bottom - (viewportY + viewportH - margin);
+        }
+        if (rect.top + shiftY < viewportY + margin) {
+          shiftY += -(rect.top + shiftY) + (viewportY + margin);
+        }
+        if (rect.top + shiftY < viewportY + margin) {
+          shiftY += viewportY + margin - (rect.top + shiftY);
+        }
+        menu.style.setProperty("--menu-shift-x", `${shiftX}px`);
+        menu.style.setProperty("--menu-shift-y", `${shiftY}px`);
+        const maxHeight = Math.max(180, viewportH - margin * 2);
+        menu.style.maxHeight = `${maxHeight}px`;
+        menu.style.overflowY = "auto";
+        if (rect.top + shiftY < viewportY + margin) {
+          menu.style.setProperty(
+            "--menu-shift-y",
+            `${viewportY + margin - rect.top}px`,
+          );
+        }
+      };
+
       configButtons.forEach((button, index) => {
         const config = menuConfigForIndex(index);
         if (!config) {
@@ -930,6 +1705,9 @@
           .closest(".config-value")
           ?.querySelector(".config-value-text");
         configMenuState.set(index, { button, menu, valueText, config });
+        if (index === 2 && valueText) {
+          valueText.classList.add("media-types-value");
+        }
         configInitialState[index] = {
           text: valueText?.textContent || "",
           snapshot:
@@ -938,6 +1716,10 @@
               : null,
         };
         configAppliedState[index] = {
+          text: configInitialState[index].text,
+          snapshot: configInitialState[index].snapshot,
+        };
+        configBaselineState[index] = {
           text: configInitialState[index].text,
           snapshot: configInitialState[index].snapshot,
         };
@@ -958,10 +1740,37 @@
           const checked = Array.from(
             menu.querySelectorAll('input[type="checkbox"]:checked'),
           ).map((input) => input.dataset.value || "");
+          if (config.inverse) {
+            const allValues = []
+              .concat(config.itemsLeft || [])
+              .concat(config.itemsRight || [])
+              .map((item) => item.value);
+            const unchecked = allValues.filter(
+              (value) => !checked.includes(value),
+            );
+            if (!unchecked.length && config.special) {
+              valueText.textContent = config.special.value;
+              menu
+                .querySelector(".config-menu-special")
+                ?.classList.add("selected");
+            } else {
+              valueText.textContent = unchecked.join(", ");
+              menu
+                .querySelector(".config-menu-special")
+                ?.classList.remove("selected");
+            }
+            if (index === 2) {
+              updateMediaTypesStrike();
+            }
+            return;
+          }
           if (!checked.length && config.special) {
             valueText.textContent = config.special.value;
           } else {
             valueText.textContent = checked.join(", ");
+          }
+          if (index === 2) {
+            updateMediaTypesStrike();
           }
         };
 
@@ -978,13 +1787,31 @@
               menu
                 .querySelector(".config-menu-special")
                 ?.classList.add("selected");
+              if (config.inverse) {
+                menu
+                  .querySelectorAll('input[type="checkbox"]')
+                  .forEach((input) => {
+                    input.checked = true;
+                    input
+                      .closest(".config-menu-check")
+                      ?.classList.add("selected");
+                  });
+                configMenuState.get(index).lastActiveSnapshot = {
+                  checked: []
+                    .concat(config.itemsLeft || [])
+                    .concat(config.itemsRight || [])
+                    .map((item) => item.value),
+                  specialSelected: true,
+                };
+              }
             } else {
               menu
                 .querySelectorAll('input[type="checkbox"]')
                 .forEach((input) => {
-                  const checked = tokens.includes(
-                    (input.dataset.value || "").toLowerCase(),
-                  );
+                  const value = (input.dataset.value || "").toLowerCase();
+                  const checked = config.inverse
+                    ? !tokens.includes(value)
+                    : tokens.includes(value);
                   input.checked = checked;
                   input
                     .closest(".config-menu-check")
@@ -992,12 +1819,24 @@
                 });
               if (tokens.length) {
                 configMenuState.get(index).lastActiveSnapshot = {
-                  checked: tokens,
+                  checked: config.inverse
+                    ? []
+                        .concat(config.itemsLeft || [])
+                        .concat(config.itemsRight || [])
+                        .map((item) => item.value)
+                        .filter(
+                          (value) =>
+                            !tokens.includes(String(value).toLowerCase()),
+                        )
+                    : tokens,
                   specialSelected: false,
                 };
               }
             }
           }
+        }
+        if (index === 2) {
+          updateMediaTypesStrike();
         }
 
         button.addEventListener("click", (event) => {
@@ -1008,22 +1847,71 @@
             }
           });
           const willOpen = !menu.classList.contains("open");
-          if (willOpen && config.type === "multi") {
-            const snapshot = getMultiSnapshot(menu, config, valueText);
-            configMenuState.get(index).snapshot = snapshot;
+          if (willOpen) {
+            if (config.type === "multi") {
+              const snapshot = getMultiSnapshot(menu, config, valueText);
+              configMenuState.get(index).snapshot = snapshot;
+            } else if (config.type === "single") {
+              configMenuState.get(index).snapshot = {
+                text: valueText?.textContent || "",
+              };
+            }
           }
           menu.classList.toggle("open");
+          if (willOpen) {
+            requestAnimationFrame(() => {
+              document
+                .querySelectorAll(".config-menu.open")
+                .forEach((openMenu) => {
+                  adjustMenuPosition(openMenu);
+                });
+            });
+          }
         });
 
         if (config.type === "single") {
+          const specialButton = menu.querySelector(".config-menu-special");
+          const cancelButton = menu.querySelector(".config-menu-cancel");
+          if (specialButton && config.special) {
+            specialButton.addEventListener("click", () => {
+              if (valueText) {
+                valueText.textContent = config.special.value;
+              }
+              setSelectedSingle(config.special.value?.toLowerCase() || "");
+              menu.classList.remove("open");
+              scheduleApplyFilterConfig();
+            });
+          }
+          if (cancelButton) {
+            cancelButton.addEventListener("click", () => {
+              const state = configMenuState.get(index);
+              if (state?.snapshot?.text !== undefined && valueText) {
+                valueText.textContent = state.snapshot.text;
+                setSelectedSingle(
+                  String(state.snapshot.text || "")
+                    .trim()
+                    .toLowerCase(),
+                );
+              }
+              menu.classList.remove("open");
+              scheduleApplyFilterConfig();
+            });
+          }
           menu.querySelectorAll("button").forEach((item) => {
             item.addEventListener("click", () => {
+              if (item.classList.contains("config-menu-special")) {
+                return;
+              }
+              if (item.classList.contains("config-menu-cancel")) {
+                return;
+              }
               if (valueText) {
                 valueText.textContent =
                   item.dataset.value || item.textContent || "";
               }
               setSelectedSingle(item.dataset.value?.toLowerCase() || "");
               menu.classList.remove("open");
+              scheduleApplyFilterConfig();
             });
           });
         }
@@ -1031,8 +1919,24 @@
         if (config.type === "multi") {
           const specialButton = menu.querySelector(".config-menu-special");
           const cancelButton = menu.querySelector(".config-menu-cancel");
+          const applyButton = menu.querySelector(".config-menu-apply");
           if (specialButton && config.special) {
             specialButton.addEventListener("click", () => {
+              if (config.inverse) {
+                menu
+                  .querySelectorAll('input[type="checkbox"]')
+                  .forEach((input) => {
+                    input.checked = true;
+                    input
+                      .closest(".config-menu-check")
+                      ?.classList.add("selected");
+                  });
+                specialButton.classList.add("selected");
+                if (valueText) {
+                  valueText.textContent = config.special.value;
+                }
+                return;
+              }
               menu
                 .querySelectorAll('input[type="checkbox"]')
                 .forEach((input) => {
@@ -1045,10 +1949,6 @@
               if (valueText) {
                 valueText.textContent = config.special.value;
               }
-              const otherIndex = index === 1 ? 2 : index === 2 ? 1 : null;
-              if (otherIndex !== null) {
-                restoreMultiMenu(otherIndex);
-              }
             });
           }
           if (cancelButton) {
@@ -1056,16 +1956,33 @@
               const state = configMenuState.get(index);
               if (state?.snapshot) {
                 applyMultiSnapshot(state, state.snapshot);
-                const otherIndex = index === 1 ? 2 : index === 2 ? 1 : null;
-                if (otherIndex !== null) {
-                  if (state.snapshot.checked && state.snapshot.checked.length) {
-                    resetMultiMenu(otherIndex);
-                  } else {
-                    restoreMultiMenu(otherIndex);
-                  }
-                }
               }
               menu.classList.remove("open");
+              scheduleApplyFilterConfig();
+              if (index === 2) {
+                updateMediaTypesStrike();
+              }
+            });
+            cancelButton.addEventListener("keydown", (event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                cancelButton.click();
+              }
+            });
+          }
+          if (applyButton) {
+            applyButton.addEventListener("click", () => {
+              menu.classList.remove("open");
+              scheduleApplyFilterConfig();
+              if (index === 2) {
+                updateMediaTypesStrike();
+              }
+            });
+            applyButton.addEventListener("keydown", (event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                applyButton.click();
+              }
             });
           }
           menu.querySelectorAll('input[type="checkbox"]').forEach((input) => {
@@ -1082,19 +1999,15 @@
                   state.lastActiveSnapshot = snapshot;
                 }
               }
-              const otherIndex = index === 1 ? 2 : index === 2 ? 1 : null;
-              if (otherIndex !== null) {
-                resetMultiMenu(otherIndex);
+              if (index === 2) {
+                updateMediaTypesStrike();
               }
             });
           });
         }
       });
-      const actionButtons = document.querySelectorAll(
-        ".actions_box .action-button",
-      );
-      const applyAllMenusButton = actionButtons[0];
-      const resetAllMenusButton = actionButtons[1];
+      const applyAllMenusButton = null;
+      const resetAllMenusButton = document.querySelector("[data-reset-button]");
       const saveAppliedState = () => {
         configMenuState.forEach((state, index) => {
           if (!state) {
@@ -1113,6 +2026,31 @@
           }
         });
       };
+
+      const applyFilterEnabledState = () => {
+        if (!filterDetailsPanel || !configEnabledToggle) {
+          return;
+        }
+        const enabled = Boolean(configEnabledToggle.checked);
+        filterDetailsPanel.classList.toggle("filters-disabled", !enabled);
+        const enabledLabel = filterDetailsPanel.querySelector(
+          "[data-filter-label-enabled]",
+        );
+        const disabledLabel = filterDetailsPanel.querySelector(
+          "[data-filter-label-disabled]",
+        );
+        if (enabledLabel && disabledLabel) {
+          enabledLabel.style.display = enabled ? "" : "none";
+          disabledLabel.style.display = enabled ? "none" : "";
+        }
+        configMenuState.forEach((state) => {
+          if (!state?.button) {
+            return;
+          }
+          state.button.toggleAttribute("disabled", !enabled);
+          state.menu?.classList.toggle("disabled", !enabled);
+        });
+      };
       const getMenuText = (index) => {
         const state = configMenuState.get(index);
         return state?.valueText?.textContent?.trim() || "";
@@ -1122,6 +2060,19 @@
         const state = configMenuState.get(index);
         if (!state || state.config.type !== "multi") {
           return [];
+        }
+        if (index === 2) {
+          updateMediaTypesStrike();
+        }
+        if (state.config.inverse) {
+          const allValues = []
+            .concat(state.config.itemsLeft || [])
+            .concat(state.config.itemsRight || [])
+            .map((item) => item.value);
+          const checked = Array.from(
+            state.menu.querySelectorAll('input[type="checkbox"]:checked'),
+          ).map((input) => input.dataset.value || "");
+          return allValues.filter((value) => !checked.includes(value));
         }
         const snapshot = getMultiSnapshot(
           state.menu,
@@ -1134,90 +2085,166 @@
         return snapshot.checked.filter(Boolean);
       };
 
+      let applyFiltersTimer = null;
+      const isLocalPreview = window.location.protocol === "file:";
+      const applyFilterConfig = async () => {
+        if (isLocalPreview) {
+          return;
+        }
+        const enabled = configEnabledToggle
+          ? Boolean(configEnabledToggle.checked)
+          : true;
+        const countText = getMenuText(0).toLowerCase();
+        const keepOnly =
+          !countText || countText === "no limit"
+            ? null
+            : Number.parseInt(countText, 10);
+        const preferText = getMenuText(1).toLowerCase();
+        const preferValue =
+          preferText === "digital" ? 0 : preferText === "analog" ? 1 : 2;
+        const prefer =
+          preferValue === 0 ? "digital" : preferValue === 1 ? "analog" : null;
+        let exclude = getMenuValues(2);
+        const mediaState = configMenuState.get(2);
+        if (mediaState?.config?.inverse) {
+          const allValues = []
+            .concat(mediaState.config.itemsLeft || [])
+            .concat(mediaState.config.itemsRight || [])
+            .map((item) => item.value);
+          if (exclude.length >= allValues.length) {
+            const fallback = "cd";
+            const checkbox = mediaState.menu.querySelector(
+              `input[data-value="${fallback}"]`,
+            );
+            if (checkbox) {
+              checkbox.checked = true;
+              checkbox.closest(".config-menu-check")?.classList.add("selected");
+            }
+            exclude = allValues.filter((value) => value !== fallback);
+            if (mediaState.valueText) {
+              mediaState.valueText.textContent = exclude.join(", ");
+            }
+          }
+        }
+
+        const payload = {
+          enabled,
+          exclude_media_formats: exclude,
+          keep_only_media_count: Number.isFinite(keepOnly) ? keepOnly : null,
+          prefer,
+          prefer_value: preferValue,
+        };
+        try {
+          const headers = { "Content-Type": "application/json" };
+          if (invalidateApiKey) {
+            headers.Authorization = invalidateApiKey;
+          }
+          const response = await fetch("/config/release-filter", {
+            method: "POST",
+            headers,
+            body: JSON.stringify(payload),
+          });
+          if (!response.ok) {
+            const text = await response.text();
+            suppressHover();
+            openInfo(`Error (${response.status}): ${text}`);
+            return;
+          }
+          saveAppliedState();
+          suppressHover();
+          openInfo("Filter settings applied.");
+        } catch (error) {
+          if (isLocalPreview) {
+            return;
+          }
+          suppressHover();
+          openInfo(`Request failed: ${error}`);
+        }
+      };
+      const scheduleApplyFilterConfig = () => {
+        if (applyFiltersTimer) {
+          clearTimeout(applyFiltersTimer);
+        }
+        applyFiltersTimer = setTimeout(() => {
+          applyFilterConfig();
+        }, 150);
+      };
+
       if (applyAllMenusButton) {
         applyAllMenusButton.addEventListener("click", async () => {
-          const enabledText = getMenuText(0).toLowerCase();
-          const enabled =
-            enabledText === "enabled" ||
-            enabledText === "yes" ||
-            enabledText === "true";
-          const exclude = getMenuValues(1);
-          const include = getMenuValues(2);
-          const countText = getMenuText(3).toLowerCase();
-          const keepOnly =
-            !countText || countText === "no limit"
-              ? null
-              : Number.parseInt(countText, 10);
-          const preferText = getMenuText(4).toLowerCase();
-          const preferValue =
-            preferText === "digital" ? 0 : preferText === "analog" ? 1 : 2;
-          const prefer =
-            preferValue === 0 ? "digital" : preferValue === 1 ? "analog" : null;
-
-          const payload = {
-            enabled,
-            exclude_media_formats: exclude,
-            include_media_formats: include,
-            keep_only_media_count: Number.isFinite(keepOnly) ? keepOnly : null,
-            prefer,
-            prefer_value: preferValue,
-          };
-          try {
-            const headers = { "Content-Type": "application/json" };
-            if (invalidateApiKey) {
-              headers.Authorization = invalidateApiKey;
-            }
-            const response = await fetch("/config/release-filter", {
-              method: "POST",
-              headers,
-              body: JSON.stringify(payload),
-            });
-            if (!response.ok) {
-              const text = await response.text();
-              suppressHover();
-              openInfo(`Error (${response.status}): ${text}`);
-              return;
-            }
-            saveAppliedState();
-            suppressHover();
-            openInfo("Filter settings applied.");
-          } catch (error) {
-            suppressHover();
-            openInfo(`Request failed: ${error}`);
-          }
+          await applyFilterConfig();
+        });
+      }
+      applyFilterEnabledState();
+      if (configEnabledToggle) {
+        configEnabledToggle.addEventListener("change", () => {
+          scheduleApplyFilterConfig();
+          applyFilterEnabledState();
         });
       }
       if (resetAllMenusButton) {
         resetAllMenusButton.addEventListener("click", () => {
-          configMenuState.forEach((state, index) => {
-            const applied = configAppliedState[index];
-            if (!state || !applied) {
-              return;
-            }
-            if (state.config.type === "single") {
-              const value = applied.text.trim().toLowerCase();
-              if (state.valueText) {
-                state.valueText.textContent = applied.text;
+          openConfirm(
+            "Reset filters to initial state?",
+            () => {
+              if (configEnabledToggle) {
+                configEnabledToggle.checked = Boolean(configEnabledBaseline);
+                scheduleApplyFilterConfig();
               }
-              state.menu.querySelectorAll("button").forEach((item) => {
-                item.classList.toggle(
-                  "selected",
-                  item.dataset.value?.toLowerCase() === value,
-                );
+              configMenuState.forEach((state, index) => {
+                const baseline = configBaselineState[index];
+                if (!state || !baseline) {
+                  return;
+                }
+                if (state.config.type === "single") {
+                  const value = baseline.text.trim().toLowerCase();
+                  if (state.valueText) {
+                    state.valueText.textContent = baseline.text;
+                  }
+                  state.menu.querySelectorAll("button").forEach((item) => {
+                    item.classList.toggle(
+                      "selected",
+                      item.dataset.value?.toLowerCase() === value,
+                    );
+                  });
+                }
+                if (state.config.type === "multi" && baseline.snapshot) {
+                  applyMultiSnapshot(state, baseline.snapshot);
+                  state.lastActiveSnapshot = baseline.snapshot;
+                }
               });
-            }
-            if (state.config.type === "multi" && applied.snapshot) {
-              applyMultiSnapshot(state, applied.snapshot);
-              state.lastActiveSnapshot = applied.snapshot;
-            }
-          });
+              scheduleApplyFilterConfig();
+            },
+            { okLabel: "RESET", cancelLabel: "CANCEL" },
+          );
         });
       }
       document.addEventListener("click", () => {
-        document.querySelectorAll(".config-menu.open").forEach((menu) => {
+        const openMenus = document.querySelectorAll(".config-menu.open");
+        if (!openMenus.length) {
+          return;
+        }
+        openMenus.forEach((menu) => {
           menu.classList.remove("open");
+          menu.style.removeProperty("--menu-shift-x");
+          menu.style.removeProperty("--menu-shift-y");
+        });
+        scheduleApplyFilterConfig();
+      });
+      window.addEventListener("resize", () => {
+        document.querySelectorAll(".config-menu.open").forEach((menu) => {
+          adjustMenuPosition(menu);
         });
       });
+      window.addEventListener(
+        "scroll",
+        () => {
+          document.querySelectorAll(".config-menu.open").forEach((menu) => {
+            adjustMenuPosition(menu);
+          });
+        },
+        { passive: true },
+      );
 
       const syncActionButtonWidth = () => {
         const probe = document.createElement("span");
@@ -1251,13 +2278,13 @@
         const filterBox = document.querySelector(
           '[data-tab-panel="filter-details"] .filters_box',
         );
-        const refreshInput = document.querySelector(".refresh-input");
-        if (!filterBox || !refreshInput) {
+        const refreshEditor = document.querySelector("[data-refresh-editor]");
+        if (!filterBox || !refreshEditor) {
           return;
         }
         const height = Math.round(filterBox.getBoundingClientRect().height);
         if (height > 0) {
-          refreshInput.style.minHeight = `${height}px`;
+          refreshEditor.style.minHeight = `${height}px`;
         }
       };
 
@@ -1330,6 +2357,12 @@
           event.preventDefault();
           const target = button.getAttribute("data-modal-open");
           openModal(getModalById(target));
+          if (target === "refresh-modal") {
+            const editor = document.querySelector("[data-refresh-editor]");
+            if (editor) {
+              requestAnimationFrame(() => editor.focus());
+            }
+          }
         });
       });
 
@@ -1343,6 +2376,9 @@
       document.querySelectorAll("[data-modal-backdrop]").forEach((backdrop) => {
         backdrop.addEventListener("click", () => {
           const modal = backdrop.closest("[data-modal]");
+          if (modal && modal.hasAttribute("data-modal-static")) {
+            return;
+          }
           closeModal(modal);
         });
       });

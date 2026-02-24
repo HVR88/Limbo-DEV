@@ -2,7 +2,7 @@
 services:
   api:
     # Use a local tag or set via env
-    image: ${LIMBO_IMAGE:-espressomatic/limbo:latest}
+    image: ${LIMBO_IMAGE:-espressomatic/limbo-bridge:latest}
     ports:
       - "${LIMBO_PORT:-5001}:5001"
     environment:

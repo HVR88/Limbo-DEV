@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/HVR88/Limbo/main/assets/limbo-icon.png" alt="Limbo" width="500" />
+  <img src="https://raw.githubusercontent.com/HVR88/Limbo_Bridge_DEV/main/assets/limbo-icon.png" alt="Limbo" width="500" />
 </p>
 
 # Lidarr/MusicBrainz Bridge
@@ -39,7 +39,7 @@ You should already be running a plugins-enabled [Lidarr](https://hub.docker.com/
 **Install Limbo Plugin**
 
 1. In Lidarr, open **System → Plugins**
-2. Paste the GitHub repo URL `https://github.com/HVR88/Limbo` into the GitHub URL box and click **Install**.
+2. Paste the GitHub repo URL `https://github.com/HVR88/Limbo_Bridge` into the GitHub URL box and click **Install**.
 3. Restart Lidarr when prompted.
 
 If you don't see a System → Plugins page in your Lidarr, switch to the `nightly` branch, such as **[LinuxServer.io's](https://hub.docker.com/r/linuxserver/lidarr)**
@@ -112,7 +112,7 @@ The `init` container will exit after completing setup. That is expected.
 If you use custom image tags, set them via environment:
 
 ```bash
-LIMBO_IMAGE=espressomatic/limbo:latest \
+LIMBO_IMAGE=espressomatic/limbo-bridge:latest \
 MB_NETWORK=musicbrainz_default \
 docker compose -f docker-compose.yml up -d
 ```

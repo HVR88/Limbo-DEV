@@ -604,9 +604,7 @@ def register_root_route() -> None:
 
         @upstream_app.app.route("/assets/limbo-icon.png", methods=["GET"])
         async def _limbo_icon():
-            return await send_file(
-                assets_dir / "limbo-icon.png", mimetype="image/png"
-            )
+            return await send_file(assets_dir / "limbo-icon.png", mimetype="image/png")
 
     for rule in upstream_app.app.url_map.iter_rules():
         if rule.rule == "/assets/limbo-settings.svg":
@@ -738,9 +736,7 @@ def register_root_route() -> None:
                 except Exception as exc:
                     return jsonify({"ok": False, "error": str(exc)}), 500
 
-            script_path = os.getenv(
-                "LIMBO_REPLICATION_SCRIPT", "/admin/replicate-now"
-            )
+            script_path = os.getenv("LIMBO_REPLICATION_SCRIPT", "/admin/replicate-now")
             script = Path(script_path)
             if not script.exists() and not script_path.endswith(".sh"):
                 candidate = Path(script_path + ".sh")
@@ -927,7 +923,7 @@ def register_root_route() -> None:
             if base_path
             else "/assets/limbo-icon.png"
         )
-        lm_repo_url = "https://github.com/HVR88/Limbo"
+        lm_repo_url = "https://github.com/HVR88/Limbo_Bridge"
         mbms_url = "https://github.com/HVR88/MBMS_PLUS"
 
         def fmt_config_value(value: object, *, empty_label: str = "none") -> str:
@@ -945,48 +941,58 @@ def register_root_route() -> None:
         media_formats_url = (
             "https://github.com/HVR88/Docs-Extras/blob/master/docs/Media-Formats.md"
         )
-        exclude_label = 'Exclude <a class="config-link" href="{}" target="_blank" rel="noopener">Media Types</a>'.format(
+        exclude_label = '<a class="config-link" href="{}" target="_blank" rel="noopener">Media Types</a>'.format(
             html.escape(media_formats_url)
         )
         include_label = 'Include <a class="config-link" href="{}" target="_blank" rel="noopener">Media Types</a>'.format(
             html.escape(media_formats_url)
         )
+        config_menu_svg = _read_inline_svg("limbo-arrows-updn.svg")
+        enabled_value = fmt_config_value(config.get("enabled")).upper()
+        enabled_checked = "true" if config.get("enabled") else "false"
         config_rows = [
             (
-                "Filter by Release Media Types",
-                fmt_config_value(config.get("enabled")),
+                f"<span data-filter-label-enabled>Filtering Enabled</span>"
+                f'<span data-filter-label-disabled style="display:none">Filtering Disabled</span>',
+                f'<label class="config-toggle">'
+                f'<input type="checkbox" data-config-enabled {"checked" if enabled_checked == "true" else ""} />'
+                '<span class="config-toggle__track" aria-hidden="true">'
+                '<span class="config-toggle__thumb"></span>'
+                "</span>"
+                "</label>",
+            ),
+            (
+                "Limit the number of releases",
+                f'<span class="config-value-text">{html.escape(fmt_config_value(config.get("keep_only_media_count"), empty_label="no limit"))}</span>'
+                '<button class="config-action" type="button" aria-label="More" data-config-menu>'
+                f'<span class="config-action__inner">{config_menu_svg}</span>'
+                "</button>",
+            ),
+            (
+                "(Optional) Preferred media type when limiting",
+                f'<span class="config-value-text">{html.escape(fmt_config_value(config.get("prefer"), empty_label="any"))}</span>'
+                '<button class="config-action" type="button" aria-label="More" data-config-menu>'
+                f'<span class="config-action__inner">{config_menu_svg}</span>'
+                "</button>",
             ),
             (
                 exclude_label,
-                fmt_config_value(config.get("exclude_media_formats")),
+                f'<span class="config-value-text">{html.escape(fmt_config_value(config.get("exclude_media_formats")))}</span>'
+                '<button class="config-action" type="button" aria-label="More" data-config-menu>'
+                f'<span class="config-action__inner">{config_menu_svg}</span>'
+                "</button>",
             ),
             (
-                include_label,
-                fmt_config_value(
-                    config.get("include_media_formats"), empty_label="all"
-                ),
-            ),
-            (
-                "Maximum Number of Releases",
-                fmt_config_value(
-                    config.get("keep_only_media_count"), empty_label="no limit"
-                ),
-            ),
-            (
-                "Preferred Media Types (when setting Max)",
-                fmt_config_value(config.get("prefer"), empty_label="any"),
+                "&nbsp;",
+                '<span class="config-value-text">&nbsp;</span>',
             ),
         ]
-        config_menu_svg = _read_inline_svg("limbo-arrows-updn.svg")
         config_html = "\n".join(
             [
                 '          <div class="config-row">'
                 f'<div class="config-label">{label}</div>'
                 '<div class="config-value">'
-                f'<span class="config-value-text">{html.escape(value)}</span>'
-                '<button class="config-action" type="button" aria-label="More" data-config-menu>'
-                f'<span class="config-action__inner">{config_menu_svg}</span>'
-                "</button>"
+                f"{value}"
                 "</div>"
                 "</div>"
                 for label, value in config_rows
@@ -1073,7 +1079,9 @@ def register_root_route() -> None:
         else:
             lidarr_pill_class = "pill has-action"
             lidarr_pill_href = html.escape(lidarr_ui_url)
-            lidarr_arrow = f'<span class="pill-arrow" aria-hidden="true">{tall_arrow_svg}</span>'
+            lidarr_arrow = (
+                f'<span class="pill-arrow" aria-hidden="true">{tall_arrow_svg}</span>'
+            )
         lidarr_plugins_url = (
             f"{lidarr_ui_url.rstrip('/')}/system/plugins" if lidarr_ui_url else ""
         )
@@ -1098,6 +1106,7 @@ def register_root_route() -> None:
             if mbms_latest and _is_newer_version(info["mbms_plus_version"], mbms_latest)
             else None
         )
+
         def _format_version_value(
             current: str, update: Optional[str]
         ) -> Tuple[str, bool]:

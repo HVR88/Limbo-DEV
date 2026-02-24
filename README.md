@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/HVR88/Limbo-DEV/main/assets/limbo-icon.png" alt="Limbo" width="250" />
+  <img src="https://raw.githubusercontent.com/HVR88/Limbo_Bridge_DEV/main/assets/limbo-icon.png" alt="Limbo" width="250" />
 </p>
 
 # Limbo Development Source
@@ -17,7 +17,7 @@ and contains Limbo container plus related tooling.
 
 > [!IMPORTANT]
 >
-> **_For the premade Docker container: https://github.com/HVR88/Limbo_**
+> **_For the premade Docker container: https://github.com/HVR88/Limbo_Bridge_**
 >
 > **Plugin status**:
 > References here are historical; this repo no longer builds or publishes a plugin.
@@ -112,7 +112,7 @@ The script also creates the cache tables (`fanart`, `tadb`, `wikipedia`, `artist
 Recommended (pulls the upstream submodule automatically):
 
 ```bash
-git clone --recurse-submodules https://github.com/HVR88/Limbo.git
+git clone --recurse-submodules https://github.com/HVR88/Limbo_Bridge_DEV.git
 ```
 
 If you already cloned without submodules:
@@ -146,7 +146,7 @@ Start the container using the provided settings file (Compose will pull the imag
 docker compose -f deploy/compose/limbo-hosted-services.yml up -d
 ```
 
-Note: Package files default to `espressomatic/limbo:latest`. If you build locally, set `LIMBO_IMAGE` to your tag.
+Note: Package files default to `espressomatic/limbo-bridge:latest`. If you build locally, set `LIMBO_IMAGE` to your tag.
 
 If you want to run it on the **same Docker network** as your MusicBrainz mirror and auto-run the **init container**, use the repo’s root `docker-compose.yml` (it’s already there if you cloned the repo). Then run:
 

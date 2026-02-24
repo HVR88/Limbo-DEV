@@ -1,2 +1,2 @@
 Thanks for the contribution! Please open pull requests against the dev repo instead:
-https://github.com/HVR88/Limbo-DEV
+https://github.com/HVR88/Limbo_Bridge_DEV

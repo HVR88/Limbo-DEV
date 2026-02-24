@@ -21,206 +21,278 @@ _STATE_FILE = Path(
 
 
 def register_config_routes() -> None:
-    for rule in upstream_app.app.url_map.iter_rules():
-        if rule.rule == "/config/release-filter":
-            return
+    existing_rules = {rule.rule for rule in upstream_app.app.url_map.iter_rules()}
 
     _load_persisted_config()
 
-    @upstream_app.app.route("/config/release-filter", methods=["GET", "POST"])
-    async def _limbo_release_filter_config():
-        if request.method == "GET":
-            prefer_value = _prefer_to_value(release_filters.get_runtime_media_prefer())
-            data = {
-                "enabled": bool(_read_enabled_flag()),
-                "exclude_media_formats": release_filters.get_runtime_media_exclude() or [],
-                "include_media_formats": release_filters.get_runtime_media_include() or [],
-                "keep_only_media_count": release_filters.get_runtime_media_keep_only(),
-                "prefer": release_filters.get_runtime_media_prefer(),
-                "prefer_value": prefer_value,
-            }
-            data.update(
+    if "/config/release-filter" not in existing_rules:
+        @upstream_app.app.route("/config/release-filter", methods=["GET", "POST"])
+        async def _limbo_release_filter_config():
+            if request.method == "GET":
+                prefer_value = _prefer_to_value(release_filters.get_runtime_media_prefer())
+                data = {
+                    "enabled": bool(_read_enabled_flag()),
+                    "exclude_media_formats": release_filters.get_runtime_media_exclude() or [],
+                    "include_media_formats": release_filters.get_runtime_media_include() or [],
+                    "keep_only_media_count": release_filters.get_runtime_media_keep_only(),
+                    "prefer": release_filters.get_runtime_media_prefer(),
+                    "prefer_value": prefer_value,
+                }
+                data.update(
+                    {
+                        "excludeMediaFormats": data["exclude_media_formats"],
+                        "includeMediaFormats": data["include_media_formats"],
+                        "keepOnlyMediaCount": data["keep_only_media_count"],
+                        "preferValue": data["prefer_value"],
+                    }
+                )
+                return jsonify(data)
+            payload = await request.get_json(silent=True) or {}
+            enabled = _is_truthy(payload.get("enabled", True))
+            lidarr_base_url, base_url_provided = _extract_lidarr_base_url(payload)
+            lidarr_url_base = _extract_lidarr_url_base(payload)
+            lidarr_port = _extract_lidarr_port(payload)
+            lidarr_use_ssl = _extract_lidarr_use_ssl(payload)
+            lidarr_api_key, api_key_provided = _extract_lidarr_api_key(payload)
+            lidarr_client_ip = _extract_client_ip(request)
+            if lidarr_client_ip:
+                upstream_app.app.logger.info("Limbo config sync from Lidarr at %s", lidarr_client_ip)
+            if lidarr_client_ip and (not base_url_provided or _is_localhost_url(lidarr_base_url)):
+                scheme = "https" if lidarr_use_ssl else "http"
+                port = lidarr_port or (6868 if lidarr_use_ssl else 8686)
+                lidarr_base_url = f"{scheme}://{lidarr_client_ip}:{port}{lidarr_url_base}"
+                base_url_provided = True
+            exclude = payload.get("exclude_media_formats")
+            if exclude is None:
+                exclude = payload.get("excludeMediaFormats")
+            if exclude is None:
+                exclude = payload.get("media_exclude")
+            include = payload.get("include_media_formats")
+            if include is None:
+                include = payload.get("includeMediaFormats")
+            if include is None:
+                include = payload.get("media_include")
+            keep_only_count = payload.get("keep_only_media_count")
+            if keep_only_count is None:
+                keep_only_count = payload.get("keepOnlyMediaCount")
+            prefer = payload.get("prefer")
+            prefer_value = payload.get("prefer_value")
+            if prefer_value is None:
+                prefer_value = payload.get("preferValue")
+            if prefer_value is not None:
+                prefer = _prefer_value_to_token(prefer_value)
+            if not enabled:
+                exclude = []
+                include = []
+                keep_only_count = None
+                prefer = None
+
+            release_filters.set_runtime_media_exclude(exclude)
+            release_filters.set_runtime_media_include(include)
+            release_filters.set_runtime_media_keep_only(keep_only_count)
+            release_filters.set_runtime_media_prefer(prefer)
+            _persist_config(
                 {
-                    "excludeMediaFormats": data["exclude_media_formats"],
-                    "includeMediaFormats": data["include_media_formats"],
-                    "keepOnlyMediaCount": data["keep_only_media_count"],
-                    "preferValue": data["prefer_value"],
+                    "enabled": bool(enabled),
+                    "exclude_media_formats": release_filters.get_runtime_media_exclude() or [],
+                    "include_media_formats": release_filters.get_runtime_media_include() or [],
+                    "keep_only_media_count": release_filters.get_runtime_media_keep_only(),
+                    "prefer": release_filters.get_runtime_media_prefer(),
+                    "lidarr_version": _extract_lidarr_version(payload),
+                    "plugin_version": _extract_plugin_version(payload),
+                    "lidarr_base_url": lidarr_base_url if base_url_provided else None,
+                    "lidarr_api_key": lidarr_api_key if api_key_provided else None,
+                    "lidarr_client_ip": lidarr_client_ip,
                 }
             )
-            return jsonify(data)
-        payload = await request.get_json(silent=True) or {}
-        enabled = _is_truthy(payload.get("enabled", True))
-        lidarr_base_url, base_url_provided = _extract_lidarr_base_url(payload)
-        lidarr_url_base = _extract_lidarr_url_base(payload)
-        lidarr_port = _extract_lidarr_port(payload)
-        lidarr_use_ssl = _extract_lidarr_use_ssl(payload)
-        lidarr_api_key, api_key_provided = _extract_lidarr_api_key(payload)
-        lidarr_client_ip = _extract_client_ip(request)
-        if lidarr_client_ip:
-            upstream_app.app.logger.info("Limbo config sync from Lidarr at %s", lidarr_client_ip)
-        if lidarr_client_ip and (not base_url_provided or _is_localhost_url(lidarr_base_url)):
-            scheme = "https" if lidarr_use_ssl else "http"
-            port = lidarr_port or (6868 if lidarr_use_ssl else 8686)
-            lidarr_base_url = f"{scheme}://{lidarr_client_ip}:{port}{lidarr_url_base}"
-            base_url_provided = True
-        exclude = payload.get("exclude_media_formats")
-        if exclude is None:
-            exclude = payload.get("excludeMediaFormats")
-        if exclude is None:
-            exclude = payload.get("media_exclude")
-        include = payload.get("include_media_formats")
-        if include is None:
-            include = payload.get("includeMediaFormats")
-        if include is None:
-            include = payload.get("media_include")
-        keep_only_count = payload.get("keep_only_media_count")
-        if keep_only_count is None:
-            keep_only_count = payload.get("keepOnlyMediaCount")
-        prefer = payload.get("prefer")
-        prefer_value = payload.get("prefer_value")
-        if prefer_value is None:
-            prefer_value = payload.get("preferValue")
-        if prefer_value is not None:
-            prefer = _prefer_value_to_token(prefer_value)
-        if not enabled:
-            exclude = []
-            include = []
-            keep_only_count = None
-            prefer = None
+            return jsonify(
+                {
+                    "ok": True,
+                    "enabled": bool(enabled),
+                    "exclude_media_formats": release_filters.get_runtime_media_exclude() or [],
+                    "include_media_formats": release_filters.get_runtime_media_include() or [],
+                    "keep_only_media_count": release_filters.get_runtime_media_keep_only(),
+                    "prefer": release_filters.get_runtime_media_prefer(),
+                }
+            )
 
-        release_filters.set_runtime_media_exclude(exclude)
-        release_filters.set_runtime_media_include(include)
-        release_filters.set_runtime_media_keep_only(keep_only_count)
-        release_filters.set_runtime_media_prefer(prefer)
-        _persist_config(
-            {
-                "enabled": bool(enabled),
-                "exclude_media_formats": release_filters.get_runtime_media_exclude() or [],
-                "include_media_formats": release_filters.get_runtime_media_include() or [],
-                "keep_only_media_count": release_filters.get_runtime_media_keep_only(),
-                "prefer": release_filters.get_runtime_media_prefer(),
-                "lidarr_version": _extract_lidarr_version(payload),
-                "plugin_version": _extract_plugin_version(payload),
-                "lidarr_base_url": lidarr_base_url if base_url_provided else None,
-                "lidarr_api_key": lidarr_api_key if api_key_provided else None,
-                "lidarr_client_ip": lidarr_client_ip,
-            }
-        )
-        return jsonify(
-            {
-                "ok": True,
-                "enabled": bool(enabled),
-                "exclude_media_formats": release_filters.get_runtime_media_exclude() or [],
-                "include_media_formats": release_filters.get_runtime_media_include() or [],
-                "keep_only_media_count": release_filters.get_runtime_media_keep_only(),
-                "prefer": release_filters.get_runtime_media_prefer(),
-            }
-        )
+    if "/config/refresh-releases" not in existing_rules:
+        @upstream_app.app.route("/config/refresh-releases", methods=["POST"])
+        async def _limbo_refresh_releases():
+            payload = await request.get_json(silent=True) or {}
+            lidarr_ids = _parse_int_list(payload.get("lidarr_ids") or payload.get("lidarrIds"))
+            mbids = _parse_mbid_list(payload.get("mbids") or payload.get("mbid") or payload.get("foreignAlbumIds"))
 
-    for rule in upstream_app.app.url_map.iter_rules():
-        if rule.rule == "/config/refresh-releases":
-            return
+            base_url = root_patch.get_lidarr_base_url()
+            api_key = root_patch.get_lidarr_api_key()
+            if not base_url or not api_key:
+                return jsonify({"ok": False, "error": "Missing Lidarr base URL or API key."}), 400
 
-    @upstream_app.app.route("/config/refresh-releases", methods=["POST"])
-    async def _limbo_refresh_releases():
-        payload = await request.get_json(silent=True) or {}
-        lidarr_ids = _parse_int_list(payload.get("lidarr_ids") or payload.get("lidarrIds"))
-        mbids = _parse_mbid_list(payload.get("mbids") or payload.get("mbid") or payload.get("foreignAlbumIds"))
+            resolved_ids: List[int] = []
+            resolved_artist_ids: List[int] = []
+            missing_mbids: List[str] = []
+            errors: List[str] = []
+            timeout = aiohttp.ClientTimeout(total=5)
+            headers = {"X-Api-Key": api_key}
 
-        base_url = root_patch.get_lidarr_base_url()
-        api_key = root_patch.get_lidarr_api_key()
-        if not base_url or not api_key:
-            return jsonify({"ok": False, "error": "Missing Lidarr base URL or API key."}), 400
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                for mbid in mbids:
+                    url = base_url.rstrip("/") + "/api/v1/album"
+                    try:
+                        async with session.get(url, headers=headers, params={"foreignAlbumId": mbid}) as resp:
+                            if resp.status != 200:
+                                errors.append(f"MBID {mbid}: status {resp.status}")
+                                continue
+                            data = await resp.json()
+                    except Exception as exc:
+                        errors.append(f"MBID {mbid}: {exc}")
+                        continue
+                    if data:
+                        for item in data:
+                            album_id = item.get("id")
+                            if isinstance(album_id, int):
+                                resolved_ids.append(album_id)
+                        continue
 
-        resolved_ids: List[int] = []
-        resolved_artist_ids: List[int] = []
-        missing_mbids: List[str] = []
-        errors: List[str] = []
-        timeout = aiohttp.ClientTimeout(total=5)
-        headers = {"X-Api-Key": api_key}
+                    artist_url = base_url.rstrip("/") + "/api/v1/artist"
+                    try:
+                        async with session.get(artist_url, headers=headers, params={"mbId": mbid}) as resp:
+                            if resp.status != 200:
+                                errors.append(f"Artist MBID {mbid}: status {resp.status}")
+                                continue
+                            artist_data = await resp.json()
+                    except Exception as exc:
+                        errors.append(f"Artist MBID {mbid}: {exc}")
+                        continue
+                    if not artist_data:
+                        missing_mbids.append(mbid)
+                        continue
+                    for artist in artist_data:
+                        artist_id = artist.get("id")
+                        if isinstance(artist_id, int):
+                            resolved_artist_ids.append(artist_id)
 
-        async with aiohttp.ClientSession(timeout=timeout) as session:
-            for mbid in mbids:
-                url = base_url.rstrip("/") + "/api/v1/album"
-                try:
-                    async with session.get(url, headers=headers, params={"foreignAlbumId": mbid}) as resp:
-                        if resp.status != 200:
-                            errors.append(f"MBID {mbid}: status {resp.status}")
-                            continue
-                        data = await resp.json()
-                except Exception as exc:
-                    errors.append(f"MBID {mbid}: {exc}")
-                    continue
-                if data:
-                    for item in data:
+                artist_ids_unique = sorted(set(resolved_artist_ids))
+                for artist_id in artist_ids_unique:
+                    try:
+                        async with session.get(
+                            base_url.rstrip("/") + "/api/v1/album",
+                            headers=headers,
+                            params={"artistId": artist_id},
+                        ) as resp:
+                            if resp.status != 200:
+                                errors.append(f"Artist {artist_id}: status {resp.status}")
+                                continue
+                            albums = await resp.json()
+                    except Exception as exc:
+                        errors.append(f"Artist {artist_id}: {exc}")
+                        continue
+                    for item in albums or []:
                         album_id = item.get("id")
                         if isinstance(album_id, int):
                             resolved_ids.append(album_id)
-                    continue
 
-                artist_url = base_url.rstrip("/") + "/api/v1/artist"
-                try:
-                    async with session.get(artist_url, headers=headers, params={"mbId": mbid}) as resp:
-                        if resp.status != 200:
-                            errors.append(f"Artist MBID {mbid}: status {resp.status}")
-                            continue
-                        artist_data = await resp.json()
-                except Exception as exc:
-                    errors.append(f"Artist MBID {mbid}: {exc}")
-                    continue
-                if not artist_data:
-                    missing_mbids.append(mbid)
-                    continue
-                for artist in artist_data:
-                    artist_id = artist.get("id")
-                    if isinstance(artist_id, int):
-                        resolved_artist_ids.append(artist_id)
+                all_ids = sorted(set(lidarr_ids + resolved_ids))
+                queued: List[int] = []
+                for album_id in all_ids:
+                    try:
+                        cmd_url = base_url.rstrip("/") + "/api/v1/command"
+                        payload = {"name": "RefreshAlbum", "albumId": album_id}
+                        async with session.post(cmd_url, headers=headers, json=payload) as resp:
+                            if resp.status not in {200, 201}:
+                                errors.append(f"Album {album_id}: status {resp.status}")
+                                continue
+                        queued.append(album_id)
+                    except Exception as exc:
+                        errors.append(f"Album {album_id}: {exc}")
 
-            artist_ids_unique = sorted(set(resolved_artist_ids))
-            for artist_id in artist_ids_unique:
-                try:
-                    async with session.get(
-                        base_url.rstrip("/") + "/api/v1/album",
-                        headers=headers,
-                        params={"artistId": artist_id},
-                    ) as resp:
-                        if resp.status != 200:
-                            errors.append(f"Artist {artist_id}: status {resp.status}")
-                            continue
-                        albums = await resp.json()
-                except Exception as exc:
-                    errors.append(f"Artist {artist_id}: {exc}")
-                    continue
-                for item in albums or []:
-                    album_id = item.get("id")
-                    if isinstance(album_id, int):
-                        resolved_ids.append(album_id)
+            return jsonify(
+                {
+                    "ok": True,
+                    "requested_ids": lidarr_ids,
+                    "resolved_ids": resolved_ids,
+                    "queued_ids": queued,
+                    "resolved_artist_ids": artist_ids_unique,
+                    "missing_mbids": missing_mbids,
+                    "errors": errors,
+                }
+            )
 
-            all_ids = sorted(set(lidarr_ids + resolved_ids))
-            queued: List[int] = []
-            for album_id in all_ids:
-                try:
-                    cmd_url = base_url.rstrip("/") + "/api/v1/command"
-                    payload = {"name": "RefreshAlbum", "albumId": album_id}
-                    async with session.post(cmd_url, headers=headers, json=payload) as resp:
-                        if resp.status not in {200, 201}:
-                            errors.append(f"Album {album_id}: status {resp.status}")
-                            continue
-                    queued.append(album_id)
-                except Exception as exc:
-                    errors.append(f"Album {album_id}: {exc}")
+    if "/config/validate-ids" not in existing_rules:
+        @upstream_app.app.route("/config/validate-ids", methods=["POST"])
+        async def _limbo_validate_ids():
+            payload = await request.get_json(silent=True) or {}
+            lidarr_ids = _parse_int_list(payload.get("lidarr_ids") or payload.get("lidarrIds"))
+            mbids = _parse_mbid_list(payload.get("mbids") or payload.get("mbid") or payload.get("foreignAlbumIds"))
 
-        return jsonify(
-            {
-                "ok": True,
-                "requested_ids": lidarr_ids,
-                "resolved_ids": resolved_ids,
-                "queued_ids": queued,
-                "resolved_artist_ids": artist_ids_unique,
-                "missing_mbids": missing_mbids,
-                "errors": errors,
-            }
-        )
+            base_url = root_patch.get_lidarr_base_url()
+            api_key = root_patch.get_lidarr_api_key()
+            if not base_url or not api_key:
+                return jsonify({"ok": False, "error": "Missing Lidarr base URL or API key."}), 400
+
+            mbid_valid: List[str] = []
+            mbid_invalid: List[str] = []
+            lidarr_valid: List[int] = []
+            lidarr_invalid: List[int] = []
+            errors: List[str] = []
+            timeout = aiohttp.ClientTimeout(total=4)
+            headers = {"X-Api-Key": api_key}
+
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                for mbid in mbids:
+                    url = base_url.rstrip("/") + "/api/v1/album"
+                    try:
+                        async with session.get(url, headers=headers, params={"foreignAlbumId": mbid}) as resp:
+                            if resp.status != 200:
+                                errors.append(f"MBID {mbid}: status {resp.status}")
+                                continue
+                            data = await resp.json()
+                    except Exception as exc:
+                        errors.append(f"MBID {mbid}: {exc}")
+                        continue
+                    if data:
+                        mbid_valid.append(mbid)
+                        continue
+                    artist_url = base_url.rstrip("/") + "/api/v1/artist"
+                    try:
+                        async with session.get(artist_url, headers=headers, params={"mbId": mbid}) as resp:
+                            if resp.status != 200:
+                                errors.append(f"Artist MBID {mbid}: status {resp.status}")
+                                continue
+                            artist_data = await resp.json()
+                    except Exception as exc:
+                        errors.append(f"Artist MBID {mbid}: {exc}")
+                        continue
+                    if artist_data:
+                        mbid_valid.append(mbid)
+                    else:
+                        mbid_invalid.append(mbid)
+
+                for lidarr_id in lidarr_ids:
+                    try:
+                        async with session.get(
+                            base_url.rstrip("/") + f"/api/v1/album/{lidarr_id}",
+                            headers=headers,
+                        ) as resp:
+                            if resp.status == 200:
+                                lidarr_valid.append(lidarr_id)
+                            elif resp.status == 404:
+                                lidarr_invalid.append(lidarr_id)
+                            else:
+                                errors.append(f"Lidarr ID {lidarr_id}: status {resp.status}")
+                    except Exception as exc:
+                        errors.append(f"Lidarr ID {lidarr_id}: {exc}")
+
+            return jsonify(
+                {
+                    "ok": True,
+                    "mbid_valid": sorted(set(mbid_valid)),
+                    "mbid_invalid": sorted(set(mbid_invalid)),
+                    "lidarr_valid": sorted(set(lidarr_valid)),
+                    "lidarr_invalid": sorted(set(lidarr_invalid)),
+                    "errors": errors,
+                }
+            )
 
 
 def _is_truthy(value) -> bool:
