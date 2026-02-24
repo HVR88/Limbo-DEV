@@ -349,11 +349,11 @@ def _read_theme() -> str:
         theme = _THEME_FILE.read_text().strip().lower()
     except Exception:
         return ""
-    return theme if theme in {"dark", "light"} else ""
+    return theme if theme in {"dark", "light", "auto"} else ""
 
 
 def _write_theme(theme: str) -> None:
-    if theme not in {"dark", "light"}:
+    if theme not in {"dark", "light", "auto"}:
         return
     try:
         _THEME_FILE.parent.mkdir(parents=True, exist_ok=True)
@@ -829,7 +829,7 @@ def register_root_route() -> None:
             if not isinstance(payload, dict):
                 payload = {}
             theme = str(payload.get("theme") or "").strip().lower()
-            if theme not in {"dark", "light"}:
+            if theme not in {"dark", "light", "auto"}:
                 return jsonify({"error": "invalid theme"}), 400
             _write_theme(theme)
             return jsonify({"ok": True, "theme": theme})
@@ -847,7 +847,7 @@ def register_root_route() -> None:
         except Exception:
             replication_date = None
 
-        lidarr_version_label = "Lidarr Version (Last Seen)"
+        lidarr_version_label = "Lidarr (Last Seen)"
         lidarr_version = _read_last_lidarr_version()
         lidarr_base_url = get_lidarr_base_url()
         lidarr_api_key = get_lidarr_api_key()
@@ -856,7 +856,7 @@ def register_root_route() -> None:
                 lidarr_base_url, lidarr_api_key
             )
             if fetched_version:
-                lidarr_version_label = "Lidarr Version"
+                lidarr_version_label = "Lidarr"
                 lidarr_version = fetched_version
                 set_lidarr_version(fetched_version)
 
@@ -1035,6 +1035,7 @@ def register_root_route() -> None:
         settings_svg = _read_inline_svg("limbo-settings.svg")
         theme_dark_svg = _read_inline_svg("limbo-dark.svg")
         theme_light_svg = _read_inline_svg("limbo-light.svg")
+        theme_auto_svg = _read_inline_svg("limbo-auto.svg")
         tall_arrow_svg = _read_inline_svg("limbo-tall-arrow.svg")
 
         replacements = {
@@ -1064,6 +1065,7 @@ def register_root_route() -> None:
             "__SETTINGS_ICON__": settings_svg,
             "__THEME_ICON_DARK__": theme_dark_svg,
             "__THEME_ICON_LIGHT__": theme_light_svg,
+            "__THEME_ICON_AUTO__": theme_auto_svg,
             "__TALL_ARROW_ICON__": tall_arrow_svg,
             "__CONFIG_HTML__": config_html,
         }
@@ -1141,7 +1143,7 @@ def register_root_route() -> None:
                 '          <button type="button" class="pill has-action" data-pill-href="{}">'.format(
                     html.escape(mbms_url)
                 ),
-                '            <div class="label">MBMS PLUS VERSION</div>',
+                '            <div class="label">Limbo</div>',
                 f'            <div class="{mbms_value_class}">{mbms_version_value}</div>',
                 f'            <span class="pill-arrow" aria-hidden="true">{tall_arrow_svg}</span>',
                 "          </button>",
@@ -1173,7 +1175,7 @@ def register_root_route() -> None:
         lm_pill_html = "\n".join(
             [
                 f"          {lm_pill_tag_open}",
-                '            <div class="label">Limbo Version</div>',
+                '            <div class="label">Limbo Bridge/webUI</div>',
                 f'            <div class="{lm_value_class}">{lm_version_value}</div>',
                 f'            <span class="pill-arrow" aria-hidden="true">{tall_arrow_svg}</span>',
                 "          </button>",

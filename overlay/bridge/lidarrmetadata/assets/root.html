@@ -16,7 +16,7 @@
         <button
           class="corner-button"
           type="button"
-          aria-label="Toggle dark mode"
+          aria-label="Theme"
           aria-pressed="false"
           data-theme-toggle
         >
@@ -35,6 +35,11 @@
             </span>
           </span>
         </button>
+        <div class="config-menu config-menu-narrow theme-menu" data-theme-menu>
+          <button type="button" data-theme-option="auto">AUTO</button>
+          <button type="button" data-theme-option="light">LIGHT</button>
+          <button type="button" data-theme-option="dark">DARK</button>
+        </div>
         <button
           class="corner-button"
           type="button"
@@ -91,9 +96,6 @@
                   Exclude or include selected media types, Vinyl LP, Cassette,
                   CD, etc.
                 </div>
-                <button class="action-button" type="button" data-reset-button>
-                  <span class="action-button__inner">Reset</span>
-                </button>
               </div>
             </div>
           </div>
@@ -142,7 +144,7 @@
         </div>
 
         <div class="grid">
-          __LM_PILL_HTML__ __LIDARR_PILL_HTML__ __MBMS_PILLS__
+          __LIDARR_PILL_HTML__ __LM_PILL_HTML__ __MBMS_PILLS__
           __REPLICATION_PILL_HTML__
         </div>
         <div class="links">
@@ -1379,6 +1381,7 @@
             inverse: true,
             columns: 2,
             footer: "apply",
+            closeOnBackdrop: false,
             itemsLeft: mediaItemsLeft,
             itemsRight: mediaItemsRight,
           };
@@ -1395,6 +1398,8 @@
         if (config.narrow) {
           menu.classList.add("config-menu-narrow");
         }
+        menu.dataset.closeOnBackdrop =
+          config.closeOnBackdrop === false ? "false" : "true";
         menu.dataset.menuType = config.type;
         if (config.special) {
           const special = document.createElement("button");
@@ -2007,7 +2012,6 @@
         }
       });
       const applyAllMenusButton = null;
-      const resetAllMenusButton = document.querySelector("[data-reset-button]");
       const saveAppliedState = () => {
         configMenuState.forEach((state, index) => {
           if (!state) {
@@ -2182,54 +2186,40 @@
           applyFilterEnabledState();
         });
       }
-      if (resetAllMenusButton) {
-        resetAllMenusButton.addEventListener("click", () => {
-          openConfirm(
-            "Reset filters to initial state?",
-            () => {
-              if (configEnabledToggle) {
-                configEnabledToggle.checked = Boolean(configEnabledBaseline);
-                scheduleApplyFilterConfig();
-              }
-              configMenuState.forEach((state, index) => {
-                const baseline = configBaselineState[index];
-                if (!state || !baseline) {
-                  return;
-                }
-                if (state.config.type === "single") {
-                  const value = baseline.text.trim().toLowerCase();
-                  if (state.valueText) {
-                    state.valueText.textContent = baseline.text;
-                  }
-                  state.menu.querySelectorAll("button").forEach((item) => {
-                    item.classList.toggle(
-                      "selected",
-                      item.dataset.value?.toLowerCase() === value,
-                    );
-                  });
-                }
-                if (state.config.type === "multi" && baseline.snapshot) {
-                  applyMultiSnapshot(state, baseline.snapshot);
-                  state.lastActiveSnapshot = baseline.snapshot;
-                }
-              });
-              scheduleApplyFilterConfig();
-            },
-            { okLabel: "RESET", cancelLabel: "CANCEL" },
-          );
-        });
-      }
       document.addEventListener("click", () => {
         const openMenus = document.querySelectorAll(".config-menu.open");
         if (!openMenus.length) {
           return;
         }
         openMenus.forEach((menu) => {
+          if (menu.dataset.closeOnBackdrop === "false") {
+            return;
+          }
           menu.classList.remove("open");
           menu.style.removeProperty("--menu-shift-x");
           menu.style.removeProperty("--menu-shift-y");
         });
         scheduleApplyFilterConfig();
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.key !== "Escape") {
+          return;
+        }
+        const openMenus = document.querySelectorAll(".config-menu.open");
+        if (!openMenus.length) {
+          return;
+        }
+        event.preventDefault();
+        openMenus.forEach((menu) => {
+          const cancelButton = menu.querySelector(".config-menu-cancel");
+          if (cancelButton) {
+            cancelButton.click();
+            return;
+          }
+          menu.classList.remove("open");
+          menu.style.removeProperty("--menu-shift-x");
+          menu.style.removeProperty("--menu-shift-y");
+        });
       });
       window.addEventListener("resize", () => {
         document.querySelectorAll(".config-menu.open").forEach((menu) => {
@@ -2304,8 +2294,24 @@
       }
 
       const themeToggle = document.querySelector("[data-theme-toggle]");
+      const themeMenu = document.querySelector("[data-theme-menu]");
+      const themeOptions = Array.from(
+        document.querySelectorAll("[data-theme-option]"),
+      );
+      const systemThemeQuery =
+        window.matchMedia &&
+        window.matchMedia("(prefers-color-scheme: dark)");
+      let currentTheme = "auto";
+      const resolveTheme = (theme) => {
+        if (theme !== "auto") {
+          return theme;
+        }
+        return systemThemeQuery && systemThemeQuery.matches ? "dark" : "light";
+      };
       const applyTheme = (theme) => {
-        if (theme === "dark") {
+        currentTheme = theme;
+        const resolved = resolveTheme(theme);
+        if (resolved === "dark") {
           document.body.dataset.theme = "dark";
         } else {
           delete document.body.dataset.theme;
@@ -2313,26 +2319,32 @@
         if (themeToggle) {
           themeToggle.setAttribute(
             "aria-pressed",
-            theme === "dark" ? "true" : "false",
+            resolved === "dark" ? "true" : "false",
           );
+          const label =
+            theme === "auto"
+              ? "Theme: Automatic"
+              : `Theme: ${theme === "dark" ? "Dark" : "Light"}`;
+          themeToggle.setAttribute("aria-label", label);
         }
       };
       const storedTheme = localStorage.getItem("limbo-theme");
-      if (serverTheme === "dark" || serverTheme === "light") {
+      if (serverTheme === "dark" || serverTheme === "light" || serverTheme === "auto") {
         applyTheme(serverTheme);
         localStorage.setItem("limbo-theme", serverTheme);
-      } else if (storedTheme === "dark" || storedTheme === "light") {
-        applyTheme(storedTheme);
       } else if (
-        window.matchMedia &&
-        window.matchMedia("(prefers-color-scheme: dark)").matches
+        storedTheme === "dark" ||
+        storedTheme === "light" ||
+        storedTheme === "auto"
       ) {
-        applyTheme("dark");
+        applyTheme(storedTheme);
+      } else {
+        applyTheme("auto");
       }
       if (themeToggle) {
         themeToggle.addEventListener("click", () => {
           const next =
-            document.body.dataset.theme === "dark" ? "light" : "dark";
+            resolveTheme(currentTheme) === "dark" ? "light" : "dark";
           document.body.classList.add("theme-transition");
           applyTheme(next);
           localStorage.setItem("limbo-theme", next);
@@ -2347,7 +2359,63 @@
           window.setTimeout(() => {
             document.body.classList.remove("theme-transition");
           }, 800);
+          if (!themeMenu) {
+            return;
+          }
+          themeMenu.classList.toggle("open");
+          if (themeMenu.classList.contains("open")) {
+            requestAnimationFrame(() => adjustMenuPosition(themeMenu));
+          }
         });
+      }
+      if (themeMenu) {
+        themeMenu.addEventListener("click", (event) => {
+          event.stopPropagation();
+        });
+      }
+      themeOptions.forEach((option) => {
+        const setTheme = () => {
+          const next = option.dataset.themeOption || "auto";
+          document.body.classList.add("theme-transition");
+          applyTheme(next);
+          localStorage.setItem("limbo-theme", next);
+          fetch("/theme", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(invalidateApiKey ? { Authorization: invalidateApiKey } : {}),
+            },
+            body: JSON.stringify({ theme: next }),
+          }).catch(() => {});
+          if (themeMenu) {
+            themeMenu.classList.remove("open");
+          }
+          window.setTimeout(() => {
+            document.body.classList.remove("theme-transition");
+          }, 800);
+        };
+        option.addEventListener("click", (event) => {
+          event.stopPropagation();
+          setTheme();
+        });
+        option.addEventListener("keydown", (event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            setTheme();
+          }
+        });
+      });
+      if (systemThemeQuery) {
+        const handleSystemChange = () => {
+          if (currentTheme === "auto") {
+            applyTheme("auto");
+          }
+        };
+        if (systemThemeQuery.addEventListener) {
+          systemThemeQuery.addEventListener("change", handleSystemChange);
+        } else if (systemThemeQuery.addListener) {
+          systemThemeQuery.addListener(handleSystemChange);
+        }
       }
       const getModalById = (id) =>
         document.querySelector(`[data-modal="${id}"]`);

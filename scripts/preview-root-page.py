@@ -41,18 +41,18 @@ def build_preview_html() -> str:
     mbms_pills = "\n".join(
         [
             '          <button type="button" class="pill has-action" data-pill-href="https://github.com/HVR88/MBMS_PLUS">',
-            '            <div class="label">MBMS PLUS VERSION</div>',
+            '            <div class="label">Limbo</div>',
             '            <div class="value has-update"><span class="version-current">1.2.3</span><span class="version-update">&rarr; NEW 1.2.4</span></div>',
             "",
             f"            <span class=\"pill-arrow\" aria-hidden=\"true\">{read_svg('limbo-tall-arrow.svg')}</span>",
             "          </button>",
             '          <button type="button" class="pill" data-pill-href="" data-modal-open="schedule-indexer">',
-            '            <div class="label">MBMS Index Schedule</div>',
+            '            <div class="label">DB Indexing Schedule</div>',
             '            <div class="value">daily @ 3:00&nbsp;<span class="ampm">AM</span></div>',
             f"            <span class=\"pill-arrow\" aria-hidden=\"true\">{read_svg('limbo-tall-arrow.svg')}</span>",
             "          </button>",
             '          <button type="button" class="pill" data-pill-href="" data-modal-open="schedule-replication">',
-            '            <div class="label">MBMS Replication Schedule</div>',
+            '            <div class="label">DB Replication Schedule</div>',
             '            <div class="value">hourly @ :15</div>',
             f"            <span class=\"pill-arrow\" aria-hidden=\"true\">{read_svg('limbo-tall-arrow.svg')}</span>",
             "          </button>",
@@ -63,11 +63,11 @@ def build_preview_html() -> str:
         "__ICON_URL__": "limbo-icon.png",
         "__LM_VERSION__": "1.9.7.10",
         "__LM_PLUGIN_VERSION__": "1.9.7.10",
-        "__LM_PLUGIN_LABEL__": "Limbo Plugin",
+        "__LM_PLUGIN_LABEL__": "Limbo Plugin Version",
         "__LM_PILL_HTML__": "\n".join(
             [
                 '          <button type="button" class="pill has-action" data-pill-href="https://github.com/HVR88/Limbo_Bridge">',
-                '            <div class="label">Limbo Version</div>',
+                '            <div class="label">Limbo Bridge/webUI</div>',
                 '            <div class="value has-update"><span class="version-current">1.9.7.10</span><span class="version-update">&rarr; NEW 1.9.7.12</span></div>',
                 f"            <span class=\"pill-arrow\" aria-hidden=\"true\">{read_svg('limbo-tall-arrow.svg')}</span>",
                 "          </button>",
@@ -76,7 +76,7 @@ def build_preview_html() -> str:
         "__LIDARR_PILL_HTML__": "\n".join(
             [
                 '          <button type="button" class="pill" disabled>',
-                '            <div class="label">LIDARR VERSION (LAST SEEN)</div>',
+                '            <div class="label">Lidarr (Last Seen)</div>',
                 '            <div class="value">3.1.2.4913</div>',
                 "          </button>",
             ]
@@ -91,7 +91,7 @@ def build_preview_html() -> str:
             ]
         ),
         "__PLUGIN_PILL_CLASS__": "pill",
-        "__LIDARR_VERSION_LABEL__": "LIDARR VERSION",
+        "__LIDARR_VERSION_LABEL__": "Lidarr (Last Seen)",
         "__LIDARR_VERSION__": "3.1.2.4913",
         "__LIDARR_PILL_CLASS__": "pill has-action",
         "__MBMS_REPLICATION_SCHEDULE__": "hourly @ :15",
@@ -111,6 +111,7 @@ def build_preview_html() -> str:
         "__SETTINGS_ICON__": read_svg("limbo-settings.svg"),
         "__THEME_ICON_DARK__": read_svg("limbo-dark.svg"),
         "__THEME_ICON_LIGHT__": read_svg("limbo-light.svg"),
+        "__THEME_ICON_AUTO__": read_svg("limbo-auto.svg"),
         "__TALL_ARROW_ICON__": read_svg("limbo-tall-arrow.svg"),
         "__MBMS_URL__": "https://github.com/HVR88/MBMS_PLUS",
         "__CONFIG_HTML__": config_html,
