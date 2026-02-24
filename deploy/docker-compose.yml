@@ -80,4 +80,4 @@ networks:
 
 volumes:
   limbo-init-state:
-    name: ${LIMBO_INIT_STATE_VOLUME:-limbo-init-state}
+    name: ${LIMBO_INIT_STATE_VOLUME:-limbo_bridge_init_state}

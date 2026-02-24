@@ -49,6 +49,7 @@ Edit `.env` (top section) before first run:
 - Ensure `MB_NETWORK` points at the MusicBrainz mirror network (example: `musicbrainz_default`).
 - `LIMBO_PORT` ('5001' default, edit as needed)
 - Optional provider keys/tokens for Fanart, The AudioDB, Last.FM, etc.
+- `LIMBO_INIT_STATE_VOLUME` should be `limbo_bridge_init_state` (default) for init-state/settings volume.
 
 ### 4. Download containers, build & startup
 
