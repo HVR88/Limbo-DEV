@@ -272,7 +272,7 @@ def register_config_routes() -> None:
                         "preferValue": data["prefer_value"],
                     }
                 )
-            return jsonify(data)
+                return jsonify(data)
             payload = await request.get_json(silent=True) or {}
             enabled = _is_truthy(payload.get("enabled", True))
             lidarr_base_url, base_url_provided = _extract_lidarr_base_url(payload)

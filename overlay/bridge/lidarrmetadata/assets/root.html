@@ -2241,11 +2241,14 @@
             }
             if (payload.connection_ok === false) {
               suppressHover();
-              openInfo(
-                payload.error
-                  ? `Connection could not be established. ${payload.error} Check the settings.`
-                  : "Connection could not be established. Check the settings.",
-              );
+              const baseMessage = "Connection could not be established.";
+              const errorText =
+                payload.error && payload.error.startsWith(baseMessage)
+                  ? payload.error
+                  : payload.error
+                    ? `${baseMessage} ${payload.error}`
+                    : baseMessage;
+              openInfo(`${errorText} Check the settings.`);
               return;
             }
             if (payload.metadata_update_ok === false) {

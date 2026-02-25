@@ -146,6 +146,11 @@ body.menu-modal-open .config-menu.open * {
   pointer-events: auto !important;
   cursor: auto !important;
 }
+body.menu-modal-open .modal.open,
+body.menu-modal-open .modal.open * {
+  pointer-events: auto !important;
+  cursor: auto !important;
+}
 .wrap {
   max-width: 900px;
   margin: 0 auto;
@@ -526,6 +531,7 @@ body[data-theme="dark"] .modal__esc-hint {
   flex-direction: column;
   gap: 10px;
   text-align: left;
+  flex: 1;
 }
 .confirm-modal__panel {
   justify-content: flex-start;
@@ -536,6 +542,7 @@ body[data-theme="dark"] .modal__esc-hint {
   flex-direction: column;
   gap: 12px;
   text-align: left;
+  flex: 1;
 }
 .info-modal__panel {
   justify-content: flex-start;
@@ -544,6 +551,7 @@ body[data-theme="dark"] .modal__esc-hint {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
+  margin-top: auto;
 }
 .confirm-modal__actions .modal-link {
   text-decoration: none;
@@ -551,6 +559,7 @@ body[data-theme="dark"] .modal__esc-hint {
 .info-modal__actions {
   display: flex;
   justify-content: flex-end;
+  margin-top: auto;
 }
 .info-modal__actions .modal-link {
   text-decoration: none;
