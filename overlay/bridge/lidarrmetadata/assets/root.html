@@ -216,6 +216,7 @@
                   id="lidarr-url"
                   class="settings-field__input"
                   type="text"
+                  maxlength="2048"
                   spellcheck="false"
                   autocomplete="off"
                   placeholder="http://lidarr-ip:port"
@@ -230,6 +231,7 @@
                   id="lidarr-apikey"
                   class="settings-field__input"
                   type="text"
+                  maxlength="255"
                   spellcheck="false"
                   autocomplete="off"
                   placeholder="lkd9a8s7df0a9s8d7f0a9s8d7f0a9s8d"
@@ -248,6 +250,7 @@
                     id="limbo-url"
                     class="settings-field__input settings-field__input--framed"
                     type="text"
+                    maxlength="2048"
                     spellcheck="false"
                     autocomplete="off"
                     placeholder="http://limbo-url:port"
@@ -522,6 +525,7 @@
               id="tidal-client-id"
               class="settings-field__input"
               type="text"
+              maxlength="255"
               spellcheck="false"
               autocomplete="off"
               placeholder="tidal client id"
@@ -536,6 +540,7 @@
               id="tidal-client-secret"
               class="settings-field__input"
               type="text"
+              maxlength="255"
               spellcheck="false"
               autocomplete="off"
               placeholder="tidal client secret"
@@ -550,6 +555,7 @@
               id="tidal-country-code"
               class="settings-field__input"
               type="text"
+              maxlength="2"
               spellcheck="false"
               autocomplete="off"
               placeholder="US"
@@ -564,6 +570,7 @@
               id="tidal-user"
               class="settings-field__input"
               type="text"
+              maxlength="254"
               spellcheck="false"
               autocomplete="off"
               placeholder="email"
@@ -578,6 +585,7 @@
               id="tidal-user-password"
               class="settings-field__input"
               type="password"
+              maxlength="255"
               spellcheck="false"
               autocomplete="off"
               placeholder="password"
@@ -615,6 +623,7 @@
               id="fanart-key"
               class="settings-field__input"
               type="text"
+              maxlength="255"
               spellcheck="false"
               autocomplete="off"
               placeholder="fanart.tv api key"
@@ -640,6 +649,7 @@
               id="tadb-key"
               class="settings-field__input"
               type="text"
+              maxlength="255"
               spellcheck="false"
               autocomplete="off"
               placeholder="theaudiodb api key"
@@ -665,6 +675,7 @@
               id="discogs-key"
               class="settings-field__input"
               type="text"
+              maxlength="255"
               spellcheck="false"
               autocomplete="off"
               placeholder="discogs api key"
@@ -690,6 +701,7 @@
               id="lastfm-key"
               class="settings-field__input"
               type="text"
+              maxlength="255"
               spellcheck="false"
               autocomplete="off"
               placeholder="last.fm api key"
@@ -702,6 +714,7 @@
               id="lastfm-secret"
               class="settings-field__input"
               type="text"
+              maxlength="255"
               spellcheck="false"
               autocomplete="off"
               placeholder="last.fm secret"
@@ -727,6 +740,7 @@
               id="apple-music-max-image"
               class="settings-field__input"
               type="text"
+              maxlength="4"
               spellcheck="false"
               autocomplete="off"
               placeholder="2500"
@@ -1211,6 +1225,62 @@
       const serviceRemoveButton = document.querySelector("[data-service-remove]");
       let settingsSnapshot = null;
       let settingsRestoreEnabled = false;
+
+      const applyInputSanitizers = () => {
+        if (lidarrUrlInput) {
+          lidarrUrlInput.addEventListener("blur", () => {
+            lidarrUrlInput.value = sanitizeHostPort(lidarrUrlInput.value);
+          });
+        }
+        if (limboUrlInput) {
+          limboUrlInput.addEventListener("blur", () => {
+            if (limboControl?.dataset.limboMode === "custom") {
+              limboUrlInput.value = sanitizeHostPort(limboUrlInput.value);
+            }
+          });
+        }
+        if (lidarrApiKeyInput) {
+          lidarrApiKeyInput.addEventListener("input", () => {
+            lidarrApiKeyInput.value = sanitizeApiKey(lidarrApiKeyInput.value);
+          });
+        }
+        [
+          fanartKeyInput,
+          tadbKeyInput,
+          discogsKeyInput,
+          lastfmKeyInput,
+          lastfmSecretInput,
+          tidalClientIdInput,
+          tidalClientSecretInput,
+          tidalUserPasswordInput,
+        ].forEach((input) => {
+          if (!input) return;
+          input.addEventListener("input", () => {
+            input.value = sanitizeApiKey(input.value);
+          });
+        });
+        if (tidalUserInput) {
+          tidalUserInput.addEventListener("input", () => {
+            tidalUserInput.value = sanitizeEmail(tidalUserInput.value);
+          });
+        }
+        if (tidalCountryCodeInput) {
+          tidalCountryCodeInput.addEventListener("input", () => {
+            tidalCountryCodeInput.value = sanitizeCountryCode(
+              tidalCountryCodeInput.value,
+            );
+          });
+        }
+        if (appleMusicMaxInput) {
+          appleMusicMaxInput.addEventListener("input", () => {
+            appleMusicMaxInput.value = sanitizeNumberRange(
+              appleMusicMaxInput.value,
+              6000,
+            );
+          });
+        }
+      };
+      applyInputSanitizers();
       const serviceTestButton = document.querySelector("[data-service-test]");
       const settingsModalPanel = document.querySelector(
         '[data-modal="settings"] .modal__panel',
@@ -1255,6 +1325,95 @@
       let refreshValidateTimer = null;
       let refreshValidateController = null;
       let refreshInputGuard = false;
+
+      const sanitizeApiKey = (value = "") =>
+        value.replace(/[^a-z0-9]/gi, "").toLowerCase().slice(0, 255);
+      const sanitizeEmail = (value = "") =>
+        value
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9@._+-]/g, "")
+          .slice(0, 254);
+      const sanitizeCountryCode = (value = "") =>
+        value.replace(/[^a-z]/gi, "").toUpperCase().slice(0, 2);
+      const sanitizeNumberRange = (value = "", max = 6000) => {
+        const digits = String(value).replace(/[^0-9]/g, "");
+        if (!digits) {
+          return "";
+        }
+        const num = Math.min(Math.max(parseInt(digits, 10), 1), max);
+        return String(num);
+      };
+      const sanitizeHostPort = (value = "") => {
+        const raw = value.trim();
+        if (!raw) {
+          return "";
+        }
+        const stripped = raw.replace(/\s+/g, "");
+        let scheme = "";
+        let rest = stripped;
+        const schemeMatch = rest.match(/^(https?):\/\//i);
+        if (schemeMatch) {
+          scheme = schemeMatch[1].toLowerCase();
+          rest = rest.slice(schemeMatch[0].length);
+        }
+        rest = rest.split("/")[0].split("?")[0].split("#")[0];
+        if (!rest) {
+          return "";
+        }
+        let host = rest;
+        let port = "";
+        if (rest.includes(":")) {
+          const parts = rest.split(":");
+          host = parts[0];
+          port = parts[1] || "";
+        }
+        host = host.toLowerCase();
+        const ipv4 = /^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$/;
+        const fqdn = /^(?=.{1,253}$)([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)(\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$/;
+        if (!ipv4.test(host) && !fqdn.test(host)) {
+          return "";
+        }
+        if (!ipv4.test(host)) {
+          if (host.length > 253) {
+            return "";
+          }
+          const labels = host.split(".");
+          if (labels.some((label) => !label || label.length > 63)) {
+            return "";
+          }
+        }
+        if (port) {
+          if (!/^\d{1,5}$/.test(port)) {
+            return "";
+          }
+          const portNum = parseInt(port, 10);
+          if (portNum < 1 || portNum > 65535) {
+            return "";
+          }
+          const blockedPorts = new Set([
+            20, // FTP data
+            21, // FTP
+            22, // SSH
+            23, // Telnet
+            25, // SMTP
+            53, // DNS
+            69, // TFTP
+            110, // POP3
+            143, // IMAP
+            161, // SNMP
+            389, // LDAP
+            445, // SMB
+            587, // SMTP submission
+          ]);
+          if (blockedPorts.has(portNum)) {
+            return "";
+          }
+          port = String(portNum);
+        }
+        const prefix = scheme ? `${scheme}://` : "http://";
+        return `${prefix}${host}${port ? `:${port}` : ""}`;
+      };
 
       const setLimboMode = (mode, options = {}) => {
         if (!limboUrlInput || !limboControl) {
@@ -2013,12 +2172,24 @@
 
       if (lidarrSaveButton) {
         lidarrSaveButton.addEventListener("click", async () => {
-          const baseUrl = (lidarrUrlInput?.value || "").trim();
-          const apiKey = (lidarrApiKeyInput?.value || "").trim();
+          const baseUrl = sanitizeHostPort(lidarrUrlInput?.value || "");
+          if (lidarrUrlInput) {
+            lidarrUrlInput.value = baseUrl;
+          }
+          const apiKey = sanitizeApiKey(lidarrApiKeyInput?.value || "");
+          if (lidarrApiKeyInput) {
+            lidarrApiKeyInput.value = apiKey;
+          }
           const limboMode = (
             limboControl?.dataset.limboMode || "auto-referrer"
           ).trim();
-          const limboUrl = getLimboUrlForSave();
+          let limboUrl = getLimboUrlForSave();
+          if (limboMode === "custom") {
+            limboUrl = sanitizeHostPort(limboUrl);
+            if (limboUrlInput) {
+              limboUrlInput.value = limboUrl;
+            }
+          }
           if (!baseUrl || !apiKey) {
             suppressHover();
             openInfo("Lidarr URL and API key are required.");
@@ -2130,12 +2301,12 @@
             special: { label: "NO LIMIT", value: "no limit" },
             columns: 2,
             compact: true,
-            itemsLeft: Array.from({ length: 10 }, (_, i) => {
+            itemsLeft: Array.from({ length: 8 }, (_, i) => {
               const value = `${i + 1}`;
               return { label: value, value };
             }),
-            itemsRight: Array.from({ length: 10 }, (_, i) => {
-              const value = `${i + 11}`;
+            itemsRight: Array.from({ length: 8 }, (_, i) => {
+              const value = `${i + 9}`;
               return { label: value, value };
             }),
           };
@@ -2155,7 +2326,7 @@
         if (index === 2) {
           return {
             type: "multi",
-            special: { label: "ALL", value: "none" },
+            special: { label: "ALL", value: "no media filtered" },
             inverse: true,
             columns: 2,
             footer: "apply",
@@ -2426,7 +2597,17 @@
           state.valueText.dataset.mediaTypes ||
           state.valueText.textContent ||
           "";
-        const parts = raw
+        const normalizedRaw = raw.trim();
+        if (normalizedRaw.toLowerCase() === "no media filtered") {
+          state.valueText.innerHTML = "";
+          const chip = document.createElement("span");
+          chip.className = "media-type-token media-type-token-neutral";
+          chip.textContent = "no media filtered";
+          state.valueText.appendChild(chip);
+          state.valueText.dataset.mediaTypes = "no media filtered";
+          return;
+        }
+        const parts = normalizedRaw
           .split(",")
           .map((value) => value.trim())
           .filter(Boolean);
@@ -2766,6 +2947,21 @@
                 specialButton.classList.add("selected");
                 if (valueText) {
                   valueText.textContent = config.special.value;
+                }
+                syncMultiDisplay();
+                const state = configMenuState.get(index);
+                if (state) {
+                  const allValues = []
+                    .concat(config.itemsLeft || [])
+                    .concat(config.itemsRight || [])
+                    .map((item) => item.value);
+                  state.lastActiveSnapshot = {
+                    checked: allValues,
+                    specialSelected: true,
+                  };
+                }
+                if (index === 2) {
+                  updateMediaTypesStrike();
                 }
                 return;
               }
@@ -3923,7 +4119,8 @@
 
       if (fanartSaveButton) {
         fanartSaveButton.addEventListener("click", async () => {
-          const key = (fanartKeyInput?.value || "").trim();
+          const key = sanitizeApiKey(fanartKeyInput?.value || "");
+          if (fanartKeyInput) fanartKeyInput.value = key;
           if (!key) {
             suppressHover();
             openInfo("Fanart.tv API key is required.");
@@ -3938,7 +4135,8 @@
       }
       if (tadbSaveButton) {
         tadbSaveButton.addEventListener("click", async () => {
-          const key = (tadbKeyInput?.value || "").trim();
+          const key = sanitizeApiKey(tadbKeyInput?.value || "");
+          if (tadbKeyInput) tadbKeyInput.value = key;
           if (!key) {
             suppressHover();
             openInfo("The AudioDB API key is required.");
@@ -3953,7 +4151,8 @@
       }
       if (discogsSaveButton) {
         discogsSaveButton.addEventListener("click", async () => {
-          const key = (discogsKeyInput?.value || "").trim();
+          const key = sanitizeApiKey(discogsKeyInput?.value || "");
+          if (discogsKeyInput) discogsKeyInput.value = key;
           if (!key) {
             suppressHover();
             openInfo("Discogs API key is required.");
@@ -3968,8 +4167,10 @@
       }
       if (lastfmSaveButton) {
         lastfmSaveButton.addEventListener("click", async () => {
-          const key = (lastfmKeyInput?.value || "").trim();
-          const secret = (lastfmSecretInput?.value || "").trim();
+          const key = sanitizeApiKey(lastfmKeyInput?.value || "");
+          const secret = sanitizeApiKey(lastfmSecretInput?.value || "");
+          if (lastfmKeyInput) lastfmKeyInput.value = key;
+          if (lastfmSecretInput) lastfmSecretInput.value = secret;
           if (!key || !secret) {
             suppressHover();
             openInfo("Last.fm API key and secret are required.");
@@ -3987,7 +4188,11 @@
       }
       if (appleMusicSaveButton) {
         appleMusicSaveButton.addEventListener("click", async () => {
-          const maxSize = (appleMusicMaxInput?.value || "").trim();
+          const maxSize = sanitizeNumberRange(
+            appleMusicMaxInput?.value || "",
+            6000,
+          );
+          if (appleMusicMaxInput) appleMusicMaxInput.value = maxSize;
           const allowUpscale = Boolean(appleMusicUpscaleInput?.checked);
           if (!maxSize) {
             suppressHover();
@@ -4007,11 +4212,25 @@
 
       if (tidalSaveButton) {
         tidalSaveButton.addEventListener("click", async () => {
-          const tidalClientId = (tidalClientIdInput?.value || "").trim();
-          const tidalClientSecret = (tidalClientSecretInput?.value || "").trim();
-          const tidalCountryCode = (tidalCountryCodeInput?.value || "").trim();
-          const tidalUser = (tidalUserInput?.value || "").trim();
-          const tidalUserPassword = (tidalUserPasswordInput?.value || "").trim();
+          const tidalClientId = sanitizeApiKey(tidalClientIdInput?.value || "");
+          const tidalClientSecret = sanitizeApiKey(
+            tidalClientSecretInput?.value || "",
+          );
+          const tidalCountryCode = sanitizeCountryCode(
+            tidalCountryCodeInput?.value || "",
+          );
+          const tidalUser = sanitizeEmail(tidalUserInput?.value || "");
+          const tidalUserPassword = sanitizeApiKey(
+            tidalUserPasswordInput?.value || "",
+          );
+          if (tidalClientIdInput) tidalClientIdInput.value = tidalClientId;
+          if (tidalClientSecretInput)
+            tidalClientSecretInput.value = tidalClientSecret;
+          if (tidalCountryCodeInput)
+            tidalCountryCodeInput.value = tidalCountryCode;
+          if (tidalUserInput) tidalUserInput.value = tidalUser;
+          if (tidalUserPasswordInput)
+            tidalUserPasswordInput.value = tidalUserPassword;
           if (
             !tidalClientId ||
             !tidalClientSecret ||

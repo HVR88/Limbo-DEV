@@ -63,7 +63,7 @@ body[data-theme="dark"] {
   --ink: #c6d4dd;
   --muted: #97aab4;
   --card: rgba(18, 23, 27, 0.92);
-  --panel: rgba(22, 28, 32, 0.92);
+  --panel: rgba(22, 28, 32, 0.96);
   --border: rgba(231, 237, 240, 0.14);
   --shadow: 0 16px 34px rgba(0, 0, 0, 0.45);
   --soft-shadow: 0 8px 18px rgba(0, 0, 0, 0.35);
@@ -229,7 +229,7 @@ body.theme-transition .link {
   width: 100%;
 }
 .fold-toggle__label {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -1039,6 +1039,7 @@ body[data-theme="dark"] .corner-button__inner {
   width: 100%;
   max-width: 100%;
   box-shadow: var(--soft-shadow);
+  min-height: 280px;
 }
 .tabs-footnote {
   margin-top: auto;
@@ -1387,6 +1388,18 @@ body[data-theme="dark"] .config-toggle__thumb {
   font-size: 12px;
   line-height: 1;
 }
+.media-types-value .media-type-token.media-type-token-neutral {
+  background: rgba(140, 150, 160, 0.2);
+  color: var(--ink);
+  min-height: 30px;
+}
+.media-types-value .media-type-token.media-type-token-neutral::before {
+  content: none;
+  display: none;
+}
+body[data-theme="dark"] .media-types-value .media-type-token.media-type-token-neutral {
+  background: rgba(140, 150, 160, 0.3);
+}
 body[data-theme="dark"] .media-types-value .media-type-token {
   background: rgba(220, 20, 20, 0.3);
 }
@@ -1568,17 +1581,20 @@ body[data-theme="dark"] .config-action__inner svg {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 16px;
+  gap: 8px;
   margin-top: 6px;
   border-top: 1px dashed var(--border);
   padding: 8px 6px 2px;
+}
+.config-menu-footer .config-menu-cancel {
+  margin-right: -4px;
 }
 .config-menu-text {
   border: 0;
   background: none;
   color: var(--ink);
-  font-weight: 600;
-  font-size: 12px;
+  font-weight: 700;
+  font-size: 13px;
   letter-spacing: 0.02em;
   text-transform: uppercase;
   cursor: pointer;
@@ -1594,6 +1610,9 @@ body[data-theme="dark"] .config-action__inner svg {
 }
 .config-menu-text:active {
   background: rgba(11, 125, 109, 0.2);
+}
+.config-menu-text.config-menu-cancel {
+  color: var(--accent);
 }
 .config-menu-check {
   display: flex;

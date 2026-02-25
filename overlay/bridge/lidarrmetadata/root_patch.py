@@ -1567,10 +1567,10 @@ def register_root_route() -> None:
         media_formats_url = (
             "https://github.com/HVR88/Docs-Extras/blob/master/docs/Media-Formats.md"
         )
-        exclude_label = '<a class="config-link" href="{}" target="_blank" rel="noopener">Media Types</a>'.format(
+        exclude_label = '<a class="config-link" href="{}" target="_blank" rel="noopener">Filtered</a>'.format(
             html.escape(media_formats_url)
         )
-        include_label = 'Include <a class="config-link" href="{}" target="_blank" rel="noopener">Media Types</a>'.format(
+        include_label = 'Include <a class="config-link" href="{}" target="_blank" rel="noopener">Filtered</a>'.format(
             html.escape(media_formats_url)
         )
         config_menu_svg = _read_inline_svg("limbo-arrows-updn.svg")
@@ -1578,8 +1578,8 @@ def register_root_route() -> None:
         enabled_checked = "true" if config.get("enabled") else "false"
         config_rows = [
             (
-                f"<span data-filter-label-enabled>Filtering Enabled</span>"
-                f'<span data-filter-label-disabled style="display:none">Filtering Disabled</span>',
+                f"<span data-filter-label-enabled>Media type filtering enabled</span>"
+                f'<span data-filter-label-disabled style="display:none">Media type filtering disabled</span>',
                 f'<label class="config-toggle">'
                 f'<input type="checkbox" data-config-enabled {"checked" if enabled_checked == "true" else ""} />'
                 '<span class="config-toggle__track" aria-hidden="true">'
