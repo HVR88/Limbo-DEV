@@ -4,10 +4,6 @@
 
 # <p align="center">**Limbo**<br><sub>**Lidarr, but _Working_**</sub></p>
 
-# **WORK IN PROGRESS - A BIG SETUP CHANGE IS HAPPENING RIGHT NOW**
-
-**This release may not work for a few days unless you still have the old LM Bridge plugin installed - migration to plugin-free setup is coming soon**
-
 ## Introduction
 
 This is a stand-alone _Limbo_ release for existing MusicBrainz mirror installations. It should be installed onto the same host or docker network as the MusicBrainz mirror. Lidarr setup is detailed below.
@@ -61,9 +57,9 @@ docker compose up -d
 >
 > The compose files are not meant to be edited. Put all overrides in `.env`.
 
-## Browser access / status
+## Set up and use
 
-Visit **http://HOST_IP:5001** to check the status of Limbo, including version and filter settings
+Visit **http://LIMBO_HOST_IP:5001** for the Limbo WebUI. The first thing to do is click the Settings button in the top right of the window and set Lidarr's address and API Key, which can be obtained from its Settings -> General screen.
 
 ## Files:
 
