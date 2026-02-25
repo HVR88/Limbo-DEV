@@ -1434,6 +1434,15 @@
               );
               return;
             }
+            if (payload.metadata_update_ok === false) {
+              suppressHover();
+              openInfo(
+                payload.metadata_update_error
+                  ? `Lidarr metadata source could not be updated. ${payload.metadata_update_error} Check the settings.`
+                  : "Lidarr metadata source could not be updated. Check the settings.",
+              );
+              return;
+            }
             const lidarrPillLabel = document.querySelector(
               "[data-lidarr-pill-label]",
             );

@@ -18,6 +18,7 @@ _STATE_FILE = Path(
         str(_STATE_DIR / "release-filter.json"),
     )
 )
+_LIDARR_CONFIG_PATH = "/api/v1/config/metadataprovider"
 
 
 def register_config_routes() -> None:
@@ -46,6 +47,8 @@ def register_config_routes() -> None:
             connection_error = ""
             lidarr_version = ""
             lidarr_version_label = "Lidarr (Last Seen)"
+            metadata_update_ok = True
+            metadata_update_error = ""
             if base_url and api_key:
                 try:
                     version = await root_patch._fetch_lidarr_version(base_url, api_key)
@@ -62,6 +65,11 @@ def register_config_routes() -> None:
             else:
                 connection_ok = False
                 connection_error = "Lidarr URL or API key is missing."
+            if connection_ok:
+                limbo_url = _resolve_limbo_base_url()
+                metadata_update_ok, metadata_update_error = await _update_lidarr_metadata_source(
+                    base_url, api_key, limbo_url
+                )
             return jsonify(
                 {
                     "ok": True,
@@ -69,6 +77,8 @@ def register_config_routes() -> None:
                     "error": connection_error,
                     "lidarr_version": lidarr_version,
                     "lidarr_version_label": lidarr_version_label,
+                    "metadata_update_ok": metadata_update_ok,
+                    "metadata_update_error": metadata_update_error,
                 }
             )
 
@@ -155,6 +165,48 @@ def register_config_routes() -> None:
                     "prefer": release_filters.get_runtime_media_prefer(),
                 }
             )
+
+
+def _resolve_limbo_base_url() -> str:
+    host = (request.host or "").strip()
+    if not host:
+        return ""
+    if ":" in host:
+        hostname, port = host.rsplit(":", 1)
+        host = f"{hostname}:{port}"
+    return f"http://{host}"
+
+
+async def _update_lidarr_metadata_source(
+    base_url: str, api_key: str, limbo_url: str
+) -> Tuple[bool, str]:
+    if not base_url or not api_key:
+        return False, "Lidarr URL or API key is missing."
+    if not limbo_url:
+        return False, "Limbo URL is missing."
+    base_url = base_url.rstrip("/")
+    headers = {"X-Api-Key": api_key}
+    timeout = aiohttp.ClientTimeout(total=8)
+    get_url = f"{base_url}{_LIDARR_CONFIG_PATH}"
+    put_url = f"{base_url}{_LIDARR_CONFIG_PATH}/1"
+    try:
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            async with session.get(get_url, headers=headers) as resp:
+                if resp.status >= 400:
+                    return False, f"GET metadata config failed (status {resp.status})."
+                data = await resp.json()
+            if isinstance(data, list):
+                data = data[0] if data else {}
+            if not isinstance(data, dict):
+                return False, "Unexpected metadata config response."
+            data["metadataSource"] = limbo_url
+            data.setdefault("id", 1)
+            async with session.put(put_url, headers=headers, json=data) as resp:
+                if resp.status >= 400:
+                    return False, f"Save metadata config failed (status {resp.status})."
+        return True, ""
+    except Exception as exc:
+        return False, f"{exc}"
 
     if "/config/refresh-releases" not in existing_rules:
         @upstream_app.app.route("/config/refresh-releases", methods=["POST"])
