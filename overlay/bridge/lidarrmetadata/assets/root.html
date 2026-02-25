@@ -1320,7 +1320,7 @@
       const mbidMatchRegex =
         /[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/;
       const tokenRegex =
-        /[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}|\b[0-9]{2,9}\b/g;
+        /[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}|\b[0-9]{2,12}\b/g;
       const refreshTokenState = new Map();
       let refreshValidateTimer = null;
       let refreshValidateController = null;
@@ -1523,10 +1523,6 @@
         let text = String(value);
         text = text.replace(/https?:\/\//gi, " https://");
         text = text.replace(/https?:\/\/\S+/gi, (url) => {
-          const mbidMatch = url.match(mbidMatchRegex);
-          if (mbidMatch) {
-            return mbidMatch[0];
-          }
           const pathMatch = url.match(/\/(?:album|artist)\/([0-9]+)/i);
           if (pathMatch) {
             return pathMatch[1];
@@ -1536,6 +1532,10 @@
           );
           if (queryMatch) {
             return queryMatch[1];
+          }
+          const mbidMatch = url.match(mbidMatchRegex);
+          if (mbidMatch) {
+            return mbidMatch[0];
           }
           return url;
         });
@@ -1805,25 +1805,6 @@
           mbids: Array.from(mbids),
           lidarr_ids: Array.from(lidarrIds).map((value) => Number(value)),
         };
-        const applySimulatedValidation = () => {
-          Array.from(mbids).forEach((mbid) => {
-            const last = mbid.slice(-1).toLowerCase();
-            const isValid = "02468ace".includes(last);
-            refreshTokenState.set(
-              `mbid:${mbid.toLowerCase()}`,
-              isValid ? "valid" : "invalid",
-            );
-          });
-          Array.from(lidarrIds).forEach((value) => {
-            const numeric = Number(value);
-            const isValid = Number.isFinite(numeric) && numeric % 2 === 0;
-            refreshTokenState.set(
-              `lidarr:${value}`,
-              isValid ? "valid" : "invalid",
-            );
-          });
-          updateTokenClasses();
-        };
         try {
           const response = await fetch("/config/validate-ids", {
             method: "POST",
@@ -1833,9 +1814,6 @@
           });
           const data = await response.json().catch(() => ({}));
           if (!response.ok || !data.ok) {
-            if (isLocalPreview) {
-              applySimulatedValidation();
-            }
             return;
           }
           (data.mbid_valid || []).forEach((mbid) => {
@@ -1860,9 +1838,6 @@
         } catch (error) {
           if (error && error.name === "AbortError") {
             return;
-          }
-          if (isLocalPreview) {
-            applySimulatedValidation();
           }
         }
       };
