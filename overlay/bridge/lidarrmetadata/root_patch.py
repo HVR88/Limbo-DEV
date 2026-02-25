@@ -1247,8 +1247,8 @@ def register_root_route() -> None:
         lidarr_pill_html = "\n".join(
             [
                 f"          {lidarr_pill_tag_open}",
-                f'            <div class="label">{safe["lidarr_version_label"]}</div>',
-                f'            <div class="value">{safe["lidarr_version"]}</div>',
+                f'            <div class="label" data-lidarr-pill-label>{safe["lidarr_version_label"]}</div>',
+                f'            <div class="value" data-lidarr-pill-value>{safe["lidarr_version"]}</div>',
                 f'            <span class="pill-arrow" aria-hidden="true">{tall_arrow_svg}</span>',
                 "          </button>",
             ]

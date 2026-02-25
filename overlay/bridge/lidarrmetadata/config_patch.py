@@ -42,7 +42,35 @@ def register_config_routes() -> None:
             api_key = str(payload.get("lidarr_api_key") or "").strip()
             root_patch.set_lidarr_base_url(base_url)
             root_patch.set_lidarr_api_key(api_key)
-            return jsonify({"ok": True})
+            connection_ok = True
+            connection_error = ""
+            lidarr_version = ""
+            lidarr_version_label = "Lidarr (Last Seen)"
+            if base_url and api_key:
+                try:
+                    version = await root_patch._fetch_lidarr_version(base_url, api_key)
+                    if version:
+                        lidarr_version = version
+                        lidarr_version_label = "Lidarr"
+                        root_patch.set_lidarr_version(version)
+                    else:
+                        connection_ok = False
+                        connection_error = "Connection could not be established."
+                except Exception as exc:
+                    connection_ok = False
+                    connection_error = f"{exc}"
+            else:
+                connection_ok = False
+                connection_error = "Lidarr URL or API key is missing."
+            return jsonify(
+                {
+                    "ok": True,
+                    "connection_ok": connection_ok,
+                    "error": connection_error,
+                    "lidarr_version": lidarr_version,
+                    "lidarr_version_label": lidarr_version_label,
+                }
+            )
 
     if "/config/release-filter" not in existing_rules:
         @upstream_app.app.route("/config/release-filter", methods=["GET", "POST"])
@@ -73,14 +101,7 @@ def register_config_routes() -> None:
             lidarr_port = _extract_lidarr_port(payload)
             lidarr_use_ssl = _extract_lidarr_use_ssl(payload)
             lidarr_api_key, api_key_provided = _extract_lidarr_api_key(payload)
-            lidarr_client_ip = _extract_client_ip(request)
-            if lidarr_client_ip:
-                upstream_app.app.logger.info("Limbo config sync from Lidarr at %s", lidarr_client_ip)
-            if lidarr_client_ip and (not base_url_provided or _is_localhost_url(lidarr_base_url)):
-                scheme = "https" if lidarr_use_ssl else "http"
-                port = lidarr_port or (6868 if lidarr_use_ssl else 8686)
-                lidarr_base_url = f"{scheme}://{lidarr_client_ip}:{port}{lidarr_url_base}"
-                base_url_provided = True
+            lidarr_client_ip = None
             exclude = payload.get("exclude_media_formats")
             if exclude is None:
                 exclude = payload.get("excludeMediaFormats")

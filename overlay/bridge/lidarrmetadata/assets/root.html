@@ -1425,6 +1425,27 @@
               );
               return;
             }
+            if (payload.connection_ok === false) {
+              suppressHover();
+              openInfo(
+                payload.error
+                  ? `Connection could not be established. ${payload.error} Check the settings.`
+                  : "Connection could not be established. Check the settings.",
+              );
+              return;
+            }
+            const lidarrPillLabel = document.querySelector(
+              "[data-lidarr-pill-label]",
+            );
+            if (lidarrPillLabel && payload.lidarr_version_label) {
+              lidarrPillLabel.textContent = payload.lidarr_version_label;
+            }
+            const lidarrPillValue = document.querySelector(
+              "[data-lidarr-pill-value]",
+            );
+            if (lidarrPillValue && payload.lidarr_version) {
+              lidarrPillValue.textContent = payload.lidarr_version;
+            }
             closeModal(getModalById("settings"));
           } catch (error) {
             suppressHover();

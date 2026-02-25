@@ -285,18 +285,6 @@ body.theme-transition .link {
   cursor: pointer;
   z-index: 3;
 }
-.corner-button_expanded {
-  position: absolute;
-  top: 18px;
-  right: 18px;
-  width: var(--action-button-size);
-  height: calc(18px + var(--action-button-size) * 2);
-  border: 0;
-  background: none;
-  padding: 0;
-  cursor: pointer;
-  z-index: 3;
-}
 .corner-button[data-theme-toggle] {
   right: calc(18px + var(--action-button-size) + 10px);
 }
@@ -337,11 +325,6 @@ body[data-theme="dark"] .corner-button__icon--dark {
 }
 body[data-theme="dark"] .corner-button__icon--light {
   display: none;
-}
-.corner-button[data-theme-toggle]:hover .corner-button__inner {
-  height: calc(18px + var(--action-button-size) * 2);
-  transform: scale(1.07);
-  box-shadow: 0 8px 18px rgba(17, 27, 32, 0.16);
 }
 .corner-button:hover .corner-button__inner {
   transform: scale(1.07);
