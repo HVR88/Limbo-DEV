@@ -1,5 +1,7 @@
 import json
 import os
+import socket
+from urllib.parse import urlparse
 from pathlib import Path
 from typing import Any, Dict, Optional, List, Tuple
 
@@ -63,10 +65,14 @@ def register_config_routes() -> None:
                     connection_ok = False
                     connection_error = f"{exc}"
             if connection_ok:
-                limbo_url = _resolve_limbo_base_url()
-                metadata_update_ok, metadata_update_error = await _update_lidarr_metadata_source(
-                    base_url, api_key, limbo_url
-                )
+                limbo_url, limbo_error = _resolve_limbo_base_url(base_url)
+                if not limbo_url:
+                    metadata_update_ok = False
+                    metadata_update_error = limbo_error or "Unable to resolve Limbo address."
+                else:
+                    metadata_update_ok, metadata_update_error = await _update_lidarr_metadata_source(
+                        base_url, api_key, limbo_url
+                    )
             if connection_ok and metadata_update_ok:
                 root_patch.set_lidarr_base_url(base_url)
                 root_patch.set_lidarr_api_key(api_key)
@@ -172,14 +178,38 @@ def register_config_routes() -> None:
             )
 
 
-def _resolve_limbo_base_url() -> str:
+def _resolve_limbo_base_url(lidarr_base_url: str) -> Tuple[str, str]:
+    forwarded_proto = (request.headers.get("X-Forwarded-Proto") or "").strip()
+    scheme = forwarded_proto or (request.scheme or "").strip()
     host = (request.host or "").strip()
-    if not host:
-        return ""
-    if ":" in host:
-        hostname, port = host.rsplit(":", 1)
-        host = f"{hostname}:{port}"
-    return f"http://{host}"
+    if scheme and host:
+        return f"{scheme}://{host}", ""
+    if not lidarr_base_url:
+        return "", "Missing Lidarr URL."
+    parsed = urlparse(lidarr_base_url.strip())
+    lidarr_host = parsed.hostname or ""
+    if not lidarr_host:
+        return "", "Invalid Lidarr URL."
+    lidarr_port = parsed.port
+    if lidarr_port is None:
+        lidarr_port = 443 if parsed.scheme == "https" else 80
+    try:
+        addrinfo = socket.getaddrinfo(
+            lidarr_host, lidarr_port, socket.AF_INET, socket.SOCK_DGRAM
+        )
+        if not addrinfo:
+            return "", "Unable to resolve Lidarr host."
+        target = addrinfo[0][4]
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            sock.connect(target)
+            local_ip = sock.getsockname()[0]
+        finally:
+            sock.close()
+    except Exception as exc:
+        return "", f"Unable to resolve Limbo IP: {exc}"
+    limbo_port = os.getenv("LIMBO_PORT", "").strip() or "5001"
+    return f"http://{local_ip}:{limbo_port}", ""
 
 
 async def _update_lidarr_metadata_source(
