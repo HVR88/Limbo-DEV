@@ -2912,6 +2912,49 @@
             });
           }
         });
+        if (index === 2) {
+          const setMenuBlockState = (enabled) => {
+            document.body.classList.toggle("suppress-hover", enabled);
+            document.body.classList.toggle("menu-modal-open", enabled);
+          };
+          document.addEventListener(
+            "mousedown",
+            (event) => {
+              if (!menu.classList.contains("open")) {
+                return;
+              }
+              setMenuBlockState(true);
+              if (menu.contains(event.target) || button.contains(event.target)) {
+                return;
+              }
+              event.preventDefault();
+              event.stopPropagation();
+              event.stopImmediatePropagation();
+            },
+            true,
+          );
+          button.addEventListener("click", () => {
+            setMenuBlockState(menu.classList.contains("open"));
+          });
+          const escButton = menu.querySelector(".config-menu-esc");
+          if (escButton) {
+            escButton.addEventListener("click", () => {
+              setMenuBlockState(false);
+            });
+          }
+          const cancelButton = menu.querySelector(".config-menu-cancel");
+          if (cancelButton) {
+            cancelButton.addEventListener("click", () => {
+              setMenuBlockState(false);
+            });
+          }
+          const applyButton = menu.querySelector(".config-menu-apply");
+          if (applyButton) {
+            applyButton.addEventListener("click", () => {
+              setMenuBlockState(false);
+            });
+          }
+        }
 
         if (config.type === "single") {
           const specialButton = menu.querySelector(".config-menu-special");

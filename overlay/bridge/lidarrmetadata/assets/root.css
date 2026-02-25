@@ -134,6 +134,18 @@ body.theme-transition .link {
     transition: none;
   }
 }
+body.menu-modal-open {
+  cursor: default;
+}
+body.menu-modal-open * {
+  pointer-events: none !important;
+  cursor: default !important;
+}
+body.menu-modal-open .config-menu.open,
+body.menu-modal-open .config-menu.open * {
+  pointer-events: auto !important;
+  cursor: auto !important;
+}
 .wrap {
   max-width: 900px;
   margin: 0 auto;
