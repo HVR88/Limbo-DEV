@@ -216,6 +216,7 @@
               class="modal-link modal-link-text"
               type="button"
               data-modal-close
+              data-refresh-cancel
             >
               CANCEL
             </button>
@@ -1072,7 +1073,9 @@
           });
           const data = await response.json().catch(() => ({}));
           if (!response.ok || !data.ok) {
-            applySimulatedValidation();
+            if (isLocalPreview) {
+              applySimulatedValidation();
+            }
             return;
           }
           (data.mbid_valid || []).forEach((mbid) => {
@@ -1098,7 +1101,9 @@
           if (error && error.name === "AbortError") {
             return;
           }
-          applySimulatedValidation();
+          if (isLocalPreview) {
+            applySimulatedValidation();
+          }
         }
       };
 
@@ -1135,6 +1140,13 @@
           return;
         }
         event.preventDefault();
+        const selection = window.getSelection();
+        if (selection && selection.rangeCount > 0) {
+          const range = selection.getRangeAt(0);
+          if (!range.collapsed && refreshEditor.contains(range.commonAncestorContainer)) {
+            range.deleteContents();
+          }
+        }
         const text = event.clipboardData?.getData("text") || "";
         const normalized = normalizeRefreshText(text);
         const tokens = Array.from(normalized.matchAll(tokenRegex)).map(
@@ -1323,6 +1335,10 @@
           openInfo(`Request failed: ${error}`);
         } finally {
           refreshButton.disabled = false;
+          if (refreshEditor) {
+            refreshEditor.textContent = "";
+            updateRefreshState();
+          }
         }
       };
 
@@ -1372,6 +1388,16 @@
             );
           } else {
             runRefreshRequest(mbids, lidarrIds);
+          }
+        });
+      }
+
+      const refreshCancelButton = document.querySelector("[data-refresh-cancel]");
+      if (refreshCancelButton) {
+        refreshCancelButton.addEventListener("click", () => {
+          if (refreshEditor) {
+            refreshEditor.textContent = "";
+            updateRefreshState();
           }
         });
       }
