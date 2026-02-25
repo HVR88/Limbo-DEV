@@ -14,7 +14,7 @@ def build_preview_html() -> str:
     )
     template = template_path.read_text(encoding="utf-8")
     template = template.replace(
-        'href="/assets/root.css"', 'href="assets/root.css?v=preview"'
+        'href="/assets/root.css"', 'href="assets/root.css?v=preview-abc12"'
     )
     svg_dir = template_path.parent
 

@@ -1,6 +1,7 @@
 import html
 import json
 import os
+import secrets
 from pathlib import Path
 import re
 import time
@@ -1049,8 +1050,10 @@ def register_root_route() -> None:
         template_path = assets_dir / "root.html"
         template = template_path.read_text(encoding="utf-8")
         css_version = html.escape(info["version"])
+        css_nonce = secrets.token_hex(3)
         template = template.replace(
-            'href="/assets/root.css"', f'href="/assets/root.css?v={css_version}"'
+            'href="/assets/root.css"',
+            f'href="/assets/root.css?v={css_version}-{css_nonce}"',
         )
         use_remote, _start_url, status_url, header_pair = _replication_remote_config()
         replication_running = False
