@@ -710,6 +710,12 @@ body[data-theme="dark"] .modal__esc-hint {
   gap: 8px;
   background: rgba(255, 255, 255, 0.5);
   min-height: 220px;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.settings-list * {
+  user-select: none;
+  -webkit-user-select: none;
 }
 body[data-theme="dark"] .settings-list {
   background: rgba(18, 23, 27, 0.6);
@@ -731,6 +737,7 @@ body[data-theme="dark"] .settings-list {
   width: 100%;
   user-select: none;
   cursor: grab;
+  transition: background 200ms ease, box-shadow 200ms ease;
 }
 .settings-list__item.dragging {
   opacity: 0;
@@ -766,6 +773,10 @@ body[data-theme="dark"] .settings-list {
 .settings-list__item.selected {
   background: rgba(11, 125, 109, 0.2);
   box-shadow: 0 0 0 3px rgba(11, 125, 109, 0.2);
+}
+.settings-list.dragging .settings-list__item:not(.dragging):hover {
+  background: var(--panel);
+  box-shadow: none;
 }
 .settings-list.dragging .settings-list__item:not(.dragging):hover,
 .settings-list.dragging .settings-list__item:not(.dragging).selected {
@@ -816,6 +827,8 @@ body[data-theme="dark"] .settings-list {
   justify-content: center;
   font-size: 11px;
   letter-spacing: 0.16em;
+  opacity: 0;
+  pointer-events: none;
 }
 .settings-field--row {
   display: grid;
