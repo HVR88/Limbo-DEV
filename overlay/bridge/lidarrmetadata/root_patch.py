@@ -165,19 +165,7 @@ def _load_lidarr_settings() -> None:
         data = {}
     _LIDARR_BASE_URL = str(data.get("lidarr_base_url") or _LIDARR_BASE_URL or "").strip()
     _LIDARR_API_KEY = str(data.get("lidarr_api_key") or _LIDARR_API_KEY or "").strip()
-    if _LIDARR_BASE_URL and _LIDARR_API_KEY:
-        return
-    try:
-        data = json.loads(_LIDARR_FALLBACK_STATE_FILE.read_text(encoding="utf-8"))
-    except Exception:
-        return
-    fallback_base = str(data.get("lidarr_base_url") or "").strip()
-    fallback_key = str(data.get("lidarr_api_key") or "").strip()
-    if fallback_base and not _LIDARR_BASE_URL:
-        _LIDARR_BASE_URL = fallback_base
-    if fallback_key and not _LIDARR_API_KEY:
-        _LIDARR_API_KEY = fallback_key
-    _persist_lidarr_settings()
+    return
 
 
 def _persist_lidarr_settings() -> None:
@@ -193,9 +181,18 @@ def _persist_lidarr_settings() -> None:
 
 
 def set_lidarr_base_url(value: str) -> None:
+    _set_lidarr_base_url(value, persist=True)
+
+
+def set_lidarr_base_url_runtime(value: str) -> None:
+    _set_lidarr_base_url(value, persist=False)
+
+
+def _set_lidarr_base_url(value: str, *, persist: bool) -> None:
     global _LIDARR_BASE_URL
     _LIDARR_BASE_URL = value.strip() if value else ""
-    _persist_lidarr_settings()
+    if persist:
+        _persist_lidarr_settings()
 
 
 def get_lidarr_base_url() -> str:
@@ -203,13 +200,38 @@ def get_lidarr_base_url() -> str:
 
 
 def set_lidarr_api_key(value: str) -> None:
+    _set_lidarr_api_key(value, persist=True)
+
+
+def set_lidarr_api_key_runtime(value: str) -> None:
+    _set_lidarr_api_key(value, persist=False)
+
+
+def _set_lidarr_api_key(value: str, *, persist: bool) -> None:
     global _LIDARR_API_KEY
     _LIDARR_API_KEY = value.strip() if value else ""
-    _persist_lidarr_settings()
+    if persist:
+        _persist_lidarr_settings()
 
 
 def get_lidarr_api_key() -> str:
     return _LIDARR_API_KEY or ""
+
+
+def _is_localhost_url(value: str) -> bool:
+    lowered = value.strip().lower()
+    if not lowered:
+        return False
+    if not lowered.startswith("http://") and not lowered.startswith("https://"):
+        lowered = "http://" + lowered
+    try:
+        from urllib.parse import urlparse
+
+        parsed = urlparse(lowered)
+        host = (parsed.hostname or "").lower()
+    except Exception:
+        return False
+    return host in {"localhost", "127.0.0.1", "::1"}
 
 
 def set_lidarr_client_ip(value: str) -> None:

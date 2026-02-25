@@ -41,35 +41,37 @@ def register_config_routes() -> None:
                 payload = {}
             base_url = str(payload.get("lidarr_base_url") or "").strip()
             api_key = str(payload.get("lidarr_api_key") or "").strip()
-            root_patch.set_lidarr_base_url(base_url)
-            root_patch.set_lidarr_api_key(api_key)
             connection_ok = True
             connection_error = ""
             lidarr_version = ""
             lidarr_version_label = "Lidarr (Last Seen)"
             metadata_update_ok = True
             metadata_update_error = ""
-            if base_url and api_key:
+            if not base_url or not api_key:
+                connection_ok = False
+                connection_error = "Lidarr URL or API key is missing."
+            else:
                 try:
                     version = await root_patch._fetch_lidarr_version(base_url, api_key)
                     if version:
                         lidarr_version = version
                         lidarr_version_label = "Lidarr"
-                        root_patch.set_lidarr_version(version)
                     else:
                         connection_ok = False
                         connection_error = "Connection could not be established."
                 except Exception as exc:
                     connection_ok = False
                     connection_error = f"{exc}"
-            else:
-                connection_ok = False
-                connection_error = "Lidarr URL or API key is missing."
             if connection_ok:
                 limbo_url = _resolve_limbo_base_url()
                 metadata_update_ok, metadata_update_error = await _update_lidarr_metadata_source(
                     base_url, api_key, limbo_url
                 )
+            if connection_ok and metadata_update_ok:
+                root_patch.set_lidarr_base_url(base_url)
+                root_patch.set_lidarr_api_key(api_key)
+                if lidarr_version:
+                    root_patch.set_lidarr_version(lidarr_version)
             return jsonify(
                 {
                     "ok": True,
@@ -107,6 +109,9 @@ def register_config_routes() -> None:
             payload = await request.get_json(silent=True) or {}
             enabled = _is_truthy(payload.get("enabled", True))
             lidarr_base_url, base_url_provided = _extract_lidarr_base_url(payload)
+            if base_url_provided and _is_localhost_url(lidarr_base_url):
+                base_url_provided = False
+                lidarr_base_url = None
             lidarr_url_base = _extract_lidarr_url_base(payload)
             lidarr_port = _extract_lidarr_port(payload)
             lidarr_use_ssl = _extract_lidarr_use_ssl(payload)
@@ -472,6 +477,22 @@ def _extract_lidarr_base_url(payload: Dict[str, Any]) -> tuple[str, bool]:
     return "", False
 
 
+def _is_localhost_url(value: Optional[str]) -> bool:
+    if not value:
+        return False
+    lowered = value.strip().lower()
+    if not lowered.startswith("http://") and not lowered.startswith("https://"):
+        lowered = "http://" + lowered
+    try:
+        from urllib.parse import urlparse
+
+        parsed = urlparse(lowered)
+        host = (parsed.hostname or "").lower()
+    except Exception:
+        return False
+    return host in {"localhost", "127.0.0.1", "::1"}
+
+
 def _extract_lidarr_api_key(payload: Dict[str, Any]) -> tuple[str, bool]:
     for key in (
         "lidarr_api_key",
@@ -626,10 +647,10 @@ def _persist_config(data: Dict[str, Any]) -> None:
             root_patch.set_plugin_version(plugin_version)
         if data.get("lidarr_base_url") is not None:
             payload["lidarr_base_url"] = str(data.get("lidarr_base_url") or "").strip()
-            root_patch.set_lidarr_base_url(payload["lidarr_base_url"])
+            root_patch.set_lidarr_base_url_runtime(payload["lidarr_base_url"])
         if data.get("lidarr_api_key") is not None:
             payload["lidarr_api_key"] = str(data.get("lidarr_api_key") or "").strip()
-            root_patch.set_lidarr_api_key(payload["lidarr_api_key"])
+            root_patch.set_lidarr_api_key_runtime(payload["lidarr_api_key"])
         if data.get("lidarr_client_ip") is not None:
             payload["lidarr_client_ip"] = str(data.get("lidarr_client_ip") or "").strip()
             root_patch.set_lidarr_client_ip(payload["lidarr_client_ip"])
