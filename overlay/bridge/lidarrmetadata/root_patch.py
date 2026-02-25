@@ -15,6 +15,8 @@ try:
 except Exception:  # pragma: no cover - runtime dependency may be missing
     aiohttp = None
 import subprocess
+import socket
+from urllib.parse import urlparse
 import lidarrmetadata
 from lidarrmetadata import provider
 from lidarrmetadata.app import no_cache
@@ -40,6 +42,8 @@ _MBMS_VERSION_FILE = Path("/mbms/VERSION")
 _LIDARR_BASE_URL: Optional[str] = None
 _LIDARR_API_KEY: Optional[str] = None
 _LIDARR_CLIENT_IP: Optional[str] = None
+_LIMBO_URL_MODE: Optional[str] = None
+_LIMBO_URL_CUSTOM: Optional[str] = None
 _GITHUB_RELEASE_CACHE: Dict[str, Tuple[float, Optional[str]]] = {}
 _GITHUB_RELEASE_CACHE_TTL = 300.0
 _REPLICATION_NOTIFY_FILE = Path(
@@ -103,6 +107,35 @@ def _is_newer_version(current: str, latest: str) -> bool:
     return latest_tuple > current_tuple
 
 
+def _resolve_limbo_host_url(lidarr_base_url: str) -> str:
+    if not lidarr_base_url:
+        return ""
+    parsed = urlparse(lidarr_base_url.strip())
+    lidarr_host = parsed.hostname or ""
+    if not lidarr_host:
+        return ""
+    lidarr_port = parsed.port
+    if lidarr_port is None:
+        lidarr_port = 443 if parsed.scheme == "https" else 80
+    try:
+        addrinfo = socket.getaddrinfo(
+            lidarr_host, lidarr_port, socket.AF_INET, socket.SOCK_DGRAM
+        )
+        if not addrinfo:
+            return ""
+        target = addrinfo[0][4]
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            sock.connect(target)
+            local_ip = sock.getsockname()[0]
+        finally:
+            sock.close()
+    except Exception:
+        return ""
+    limbo_port = os.getenv("LIMBO_PORT", "").strip() or "5001"
+    return f"http://{local_ip}:{limbo_port}"
+
+
 async def _fetch_latest_release_version(owner: str, repo: str) -> Optional[str]:
     if aiohttp is None:
         return None
@@ -158,15 +191,22 @@ def _read_mbms_plus_version() -> str:
 
 
 def _load_lidarr_settings() -> None:
-    global _LIDARR_BASE_URL, _LIDARR_API_KEY
+    global _LIDARR_BASE_URL, _LIDARR_API_KEY, _LIMBO_URL_MODE, _LIMBO_URL_CUSTOM
     try:
         data = json.loads(_SETTINGS_FILE.read_text(encoding="utf-8"))
     except Exception:
         _LIDARR_BASE_URL = ""
         _LIDARR_API_KEY = ""
+        _LIMBO_URL_MODE = "auto-referrer"
+        _LIMBO_URL_CUSTOM = ""
         return
     _LIDARR_BASE_URL = str(data.get("lidarr_base_url") or "").strip()
     _LIDARR_API_KEY = str(data.get("lidarr_api_key") or "").strip()
+    mode = str(data.get("limbo_url_mode") or "").strip().lower()
+    if mode not in {"auto-referrer", "auto-host", "custom"}:
+        mode = "auto-referrer"
+    _LIMBO_URL_MODE = mode
+    _LIMBO_URL_CUSTOM = str(data.get("limbo_url") or "").strip()
     return
 
 
@@ -176,6 +216,8 @@ def _persist_lidarr_settings() -> None:
         payload = {
             "lidarr_base_url": _LIDARR_BASE_URL or "",
             "lidarr_api_key": _LIDARR_API_KEY or "",
+            "limbo_url_mode": _LIMBO_URL_MODE or "auto-referrer",
+            "limbo_url": _LIMBO_URL_CUSTOM or "",
         }
         _SETTINGS_FILE.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     except Exception:
@@ -218,6 +260,47 @@ def _set_lidarr_api_key(value: str, *, persist: bool) -> None:
 
 def get_lidarr_api_key() -> str:
     return _LIDARR_API_KEY or ""
+
+
+def set_limbo_url_mode(value: str) -> None:
+    _set_limbo_url_mode(value, persist=True)
+
+
+def set_limbo_url_mode_runtime(value: str) -> None:
+    _set_limbo_url_mode(value, persist=False)
+
+
+def _set_limbo_url_mode(value: str, *, persist: bool) -> None:
+    global _LIMBO_URL_MODE
+    mode = str(value or "").strip().lower()
+    if mode not in {"auto-referrer", "auto-host", "custom"}:
+        mode = "auto-referrer"
+    _LIMBO_URL_MODE = mode
+    if persist:
+        _persist_lidarr_settings()
+
+
+def get_limbo_url_mode() -> str:
+    return _LIMBO_URL_MODE or "auto-referrer"
+
+
+def set_limbo_url_custom(value: str) -> None:
+    _set_limbo_url_custom(value, persist=True)
+
+
+def set_limbo_url_custom_runtime(value: str) -> None:
+    _set_limbo_url_custom(value, persist=False)
+
+
+def _set_limbo_url_custom(value: str, *, persist: bool) -> None:
+    global _LIMBO_URL_CUSTOM
+    _LIMBO_URL_CUSTOM = value.strip() if value else ""
+    if persist:
+        _persist_lidarr_settings()
+
+
+def get_limbo_url_custom() -> str:
+    return _LIMBO_URL_CUSTOM or ""
 
 
 def _is_localhost_url(value: str) -> bool:
@@ -981,6 +1064,23 @@ def register_root_route() -> None:
         base_path = (upstream_app.app.config.get("ROOT_PATH") or "").rstrip("/")
         if base_path and not base_path.startswith("/"):
             base_path = "/" + base_path
+        forwarded_proto = (request.headers.get("X-Forwarded-Proto") or "").strip()
+        scheme = forwarded_proto or (request.scheme or "").strip()
+        host = (request.host or "").strip()
+        limbo_url = ""
+        if scheme and host:
+            limbo_url = f"{scheme}://{host}{base_path}"
+        limbo_referrer_url = limbo_url
+        limbo_host_url = _resolve_limbo_host_url(lidarr_base_url)
+        limbo_referrer_effective = limbo_referrer_url or limbo_host_url
+        limbo_mode = get_limbo_url_mode()
+        limbo_custom_url = get_limbo_url_custom()
+        if limbo_mode == "custom" and limbo_custom_url:
+            limbo_url = limbo_custom_url
+        elif limbo_mode == "auto-host" and limbo_host_url:
+            limbo_url = limbo_host_url
+        elif limbo_mode == "auto-referrer":
+            limbo_url = limbo_referrer_effective
         version_url = f"{base_path}/version" if base_path else "/version"
         cache_clear_url = f"{base_path}/cache/clear" if base_path else "/cache/clear"
         cache_expire_url = f"{base_path}/cache/expire" if base_path else "/cache/expire"
@@ -1121,6 +1221,11 @@ def register_root_route() -> None:
             "__LIDARR_VERSION_LABEL__": safe["lidarr_version_label"],
             "__LIDARR_BASE_URL__": html.escape(get_lidarr_base_url()),
             "__LIDARR_API_KEY__": html.escape(get_lidarr_api_key()),
+            "__LIMBO_URL__": html.escape(limbo_url),
+            "__LIMBO_URL_REFERRER__": html.escape(limbo_referrer_effective),
+            "__LIMBO_URL_HOST__": html.escape(limbo_host_url),
+            "__LIMBO_URL_MODE__": html.escape(limbo_mode),
+            "__LIMBO_URL_CUSTOM__": html.escape(limbo_custom_url),
             "__MBMS_REPLICATION_SCHEDULE__": safe["mbms_replication_schedule"],
             "__MBMS_INDEX_SCHEDULE__": safe["mbms_index_schedule"],
             "__METADATA_VERSION__": safe["metadata_version"],
@@ -1143,6 +1248,7 @@ def register_root_route() -> None:
             "__THEME_ICON_LIGHT__": theme_light_svg,
             "__THEME_ICON_AUTO__": theme_auto_svg,
             "__TALL_ARROW_ICON__": tall_arrow_svg,
+            "__CONFIG_MENU_ICON__": config_menu_svg,
             "__CONFIG_HTML__": config_html,
         }
         lidarr_ui_url = get_lidarr_base_url()

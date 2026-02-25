@@ -36,6 +36,8 @@ def register_config_routes() -> None:
                     {
                         "lidarr_base_url": root_patch.get_lidarr_base_url(),
                         "lidarr_api_key": root_patch.get_lidarr_api_key(),
+                        "limbo_url_mode": root_patch.get_limbo_url_mode(),
+                        "limbo_url": root_patch.get_limbo_url_custom(),
                     }
                 )
             payload = await request.get_json(silent=True) or {}
@@ -43,6 +45,12 @@ def register_config_routes() -> None:
                 payload = {}
             base_url = str(payload.get("lidarr_base_url") or "").strip()
             api_key = str(payload.get("lidarr_api_key") or "").strip()
+            limbo_url_mode = str(payload.get("limbo_url_mode") or "").strip().lower()
+            if limbo_url_mode not in {"auto-referrer", "auto-host", "custom"}:
+                limbo_url_mode = "auto-referrer"
+            limbo_url_custom = str(
+                payload.get("limbo_url") or payload.get("limbo_url_custom") or ""
+            ).strip()
             connection_ok = True
             connection_error = ""
             lidarr_version = ""
@@ -65,7 +73,9 @@ def register_config_routes() -> None:
                     connection_ok = False
                     connection_error = f"{exc}"
             if connection_ok:
-                limbo_url, limbo_error = _resolve_limbo_base_url(base_url)
+                limbo_url, limbo_error = _resolve_limbo_url_by_mode(
+                    base_url, limbo_url_mode, limbo_url_custom
+                )
                 if not limbo_url:
                     metadata_update_ok = False
                     metadata_update_error = limbo_error or "Unable to resolve Limbo address."
@@ -76,6 +86,11 @@ def register_config_routes() -> None:
             if connection_ok and metadata_update_ok:
                 root_patch.set_lidarr_base_url(base_url)
                 root_patch.set_lidarr_api_key(api_key)
+                root_patch.set_limbo_url_mode(limbo_url_mode)
+                if limbo_url_mode == "custom":
+                    root_patch.set_limbo_url_custom(limbo_url_custom)
+                else:
+                    root_patch.set_limbo_url_custom(limbo_url)
                 if lidarr_version:
                     root_patch.set_lidarr_version(lidarr_version)
             return jsonify(
@@ -210,6 +225,66 @@ def _resolve_limbo_base_url(lidarr_base_url: str) -> Tuple[str, str]:
         return "", f"Unable to resolve Limbo IP: {exc}"
     limbo_port = os.getenv("LIMBO_PORT", "").strip() or "5001"
     return f"http://{local_ip}:{limbo_port}", ""
+
+
+def _resolve_limbo_host_url(lidarr_base_url: str) -> Tuple[str, str]:
+    if not lidarr_base_url:
+        return "", "Missing Lidarr URL."
+    parsed = urlparse(lidarr_base_url.strip())
+    lidarr_host = parsed.hostname or ""
+    if not lidarr_host:
+        return "", "Invalid Lidarr URL."
+    lidarr_port = parsed.port
+    if lidarr_port is None:
+        lidarr_port = 443 if parsed.scheme == "https" else 80
+    try:
+        addrinfo = socket.getaddrinfo(
+            lidarr_host, lidarr_port, socket.AF_INET, socket.SOCK_DGRAM
+        )
+        if not addrinfo:
+            return "", "Unable to resolve Lidarr host."
+        target = addrinfo[0][4]
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            sock.connect(target)
+            local_ip = sock.getsockname()[0]
+        finally:
+            sock.close()
+    except Exception as exc:
+        return "", f"Unable to resolve Limbo IP: {exc}"
+    limbo_port = os.getenv("LIMBO_PORT", "").strip() or "5001"
+    return f"http://{local_ip}:{limbo_port}", ""
+
+
+def _resolve_limbo_url_by_mode(
+    lidarr_base_url: str, mode: str, custom_url: str
+) -> Tuple[str, str]:
+    if mode == "custom":
+        if not custom_url:
+            return "", "Limbo URL is missing."
+        if _is_musicbrainz_url(custom_url):
+            return "", "MusicBrainz URL is not allowed."
+        return custom_url, ""
+    if mode == "auto-host":
+        return _resolve_limbo_host_url(lidarr_base_url)
+    referrer_url, referrer_error = _resolve_limbo_base_url(lidarr_base_url)
+    if referrer_url:
+        return referrer_url, ""
+    return _resolve_limbo_host_url(lidarr_base_url)
+
+
+def _is_musicbrainz_url(value: str) -> bool:
+    text = str(value or "").strip().lower()
+    if not text:
+        return False
+    if not text.startswith("http://") and not text.startswith("https://"):
+        text = "http://" + text
+    try:
+        parsed = urlparse(text)
+    except Exception:
+        return False
+    host = (parsed.hostname or "").lower()
+    return host == "musicbrainz.org" or host.endswith(".musicbrainz.org")
 
 
 async def _update_lidarr_metadata_source(

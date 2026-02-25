@@ -36,7 +36,6 @@
           </span>
         </button>
         <div class="config-menu config-menu-narrow theme-menu" data-theme-menu>
-          <button type="button" data-theme-option="auto">AUTO</button>
           <button type="button" data-theme-option="light">LIGHT</button>
           <button type="button" data-theme-option="dark">DARK</button>
         </div>
@@ -90,9 +89,6 @@
                   <span class="action-button__inner">REFRESH</span>
                 </button>
                 <div class="tabs-footnote">
-                  Free-form, no special formatting needed
-                </div>
-                <div class="tabs-footnote">
                   Exclude or include selected media types, Vinyl LP, Cassette,
                   CD, etc.
                 </div>
@@ -143,9 +139,23 @@
           </div>
         </div>
 
-        <div class="grid">
-          __LIDARR_PILL_HTML__ __LM_PILL_HTML__ __MBMS_PILLS__
-          __REPLICATION_PILL_HTML__
+        <div class="fold">
+          <button
+            class="fold-toggle"
+            type="button"
+            aria-expanded="false"
+            data-fold-toggle
+          >
+            <span class="fold-toggle__label" data-fold-label>More</span>
+            <span class="fold-toggle__chevron" aria-hidden="true"></span>
+          </button>
+          <div class="fold-line" aria-hidden="true"></div>
+          <div class="fold-content" data-fold-content>
+            <div class="grid">
+              __LIDARR_PILL_HTML__ __LM_PILL_HTML__ __MBMS_PILLS__
+              __REPLICATION_PILL_HTML__
+            </div>
+          </div>
         </div>
         <div class="links">
           <div class="links-left"></div>
@@ -182,7 +192,6 @@
       >
         <div class="settings-modal__content">
           <h2 class="settings-modal__title">Settings</h2>
-          <p class="settings-modal__subtitle">Configure Limbo options.</p>
           <div class="settings-field">
             <label class="settings-field__label" for="lidarr-url"
               >Lidarr URL</label
@@ -210,6 +219,55 @@
               placeholder="lkd9a8s7df0a9s8d7f0a9s8d7f0a9s8d"
               value="__LIDARR_API_KEY__"
             />
+          </div>
+          <div class="settings-field">
+            <label class="settings-field__label" for="limbo-url"
+              >Limbo URL</label
+            >
+            <div
+              class="settings-field__control settings-field__control--framed"
+              data-limbo-control
+            >
+              <input
+                id="limbo-url"
+                class="settings-field__input settings-field__input--framed"
+                type="text"
+                spellcheck="false"
+                autocomplete="off"
+                placeholder="http://limbo-url:port"
+                value="__LIMBO_URL__"
+                data-limbo-referrer="__LIMBO_URL_REFERRER__"
+                data-limbo-host="__LIMBO_URL_HOST__"
+                data-limbo-mode="__LIMBO_URL_MODE__"
+                data-limbo-custom="__LIMBO_URL_CUSTOM__"
+                readonly
+              />
+              <span class="settings-field__chip" data-limbo-chip></span>
+              <button
+                class="config-action settings-field__menu-toggle"
+                type="button"
+                aria-label="Limbo URL menu"
+                data-limbo-menu-toggle
+              >
+                <span class="config-action__inner" aria-hidden="true">
+                  __CONFIG_MENU_ICON__
+                </span>
+              </button>
+              <div
+                class="config-menu config-menu-compact settings-field__menu"
+                data-limbo-menu
+              >
+                <button type="button" data-limbo-menu-action="auto-referrer">
+                  AUTO-DETECT (REFERRER)
+                </button>
+                <button type="button" data-limbo-menu-action="auto-host">
+                  AUTO-DETECT (HOST IP)
+                </button>
+                <button type="button" data-limbo-menu-action="custom">
+                  CUSTOM URL:PORT
+                </button>
+              </div>
+            </div>
           </div>
           <div class="refresh-modal__actions">
             <button
@@ -741,10 +799,22 @@
 
       const refreshEditor = document.querySelector("[data-refresh-editor]");
       const refreshButton = document.querySelector("[data-refresh-button]");
-      const refreshModal = document.querySelector('[data-modal="refresh-modal"]');
+      const refreshModal = document.querySelector(
+        '[data-modal="refresh-modal"]',
+      );
+      const limboUrlInput = document.querySelector("#limbo-url");
+      const limboControl = document.querySelector("[data-limbo-control]");
+      const limboChip = document.querySelector("[data-limbo-chip]");
       const lidarrUrlInput = document.querySelector("#lidarr-url");
       const lidarrApiKeyInput = document.querySelector("#lidarr-apikey");
       const lidarrSaveButton = document.querySelector("[data-lidarr-save]");
+      const limboMenuToggle = document.querySelector(
+        "[data-limbo-menu-toggle]",
+      );
+      const limboMenu = document.querySelector("[data-limbo-menu]");
+      const limboMenuActions = Array.from(
+        document.querySelectorAll("[data-limbo-menu-action]"),
+      );
       const mbidTokenRegex =
         /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
       const mbidMatchRegex =
@@ -755,6 +825,78 @@
       let refreshValidateTimer = null;
       let refreshValidateController = null;
       let refreshInputGuard = false;
+
+      const setLimboMode = (mode, options = {}) => {
+        if (!limboUrlInput || !limboControl) {
+          return;
+        }
+        const focus = Boolean(options.focus);
+        const customValue =
+          typeof options.value === "string" ? options.value.trim() : null;
+        const isCustom = mode === "custom";
+        limboControl.dataset.limboMode = mode;
+        limboControl.classList.toggle(
+          "settings-field__control--locked",
+          !isCustom,
+        );
+        limboUrlInput.readOnly = !isCustom;
+        limboUrlInput.tabIndex = isCustom ? 0 : -1;
+        limboMenuActions.forEach((action) => {
+          const actionMode = action.dataset.limboMenuAction;
+          action.classList.toggle("selected", actionMode === mode);
+        });
+        if (limboChip) {
+          if (mode === "auto-host") {
+            limboChip.textContent = "AUTO: HOST IP";
+            limboChip.hidden = false;
+          } else if (mode === "auto-referrer") {
+            limboChip.textContent = "AUTO: REFERRER";
+            limboChip.hidden = false;
+          } else {
+            limboChip.textContent = "";
+            limboChip.hidden = true;
+          }
+        }
+        if (isCustom) {
+          const referrerValue = limboUrlInput.dataset.limboReferrer || "";
+          const hostValue = limboUrlInput.dataset.limboHost || "";
+          if (customValue !== null) {
+            limboUrlInput.value = customValue;
+          }
+          if (
+            limboUrlInput.value === referrerValue ||
+            limboUrlInput.value === hostValue
+          ) {
+            limboUrlInput.value = "";
+          }
+          if (focus) {
+            limboUrlInput.focus();
+          }
+          return;
+        }
+        const nextValue =
+          mode === "auto-host"
+            ? limboUrlInput.dataset.limboHost || ""
+            : limboUrlInput.dataset.limboReferrer || "";
+        if (nextValue) {
+          limboUrlInput.value = nextValue;
+        }
+        limboUrlInput.blur();
+      };
+
+      const getLimboUrlForSave = () => {
+        if (!limboUrlInput || !limboControl) {
+          return "";
+        }
+        const mode = (limboControl.dataset.limboMode || "auto-referrer").trim();
+        if (mode === "custom") {
+          return (limboUrlInput.value || "").trim();
+        }
+        if (mode === "auto-host") {
+          return (limboUrlInput.dataset.limboHost || "").trim();
+        }
+        return (limboUrlInput.dataset.limboReferrer || "").trim();
+      };
 
       const normalizeRefreshText = (value) => {
         if (!value) {
@@ -1143,7 +1285,10 @@
         const selection = window.getSelection();
         if (selection && selection.rangeCount > 0) {
           const range = selection.getRangeAt(0);
-          if (!range.collapsed && refreshEditor.contains(range.commonAncestorContainer)) {
+          if (
+            !range.collapsed &&
+            refreshEditor.contains(range.commonAncestorContainer)
+          ) {
             range.deleteContents();
           }
         }
@@ -1298,7 +1443,10 @@
       };
 
       const runRefreshRequest = async (mbids, lidarrIds) => {
-        if ((!mbids || mbids.length === 0) && (!lidarrIds || lidarrIds.length === 0)) {
+        if (
+          (!mbids || mbids.length === 0) &&
+          (!lidarrIds || lidarrIds.length === 0)
+        ) {
           return;
         }
         refreshButton.disabled = true;
@@ -1392,7 +1540,9 @@
         });
       }
 
-      const refreshCancelButton = document.querySelector("[data-refresh-cancel]");
+      const refreshCancelButton = document.querySelector(
+        "[data-refresh-cancel]",
+      );
       if (refreshCancelButton) {
         refreshCancelButton.addEventListener("click", () => {
           if (refreshEditor) {
@@ -1406,6 +1556,18 @@
         lidarrSaveButton.addEventListener("click", async () => {
           const baseUrl = (lidarrUrlInput?.value || "").trim();
           const apiKey = (lidarrApiKeyInput?.value || "").trim();
+          const limboMode = (
+            limboControl?.dataset.limboMode || "auto-referrer"
+          ).trim();
+          const limboUrl = getLimboUrlForSave();
+          if (limboMode === "custom") {
+            const testValue = limboUrl.toLowerCase();
+            if (testValue.includes("musicbrainz.org")) {
+              suppressHover();
+              openInfo("Lidarr can't query the official MusicBrainz site");
+              return;
+            }
+          }
           try {
             const response = await fetch("/config/lidarr-settings", {
               method: "POST",
@@ -1413,6 +1575,8 @@
               body: JSON.stringify({
                 lidarr_base_url: baseUrl,
                 lidarr_api_key: apiKey,
+                limbo_url_mode: limboMode,
+                limbo_url: limboUrl,
               }),
             });
             const payload = await response.json().catch(() => ({}));
@@ -1656,11 +1820,14 @@
         if (config.inverse) {
           menu.querySelectorAll('input[type="checkbox"]').forEach((input) => {
             input.checked = true;
-            input.closest(".config-menu-check")?.classList.add("selected");
+            const row = input.closest(".config-menu-check");
+            row?.classList.add("selected");
+            row?.classList.remove("selected-exclude");
           });
           specialButton?.classList.add("selected");
           if (valueText && config.special) {
             valueText.textContent = config.special.value;
+            valueText.dataset.mediaTypes = valueText.textContent;
           }
           return;
         }
@@ -1671,6 +1838,7 @@
         specialButton?.classList.add("selected");
         if (valueText && config.special) {
           valueText.textContent = config.special.value;
+          valueText.dataset.mediaTypes = valueText.textContent;
         }
       };
 
@@ -1719,9 +1887,9 @@
               ? true
               : snapshot.checked.includes(value);
             input.checked = checked;
-            input
-              .closest(".config-menu-check")
-              ?.classList.toggle("selected", checked);
+            const row = input.closest(".config-menu-check");
+            row?.classList.toggle("selected", checked);
+            row?.classList.toggle("selected-exclude", !checked);
           });
           const unchecked = allValues.filter(
             (value) => !snapshot.checked.includes(value),
@@ -1730,11 +1898,13 @@
             specialButton?.classList.add("selected");
             if (valueText && config.special) {
               valueText.textContent = config.special.value;
+              valueText.dataset.mediaTypes = valueText.textContent;
             }
           } else {
             specialButton?.classList.remove("selected");
             if (valueText) {
               valueText.textContent = unchecked.join(", ");
+              valueText.dataset.mediaTypes = valueText.textContent;
             }
           }
           return;
@@ -1742,11 +1912,14 @@
         if (snapshot.specialSelected || !snapshot.checked.length) {
           menu.querySelectorAll('input[type="checkbox"]').forEach((input) => {
             input.checked = false;
-            input.closest(".config-menu-check")?.classList.remove("selected");
+            const row = input.closest(".config-menu-check");
+            row?.classList.remove("selected");
+            row?.classList.remove("selected-exclude");
           });
           specialButton?.classList.add("selected");
           if (valueText && config.special) {
             valueText.textContent = config.special.value;
+            valueText.dataset.mediaTypes = valueText.textContent;
           }
           return;
         }
@@ -1754,12 +1927,13 @@
         menu.querySelectorAll('input[type="checkbox"]').forEach((input) => {
           const checked = snapshot.checked.includes(input.dataset.value || "");
           input.checked = checked;
-          input
-            .closest(".config-menu-check")
-            ?.classList.toggle("selected", checked);
+          const row = input.closest(".config-menu-check");
+          row?.classList.toggle("selected", checked);
+          row?.classList.toggle("selected-exclude", false);
         });
         if (valueText) {
           valueText.textContent = snapshot.checked.join(", ");
+          valueText.dataset.mediaTypes = valueText.textContent;
         }
       };
 
@@ -1768,24 +1942,56 @@
         if (!state?.valueText) {
           return;
         }
-        const raw = state.valueText.textContent || "";
+        const raw =
+          state.valueText.dataset.mediaTypes ||
+          state.valueText.textContent ||
+          "";
         const parts = raw
           .split(",")
           .map((value) => value.trim())
           .filter(Boolean);
         if (!parts.length) {
           state.valueText.textContent = "";
+          delete state.valueText.dataset.mediaTypes;
           return;
         }
-        state.valueText.innerHTML = parts
-          .map((part) => {
-            const safe = part
-              .replace(/&/g, "&amp;")
-              .replace(/</g, "&lt;")
-              .replace(/>/g, "&gt;");
-            return `<span class="media-type-token">${safe}</span>`;
-          })
-          .join("");
+        state.valueText.dataset.mediaTypes = parts.join(", ");
+        const buildToken = (text, extraClass = "") => {
+          const span = document.createElement("span");
+          span.className = `media-type-token${extraClass ? ` ${extraClass}` : ""}`;
+          span.textContent = text;
+          return span;
+        };
+        state.valueText.innerHTML = "";
+        const tokens = parts.map((part) => buildToken(part));
+        tokens.forEach((token) => state.valueText.appendChild(token));
+        const needsEllipsis =
+          state.valueText.scrollWidth > state.valueText.clientWidth;
+        if (needsEllipsis) {
+          let i = tokens.length - 1;
+          while (
+            i >= 0 &&
+            state.valueText.scrollWidth > state.valueText.clientWidth
+          ) {
+            tokens[i].remove();
+            i -= 1;
+          }
+          const ellipsis = buildToken("...", "media-type-token-ellipsis");
+          state.valueText.appendChild(ellipsis);
+          while (
+            i >= 0 &&
+            state.valueText.scrollWidth > state.valueText.clientWidth
+          ) {
+            const node = state.valueText.querySelector(
+              ".media-type-token:not(.media-type-token-ellipsis)",
+            );
+            if (!node) {
+              break;
+            }
+            node.remove();
+            i -= 1;
+          }
+        }
       };
 
       const adjustMenuPosition = (menu) => {
@@ -1846,6 +2052,7 @@
         configMenuState.set(index, { button, menu, valueText, config });
         if (index === 2 && valueText) {
           valueText.classList.add("media-types-value");
+          valueText.dataset.mediaTypes = valueText.textContent || "";
         }
         configInitialState[index] = {
           text: valueText?.textContent || "",
@@ -1889,11 +2096,13 @@
             );
             if (!unchecked.length && config.special) {
               valueText.textContent = config.special.value;
+              valueText.dataset.mediaTypes = valueText.textContent;
               menu
                 .querySelector(".config-menu-special")
                 ?.classList.add("selected");
             } else {
               valueText.textContent = unchecked.join(", ");
+              valueText.dataset.mediaTypes = valueText.textContent;
               menu
                 .querySelector(".config-menu-special")
                 ?.classList.remove("selected");
@@ -1908,6 +2117,7 @@
           } else {
             valueText.textContent = checked.join(", ");
           }
+          valueText.dataset.mediaTypes = valueText.textContent;
           if (index === 2) {
             updateMediaTypesStrike();
           }
@@ -1931,9 +2141,9 @@
                   .querySelectorAll('input[type="checkbox"]')
                   .forEach((input) => {
                     input.checked = true;
-                    input
-                      .closest(".config-menu-check")
-                      ?.classList.add("selected");
+                    const row = input.closest(".config-menu-check");
+                    row?.classList.add("selected");
+                    row?.classList.remove("selected-exclude");
                   });
                 configMenuState.get(index).lastActiveSnapshot = {
                   checked: []
@@ -1952,9 +2162,12 @@
                     ? !tokens.includes(value)
                     : tokens.includes(value);
                   input.checked = checked;
-                  input
-                    .closest(".config-menu-check")
-                    ?.classList.toggle("selected", checked);
+                  const row = input.closest(".config-menu-check");
+                  row?.classList.toggle("selected", checked);
+                  row?.classList.toggle(
+                    "selected-exclude",
+                    config.inverse ? !checked : false,
+                  );
                 });
               if (tokens.length) {
                 configMenuState.get(index).lastActiveSnapshot = {
@@ -2066,9 +2279,9 @@
                   .querySelectorAll('input[type="checkbox"]')
                   .forEach((input) => {
                     input.checked = true;
-                    input
-                      .closest(".config-menu-check")
-                      ?.classList.add("selected");
+                    const row = input.closest(".config-menu-check");
+                    row?.classList.add("selected");
+                    row?.classList.remove("selected-exclude");
                   });
                 specialButton.classList.add("selected");
                 if (valueText) {
@@ -2080,9 +2293,9 @@
                 .querySelectorAll('input[type="checkbox"]')
                 .forEach((input) => {
                   input.checked = false;
-                  input
-                    .closest(".config-menu-check")
-                    ?.classList.remove("selected");
+                  const row = input.closest(".config-menu-check");
+                  row?.classList.remove("selected");
+                  row?.classList.remove("selected-exclude");
                 });
               specialButton.classList.add("selected");
               if (valueText) {
@@ -2126,9 +2339,12 @@
           }
           menu.querySelectorAll('input[type="checkbox"]').forEach((input) => {
             input.addEventListener("change", () => {
-              input
-                .closest(".config-menu-check")
-                ?.classList.toggle("selected", input.checked);
+              const row = input.closest(".config-menu-check");
+              row?.classList.toggle("selected", input.checked);
+              row?.classList.toggle(
+                "selected-exclude",
+                config.inverse ? !input.checked : false,
+              );
               specialButton?.classList.remove("selected");
               syncMultiDisplay();
               const state = configMenuState.get(index);
@@ -2431,8 +2647,7 @@
         document.querySelectorAll("[data-theme-option]"),
       );
       const systemThemeQuery =
-        window.matchMedia &&
-        window.matchMedia("(prefers-color-scheme: dark)");
+        window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)");
       let currentTheme = "auto";
       const resolveTheme = (theme) => {
         if (theme !== "auto") {
@@ -2461,7 +2676,11 @@
         }
       };
       const storedTheme = localStorage.getItem("limbo-theme");
-      if (serverTheme === "dark" || serverTheme === "light" || serverTheme === "auto") {
+      if (
+        serverTheme === "dark" ||
+        serverTheme === "light" ||
+        serverTheme === "auto"
+      ) {
         applyTheme(serverTheme);
         localStorage.setItem("limbo-theme", serverTheme);
       } else if (
@@ -2475,8 +2694,7 @@
       }
       if (themeToggle) {
         themeToggle.addEventListener("click", () => {
-          const next =
-            resolveTheme(currentTheme) === "dark" ? "light" : "dark";
+          const next = resolveTheme(currentTheme) === "dark" ? "light" : "dark";
           document.body.classList.add("theme-transition");
           applyTheme(next);
           localStorage.setItem("limbo-theme", next);
@@ -2503,6 +2721,110 @@
       if (themeMenu) {
         themeMenu.addEventListener("click", (event) => {
           event.stopPropagation();
+        });
+      }
+      if (limboMenuToggle && limboMenu) {
+        limboMenuToggle.addEventListener("click", (event) => {
+          event.stopPropagation();
+          limboMenu.classList.toggle("open");
+          if (limboMenu.classList.contains("open")) {
+            const mode = (
+              limboControl?.dataset.limboMode || "auto-referrer"
+            ).trim();
+            limboMenuActions.forEach((action) => {
+              const actionMode = action.dataset.limboMenuAction;
+              action.classList.toggle("selected", actionMode === mode);
+            });
+            requestAnimationFrame(() => adjustMenuPosition(limboMenu));
+          }
+        });
+      }
+      if (limboMenu) {
+        limboMenu.addEventListener("click", (event) => {
+          event.stopPropagation();
+        });
+      }
+      if (limboUrlInput && limboControl) {
+        limboUrlInput.addEventListener("focus", () => {
+          if (limboUrlInput.readOnly) {
+            limboUrlInput.blur();
+          }
+        });
+        const savedMode = (limboUrlInput.dataset.limboMode || "").toLowerCase();
+        const customValue = limboUrlInput.dataset.limboCustom || "";
+        if (savedMode === "custom") {
+          setLimboMode("custom", { value: customValue });
+        } else if (savedMode === "auto-host") {
+          setLimboMode("auto-host");
+        } else {
+          setLimboMode("auto-referrer");
+        }
+      }
+      limboMenuActions.forEach((action) => {
+        const handler = async () => {
+          const kind = action.dataset.limboMenuAction;
+          if (kind === "auto-referrer") {
+            setLimboMode("auto-referrer");
+          } else if (kind === "auto-host") {
+            setLimboMode("auto-host");
+          } else if (kind === "custom") {
+            setLimboMode("custom", { focus: true });
+          }
+          if (limboMenu) {
+            limboMenu.classList.remove("open");
+          }
+        };
+        action.addEventListener("click", (event) => {
+          event.stopPropagation();
+          handler();
+        });
+      });
+      const foldToggle = document.querySelector("[data-fold-toggle]");
+      const foldContent = document.querySelector("[data-fold-content]");
+      const foldLabel = document.querySelector("[data-fold-label]");
+      if (foldToggle && foldContent) {
+        const foldRoot = foldToggle.closest(".fold");
+        const setFoldLabel = (open) => {
+          if (!foldLabel) {
+            return;
+          }
+          foldLabel.textContent = open ? "Less" : "More";
+        };
+        const storedFold = localStorage.getItem("limbo-fold-open");
+        const shouldOpen = storedFold === "true";
+        if (foldRoot) {
+          foldRoot.classList.toggle("open", shouldOpen);
+        }
+        foldToggle.setAttribute("aria-expanded", shouldOpen ? "true" : "false");
+        if (shouldOpen) {
+          foldContent.style.maxHeight = `${foldContent.scrollHeight}px`;
+        } else {
+          foldContent.style.maxHeight = "0px";
+        }
+        setFoldLabel(shouldOpen);
+        foldToggle.addEventListener("click", () => {
+          if (!foldRoot) {
+            return;
+          }
+          const willOpen = !foldRoot.classList.contains("open");
+          const targetHeight = foldContent.scrollHeight;
+          if (willOpen) {
+            foldContent.style.maxHeight = `${targetHeight}px`;
+            foldRoot.classList.add("open");
+          } else {
+            foldContent.style.maxHeight = "0px";
+            foldRoot.classList.remove("open");
+          }
+          foldToggle.setAttribute("aria-expanded", willOpen ? "true" : "false");
+          setFoldLabel(willOpen);
+          try {
+            localStorage.setItem(
+              "limbo-fold-open",
+              willOpen ? "true" : "false",
+            );
+          } catch (error) {
+            // ignore storage failures
+          }
         });
       }
       themeOptions.forEach((option) => {
