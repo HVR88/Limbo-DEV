@@ -1561,7 +1561,14 @@
           ).trim();
           const limboUrl = getLimboUrlForSave();
           if (limboMode === "custom") {
-            const testValue = limboUrl.toLowerCase();
+            let normalizedUrl = limboUrl;
+            if (normalizedUrl && !/^https?:\/\//i.test(normalizedUrl)) {
+              normalizedUrl = `http://${normalizedUrl}`;
+              if (limboUrlInput) {
+                limboUrlInput.value = normalizedUrl;
+              }
+            }
+            const testValue = normalizedUrl.toLowerCase();
             if (testValue.includes("musicbrainz.org")) {
               suppressHover();
               openInfo("Lidarr can't query the official MusicBrainz site");
@@ -1576,7 +1583,10 @@
                 lidarr_base_url: baseUrl,
                 lidarr_api_key: apiKey,
                 limbo_url_mode: limboMode,
-                limbo_url: limboUrl,
+                limbo_url:
+                  limboMode === "custom"
+                    ? (limboUrlInput?.value || "").trim()
+                    : limboUrl,
               }),
             });
             const payload = await response.json().catch(() => ({}));

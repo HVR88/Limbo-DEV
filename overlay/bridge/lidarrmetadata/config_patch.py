@@ -227,33 +227,35 @@ def _resolve_limbo_base_url(lidarr_base_url: str) -> Tuple[str, str]:
     return f"http://{local_ip}:{limbo_port}", ""
 
 
-def _resolve_limbo_host_url(lidarr_base_url: str) -> Tuple[str, str]:
-    if not lidarr_base_url:
-        return "", "Missing Lidarr URL."
-    parsed = urlparse(lidarr_base_url.strip())
-    lidarr_host = parsed.hostname or ""
-    if not lidarr_host:
-        return "", "Invalid Lidarr URL."
-    lidarr_port = parsed.port
-    if lidarr_port is None:
-        lidarr_port = 443 if parsed.scheme == "https" else 80
-    try:
-        addrinfo = socket.getaddrinfo(
-            lidarr_host, lidarr_port, socket.AF_INET, socket.SOCK_DGRAM
-        )
-        if not addrinfo:
-            return "", "Unable to resolve Lidarr host."
-        target = addrinfo[0][4]
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        try:
-            sock.connect(target)
-            local_ip = sock.getsockname()[0]
-        finally:
-            sock.close()
-    except Exception as exc:
-        return "", f"Unable to resolve Limbo IP: {exc}"
+def _resolve_limbo_host_url(_lidarr_base_url: str) -> Tuple[str, str]:
+    gateway_ip, error = _get_default_gateway_ip()
+    if not gateway_ip:
+        return "", error or "Unable to determine host IP."
     limbo_port = os.getenv("LIMBO_PORT", "").strip() or "5001"
-    return f"http://{local_ip}:{limbo_port}", ""
+    return f"http://{gateway_ip}:{limbo_port}", ""
+
+
+def _get_default_gateway_ip() -> Tuple[str, str]:
+    try:
+        with open("/proc/net/route", "r", encoding="utf-8") as fh:
+            for line in fh:
+                fields = line.strip().split()
+                if len(fields) < 3:
+                    continue
+                iface, dest, gateway = fields[0], fields[1], fields[2]
+                if iface == "Iface" or dest != "00000000":
+                    continue
+                try:
+                    gateway_ip = socket.inet_ntoa(
+                        int(gateway, 16).to_bytes(4, "little")
+                    )
+                except Exception:
+                    continue
+                if gateway_ip and gateway_ip != "0.0.0.0":
+                    return gateway_ip, ""
+    except Exception as exc:
+        return "", f"Unable to read gateway: {exc}"
+    return "", "Default gateway not found."
 
 
 def _resolve_limbo_url_by_mode(
