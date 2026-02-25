@@ -460,6 +460,10 @@ body[data-theme="dark"] .action-button__inner {
   text-transform: lowercase;
   color: var(--accent);
   z-index: 2;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
 }
 body[data-theme="dark"] .modal__esc-hint {
   color: var(--accent);
@@ -1577,6 +1581,33 @@ body[data-theme="dark"] .config-action__inner svg {
   border-top: 1px dashed var(--border);
   padding-top: 8px;
 }
+.config-menu-special-spacer {
+  height: 8px;
+  margin: 0 0 2px;
+}
+.config-menu .config-menu-esc {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: lowercase;
+  color: var(--accent);
+  margin: 2px 6px 0;
+  align-self: flex-start;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  border-radius: 0;
+  font-weight: 400;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.config-menu .config-menu-esc:hover,
+.config-menu .config-menu-esc:active,
+.config-menu .config-menu-esc:focus {
+  background: transparent;
+  box-shadow: none;
+  outline: none;
+}
 .config-menu-footer {
   display: flex;
   justify-content: flex-end;
@@ -1588,6 +1619,10 @@ body[data-theme="dark"] .config-action__inner svg {
 }
 .config-menu-footer .config-menu-cancel {
   margin-right: -4px;
+}
+.config-menu-footer .config-menu-clear {
+  margin-right: auto;
+  z-index: 1;
 }
 .config-menu-text {
   border: 0;

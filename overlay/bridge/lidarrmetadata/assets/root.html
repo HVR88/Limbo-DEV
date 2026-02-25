@@ -195,7 +195,7 @@
         aria-modal="true"
         aria-label="Limbo Settings"
       >
-        <div class="modal__esc-hint">esc</div>
+        <button class="modal__esc-hint" type="button" data-modal-close>esc</button>
         <div class="settings-modal__content">
           <h2 class="settings-modal__title">Settings</h2>
           <div class="settings-tabs" data-settings-tabs>
@@ -387,7 +387,7 @@
         aria-modal="true"
         aria-label="Indexing Schedule"
       >
-        <div class="modal__esc-hint">esc</div>
+        <button class="modal__esc-hint" type="button" data-modal-close>esc</button>
         <div class="schedule-modal__content">
           <h2 class="settings-modal__title">Indexing Schedule</h2>
           <p class="settings-modal__subtitle">
@@ -408,7 +408,7 @@
         aria-modal="true"
         aria-label="Replication Schedule"
       >
-        <div class="modal__esc-hint">esc</div>
+        <button class="modal__esc-hint" type="button" data-modal-close>esc</button>
         <div class="schedule-modal__content">
           <h2 class="settings-modal__title">Replication Schedule</h2>
           <p class="settings-modal__subtitle">
@@ -429,7 +429,7 @@
         aria-modal="true"
         aria-label="Confirm action"
       >
-        <div class="modal__esc-hint">esc</div>
+        <button class="modal__esc-hint" type="button" data-modal-close>esc</button>
         <div class="confirm-modal__content">
           <h2 class="settings-modal__title">Confirm</h2>
           <p class="settings-modal__subtitle" data-confirm-message></p>
@@ -450,7 +450,7 @@
         aria-modal="true"
         aria-label="Information"
       >
-        <div class="modal__esc-hint">esc</div>
+        <button class="modal__esc-hint" type="button" data-modal-close>esc</button>
         <div class="info-modal__content">
           <h2 class="settings-modal__title">Info</h2>
           <p class="settings-modal__subtitle" data-info-message></p>
@@ -475,7 +475,7 @@
         aria-modal="true"
         aria-label="Bulk Refresh"
       >
-        <div class="modal__esc-hint">esc</div>
+        <button class="modal__esc-hint" type="button" data-modal-close>esc</button>
         <div class="refresh-modal__content">
           <h2 class="settings-modal__title">Bulk Refresh</h2>
           <p class="settings-modal__subtitle">
@@ -514,7 +514,7 @@
     <div class="modal settings-modal tidal-modal" data-modal="tidal-settings" aria-hidden="true">
       <div class="modal__backdrop" data-modal-backdrop></div>
       <div class="modal__panel settings-modal__panel" role="dialog" aria-modal="true" aria-label="Tidal Settings">
-        <div class="modal__esc-hint">esc</div>
+        <button class="modal__esc-hint" type="button" data-modal-close>esc</button>
         <div class="settings-modal__content">
           <h2 class="settings-modal__title">Tidal Settings</h2>
           <div class="settings-field">
@@ -614,7 +614,7 @@
     <div class="modal settings-modal service-modal" data-modal="fanart-settings" aria-hidden="true">
       <div class="modal__backdrop" data-modal-backdrop></div>
       <div class="modal__panel settings-modal__panel" role="dialog" aria-modal="true" aria-label="Fanart Settings">
-        <div class="modal__esc-hint">esc</div>
+        <button class="modal__esc-hint" type="button" data-modal-close>esc</button>
         <div class="settings-modal__content">
           <h2 class="settings-modal__title">Fanart.tv Settings</h2>
           <div class="settings-field">
@@ -640,7 +640,7 @@
     <div class="modal settings-modal service-modal" data-modal="tadb-settings" aria-hidden="true">
       <div class="modal__backdrop" data-modal-backdrop></div>
       <div class="modal__panel settings-modal__panel" role="dialog" aria-modal="true" aria-label="TheAudioDB Settings">
-        <div class="modal__esc-hint">esc</div>
+        <button class="modal__esc-hint" type="button" data-modal-close>esc</button>
         <div class="settings-modal__content">
           <h2 class="settings-modal__title">The AudioDB Settings</h2>
           <div class="settings-field">
@@ -666,7 +666,7 @@
     <div class="modal settings-modal service-modal" data-modal="discogs-settings" aria-hidden="true">
       <div class="modal__backdrop" data-modal-backdrop></div>
       <div class="modal__panel settings-modal__panel" role="dialog" aria-modal="true" aria-label="Discogs Settings">
-        <div class="modal__esc-hint">esc</div>
+        <button class="modal__esc-hint" type="button" data-modal-close>esc</button>
         <div class="settings-modal__content">
           <h2 class="settings-modal__title">Discogs Settings</h2>
           <div class="settings-field">
@@ -692,7 +692,7 @@
     <div class="modal settings-modal service-modal" data-modal="lastfm-settings" aria-hidden="true">
       <div class="modal__backdrop" data-modal-backdrop></div>
       <div class="modal__panel settings-modal__panel" role="dialog" aria-modal="true" aria-label="Last.fm Settings">
-        <div class="modal__esc-hint">esc</div>
+        <button class="modal__esc-hint" type="button" data-modal-close>esc</button>
         <div class="settings-modal__content">
           <h2 class="settings-modal__title">Last.fm Settings</h2>
           <div class="settings-field">
@@ -731,7 +731,7 @@
     <div class="modal settings-modal service-modal" data-modal="apple-music-settings" aria-hidden="true">
       <div class="modal__backdrop" data-modal-backdrop></div>
       <div class="modal__panel settings-modal__panel" role="dialog" aria-modal="true" aria-label="Apple Music Settings">
-        <div class="modal__esc-hint">esc</div>
+        <button class="modal__esc-hint" type="button" data-modal-close>esc</button>
         <div class="settings-modal__content">
           <h2 class="settings-modal__title">Apple Music Settings</h2>
           <div class="settings-field">
@@ -2327,6 +2327,9 @@
           return {
             type: "multi",
             special: { label: "ALL", value: "no media filtered" },
+            hideSpecial: true,
+            showEscHint: true,
+            clearLabel: "CLEAR",
             inverse: true,
             columns: 2,
             footer: "apply",
@@ -2347,16 +2350,37 @@
         if (config.narrow) {
           menu.classList.add("config-menu-narrow");
         }
+        if (config.showEscHint) {
+          const esc = document.createElement("button");
+          esc.className = "config-menu-esc";
+          esc.textContent = "esc";
+          esc.type = "button";
+          esc.addEventListener("click", () => {
+            const cancelButton = menu.querySelector(".config-menu-cancel");
+            if (cancelButton) {
+              cancelButton.click();
+              return;
+            }
+            menu.classList.remove("open");
+          });
+          menu.appendChild(esc);
+        }
         menu.dataset.closeOnBackdrop =
           config.closeOnBackdrop === false ? "false" : "true";
         menu.dataset.menuType = config.type;
         if (config.special) {
-          const special = document.createElement("button");
-          special.type = "button";
-          special.textContent = config.special.label;
-          special.dataset.value = config.special.value;
-          special.className = "config-menu-item config-menu-special";
-          menu.appendChild(special);
+          if (config.hideSpecial) {
+            const spacer = document.createElement("div");
+            spacer.className = "config-menu-special-spacer";
+            menu.appendChild(spacer);
+          } else {
+            const special = document.createElement("button");
+            special.type = "button";
+            special.textContent = config.special.label;
+            special.dataset.value = config.special.value;
+            special.className = "config-menu-item config-menu-special";
+            menu.appendChild(special);
+          }
         }
         const buildSingleButton = (item) => {
           const button = document.createElement("button");
@@ -2417,6 +2441,13 @@
           if (config.footer === "apply") {
             const footer = document.createElement("div");
             footer.className = "config-menu-footer";
+              if (config.clearLabel) {
+                const clear = document.createElement("button");
+                clear.type = "button";
+                clear.textContent = config.clearLabel;
+                clear.className = "config-menu-text config-menu-clear";
+                footer.appendChild(clear);
+              }
             const cancel = document.createElement("span");
             cancel.textContent = "CANCEL";
             cancel.className = "config-menu-text config-menu-cancel";
@@ -3010,6 +3041,47 @@
               if (event.key === "Enter" || event.key === " ") {
                 event.preventDefault();
                 applyButton.click();
+              }
+            });
+          }
+          const clearButton = menu.querySelector(".config-menu-clear");
+          if (clearButton) {
+            const clearHandler = () => {
+              if (config.inverse) {
+                menu
+                  .querySelectorAll('input[type="checkbox"]')
+                  .forEach((input) => {
+                    input.checked = true;
+                    const row = input.closest(".config-menu-check");
+                    row?.classList.add("selected");
+                    row?.classList.remove("selected-exclude");
+                  });
+                if (specialButton) {
+                  specialButton.classList.add("selected");
+                }
+              } else {
+                menu
+                  .querySelectorAll('input[type="checkbox"]')
+                  .forEach((input) => {
+                    input.checked = false;
+                    const row = input.closest(".config-menu-check");
+                    row?.classList.remove("selected");
+                    row?.classList.remove("selected-exclude");
+                  });
+                if (specialButton) {
+                  specialButton.classList.add("selected");
+                }
+              }
+              syncMultiDisplay();
+              if (index === 2) {
+                updateMediaTypesStrike();
+              }
+            };
+            clearButton.addEventListener("click", clearHandler);
+            clearButton.addEventListener("keydown", (event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                clearHandler();
               }
             });
           }
