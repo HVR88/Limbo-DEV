@@ -44,6 +44,24 @@ _LIDARR_API_KEY: Optional[str] = None
 _LIDARR_CLIENT_IP: Optional[str] = None
 _LIMBO_URL_MODE: Optional[str] = None
 _LIMBO_URL_CUSTOM: Optional[str] = None
+_FANART_KEY: Optional[str] = None
+_TADB_KEY: Optional[str] = None
+_LASTFM_KEY: Optional[str] = None
+_LASTFM_SECRET: Optional[str] = None
+_TIDAL_CLIENT_ID: Optional[str] = None
+_TIDAL_CLIENT_SECRET: Optional[str] = None
+_TIDAL_COUNTRY_CODE: Optional[str] = None
+_TIDAL_USER: Optional[str] = None
+_TIDAL_USER_PASSWORD: Optional[str] = None
+_DISCOGS_KEY: Optional[str] = None
+_FANART_ENABLED: Optional[bool] = None
+_TADB_ENABLED: Optional[bool] = None
+_LASTFM_ENABLED: Optional[bool] = None
+_TIDAL_ENABLED: Optional[bool] = None
+_DISCOGS_ENABLED: Optional[bool] = None
+_APPLE_MUSIC_ENABLED: Optional[bool] = None
+_APPLE_MUSIC_MAX_IMAGE_SIZE: Optional[str] = None
+_APPLE_MUSIC_ALLOW_UPSCALE: Optional[bool] = None
 _GITHUB_RELEASE_CACHE: Dict[str, Tuple[float, Optional[str]]] = {}
 _GITHUB_RELEASE_CACHE_TTL = 300.0
 _REPLICATION_NOTIFY_FILE = Path(
@@ -194,6 +212,12 @@ def _read_mbms_plus_version() -> str:
 
 def _load_lidarr_settings() -> None:
     global _LIDARR_BASE_URL, _LIDARR_API_KEY, _LIMBO_URL_MODE, _LIMBO_URL_CUSTOM
+    global _FANART_KEY, _TADB_KEY, _LASTFM_KEY, _LASTFM_SECRET
+    global _TIDAL_CLIENT_ID, _TIDAL_CLIENT_SECRET, _TIDAL_COUNTRY_CODE
+    global _TIDAL_USER, _TIDAL_USER_PASSWORD, _DISCOGS_KEY
+    global _FANART_ENABLED, _TADB_ENABLED, _LASTFM_ENABLED
+    global _TIDAL_ENABLED, _DISCOGS_ENABLED, _APPLE_MUSIC_ENABLED
+    global _APPLE_MUSIC_MAX_IMAGE_SIZE, _APPLE_MUSIC_ALLOW_UPSCALE
     try:
         data = json.loads(_SETTINGS_FILE.read_text(encoding="utf-8"))
     except Exception:
@@ -201,6 +225,24 @@ def _load_lidarr_settings() -> None:
         _LIDARR_API_KEY = ""
         _LIMBO_URL_MODE = "auto-referrer"
         _LIMBO_URL_CUSTOM = ""
+        _FANART_KEY = ""
+        _TADB_KEY = ""
+        _LASTFM_KEY = ""
+        _LASTFM_SECRET = ""
+        _TIDAL_CLIENT_ID = ""
+        _TIDAL_CLIENT_SECRET = ""
+        _TIDAL_COUNTRY_CODE = ""
+        _TIDAL_USER = ""
+        _TIDAL_USER_PASSWORD = ""
+        _DISCOGS_KEY = ""
+        _FANART_ENABLED = True
+        _TADB_ENABLED = True
+        _LASTFM_ENABLED = True
+        _TIDAL_ENABLED = True
+        _DISCOGS_ENABLED = True
+        _APPLE_MUSIC_ENABLED = False
+        _APPLE_MUSIC_MAX_IMAGE_SIZE = "2500"
+        _APPLE_MUSIC_ALLOW_UPSCALE = False
         return
     _LIDARR_BASE_URL = str(data.get("lidarr_base_url") or "").strip()
     _LIDARR_API_KEY = str(data.get("lidarr_api_key") or "").strip()
@@ -209,6 +251,75 @@ def _load_lidarr_settings() -> None:
         mode = "auto-referrer"
     _LIMBO_URL_MODE = mode
     _LIMBO_URL_CUSTOM = str(data.get("limbo_url") or "").strip()
+    _FANART_KEY = str(data.get("fanart_key") or "").strip()
+    _TADB_KEY = str(data.get("tadb_key") or "").strip()
+    _LASTFM_KEY = str(data.get("lastfm_key") or "").strip()
+    _LASTFM_SECRET = str(data.get("lastfm_secret") or "").strip()
+    _TIDAL_CLIENT_ID = str(data.get("tidal_client_id") or "").strip()
+    _TIDAL_CLIENT_SECRET = str(data.get("tidal_client_secret") or "").strip()
+    _TIDAL_COUNTRY_CODE = str(data.get("tidal_country_code") or "").strip()
+    _TIDAL_USER = str(data.get("tidal_user") or "").strip()
+    _TIDAL_USER_PASSWORD = str(data.get("tidal_user_password") or "").strip()
+    _DISCOGS_KEY = str(data.get("discogs_key") or "").strip()
+    _APPLE_MUSIC_MAX_IMAGE_SIZE = str(
+        data.get("apple_music_max_image_size") or ""
+    ).strip()
+    _APPLE_MUSIC_ALLOW_UPSCALE = _read_enabled_flag(
+        data.get("apple_music_allow_upscale"), False
+    )
+    fanart_env = str(os.getenv("FANART_KEY") or "").strip()
+    tadb_env = str(os.getenv("TADB_KEY") or "").strip()
+    lastfm_env = str(os.getenv("LASTFM_KEY") or "").strip()
+    lastfm_secret_env = str(os.getenv("LASTFM_SECRET") or "").strip()
+    tidal_client_id_env = str(os.getenv("TIDAL_CLIENT_ID") or "").strip()
+    tidal_client_secret_env = str(os.getenv("TIDAL_CLIENT_SECRET") or "").strip()
+    tidal_country_code_env = str(os.getenv("TIDAL_COUNTRY_CODE") or "").strip()
+    tidal_user_env = str(os.getenv("TIDAL_USER") or "").strip()
+    tidal_user_password_env = str(os.getenv("TIDAL_USER_PASSWORD") or "").strip()
+    discogs_env = str(os.getenv("DISCOGS_KEY") or "").strip()
+    _FANART_ENABLED = _read_enabled_flag(
+        data.get("fanart_enabled"), bool(fanart_env)
+    )
+    _TADB_ENABLED = _read_enabled_flag(data.get("tadb_enabled"), bool(tadb_env))
+    _LASTFM_ENABLED = _read_enabled_flag(
+        data.get("lastfm_enabled"), bool(lastfm_env or lastfm_secret_env)
+    )
+    _TIDAL_ENABLED = _read_enabled_flag(
+        data.get("tidal_enabled"),
+        bool(
+            tidal_client_id_env
+            or tidal_client_secret_env
+            or tidal_country_code_env
+            or tidal_user_env
+            or tidal_user_password_env
+        ),
+    )
+    _DISCOGS_ENABLED = _read_enabled_flag(
+        data.get("discogs_enabled"), bool(discogs_env)
+    )
+    _APPLE_MUSIC_ENABLED = _read_enabled_flag(data.get("apple_music_enabled"), False)
+    if _APPLE_MUSIC_ENABLED and not _APPLE_MUSIC_MAX_IMAGE_SIZE:
+        _APPLE_MUSIC_MAX_IMAGE_SIZE = "2500"
+    if _FANART_ENABLED and not _FANART_KEY:
+        _FANART_KEY = fanart_env
+    if _TADB_ENABLED and not _TADB_KEY:
+        _TADB_KEY = tadb_env
+    if _LASTFM_ENABLED and not _LASTFM_KEY:
+        _LASTFM_KEY = lastfm_env
+    if _LASTFM_ENABLED and not _LASTFM_SECRET:
+        _LASTFM_SECRET = lastfm_secret_env
+    if _TIDAL_ENABLED and not _TIDAL_CLIENT_ID:
+        _TIDAL_CLIENT_ID = tidal_client_id_env
+    if _TIDAL_ENABLED and not _TIDAL_CLIENT_SECRET:
+        _TIDAL_CLIENT_SECRET = tidal_client_secret_env
+    if _TIDAL_ENABLED and not _TIDAL_COUNTRY_CODE:
+        _TIDAL_COUNTRY_CODE = tidal_country_code_env
+    if _TIDAL_ENABLED and not _TIDAL_USER:
+        _TIDAL_USER = tidal_user_env
+    if _TIDAL_ENABLED and not _TIDAL_USER_PASSWORD:
+        _TIDAL_USER_PASSWORD = tidal_user_password_env
+    if _DISCOGS_ENABLED and not _DISCOGS_KEY:
+        _DISCOGS_KEY = discogs_env
     return
 
 
@@ -220,6 +331,24 @@ def _persist_lidarr_settings() -> None:
             "lidarr_api_key": _LIDARR_API_KEY or "",
             "limbo_url_mode": _LIMBO_URL_MODE or "auto-referrer",
             "limbo_url": _LIMBO_URL_CUSTOM or "",
+            "fanart_key": _FANART_KEY or "",
+            "tadb_key": _TADB_KEY or "",
+            "lastfm_key": _LASTFM_KEY or "",
+            "lastfm_secret": _LASTFM_SECRET or "",
+            "tidal_client_id": _TIDAL_CLIENT_ID or "",
+            "tidal_client_secret": _TIDAL_CLIENT_SECRET or "",
+            "tidal_country_code": _TIDAL_COUNTRY_CODE or "",
+            "tidal_user": _TIDAL_USER or "",
+            "tidal_user_password": _TIDAL_USER_PASSWORD or "",
+            "discogs_key": _DISCOGS_KEY or "",
+            "fanart_enabled": bool(_FANART_ENABLED),
+            "tadb_enabled": bool(_TADB_ENABLED),
+            "lastfm_enabled": bool(_LASTFM_ENABLED),
+            "tidal_enabled": bool(_TIDAL_ENABLED),
+            "discogs_enabled": bool(_DISCOGS_ENABLED),
+            "apple_music_enabled": bool(_APPLE_MUSIC_ENABLED),
+            "apple_music_max_image_size": _APPLE_MUSIC_MAX_IMAGE_SIZE or "",
+            "apple_music_allow_upscale": bool(_APPLE_MUSIC_ALLOW_UPSCALE),
         }
         _SETTINGS_FILE.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     except Exception:
@@ -303,6 +432,329 @@ def _set_limbo_url_custom(value: str, *, persist: bool) -> None:
 
 def get_limbo_url_custom() -> str:
     return _LIMBO_URL_CUSTOM or ""
+
+
+def set_fanart_key(value: str) -> None:
+    _set_fanart_key(value, persist=True)
+
+
+def set_fanart_key_runtime(value: str) -> None:
+    _set_fanart_key(value, persist=False)
+
+
+def _set_fanart_key(value: str, *, persist: bool) -> None:
+    global _FANART_KEY
+    _FANART_KEY = value.strip() if value else ""
+    if persist:
+        _persist_lidarr_settings()
+
+
+def get_fanart_key() -> str:
+    return _FANART_KEY or ""
+
+
+def set_tadb_key(value: str) -> None:
+    _set_tadb_key(value, persist=True)
+
+
+def set_tadb_key_runtime(value: str) -> None:
+    _set_tadb_key(value, persist=False)
+
+
+def _set_tadb_key(value: str, *, persist: bool) -> None:
+    global _TADB_KEY
+    _TADB_KEY = value.strip() if value else ""
+    if persist:
+        _persist_lidarr_settings()
+
+
+def get_tadb_key() -> str:
+    return _TADB_KEY or ""
+
+
+def set_lastfm_key(value: str) -> None:
+    _set_lastfm_key(value, persist=True)
+
+
+def set_lastfm_key_runtime(value: str) -> None:
+    _set_lastfm_key(value, persist=False)
+
+
+def _set_lastfm_key(value: str, *, persist: bool) -> None:
+    global _LASTFM_KEY
+    _LASTFM_KEY = value.strip() if value else ""
+    if persist:
+        _persist_lidarr_settings()
+
+
+def get_lastfm_key() -> str:
+    return _LASTFM_KEY or ""
+
+
+def set_lastfm_secret(value: str) -> None:
+    _set_lastfm_secret(value, persist=True)
+
+
+def set_lastfm_secret_runtime(value: str) -> None:
+    _set_lastfm_secret(value, persist=False)
+
+
+def _set_lastfm_secret(value: str, *, persist: bool) -> None:
+    global _LASTFM_SECRET
+    _LASTFM_SECRET = value.strip() if value else ""
+    if persist:
+        _persist_lidarr_settings()
+
+
+def get_lastfm_secret() -> str:
+    return _LASTFM_SECRET or ""
+
+
+def set_tidal_client_id(value: str) -> None:
+    _set_tidal_client_id(value, persist=True)
+
+
+def set_tidal_client_id_runtime(value: str) -> None:
+    _set_tidal_client_id(value, persist=False)
+
+
+def _set_tidal_client_id(value: str, *, persist: bool) -> None:
+    global _TIDAL_CLIENT_ID
+    _TIDAL_CLIENT_ID = value.strip() if value else ""
+    if persist:
+        _persist_lidarr_settings()
+
+
+def get_tidal_client_id() -> str:
+    return _TIDAL_CLIENT_ID or ""
+
+
+def set_tidal_client_secret(value: str) -> None:
+    _set_tidal_client_secret(value, persist=True)
+
+
+def set_tidal_client_secret_runtime(value: str) -> None:
+    _set_tidal_client_secret(value, persist=False)
+
+
+def _set_tidal_client_secret(value: str, *, persist: bool) -> None:
+    global _TIDAL_CLIENT_SECRET
+    _TIDAL_CLIENT_SECRET = value.strip() if value else ""
+    if persist:
+        _persist_lidarr_settings()
+
+
+def get_tidal_client_secret() -> str:
+    return _TIDAL_CLIENT_SECRET or ""
+
+
+def set_tidal_country_code(value: str) -> None:
+    _set_tidal_country_code(value, persist=True)
+
+
+def set_tidal_country_code_runtime(value: str) -> None:
+    _set_tidal_country_code(value, persist=False)
+
+
+def _set_tidal_country_code(value: str, *, persist: bool) -> None:
+    global _TIDAL_COUNTRY_CODE
+    _TIDAL_COUNTRY_CODE = value.strip() if value else ""
+    if persist:
+        _persist_lidarr_settings()
+
+
+def get_tidal_country_code() -> str:
+    return _TIDAL_COUNTRY_CODE or ""
+
+
+def set_tidal_user(value: str) -> None:
+    _set_tidal_user(value, persist=True)
+
+
+def set_tidal_user_runtime(value: str) -> None:
+    _set_tidal_user(value, persist=False)
+
+
+def _set_tidal_user(value: str, *, persist: bool) -> None:
+    global _TIDAL_USER
+    _TIDAL_USER = value.strip() if value else ""
+    if persist:
+        _persist_lidarr_settings()
+
+
+def get_tidal_user() -> str:
+    return _TIDAL_USER or ""
+
+
+def set_tidal_user_password(value: str) -> None:
+    _set_tidal_user_password(value, persist=True)
+
+
+def set_tidal_user_password_runtime(value: str) -> None:
+    _set_tidal_user_password(value, persist=False)
+
+
+def _set_tidal_user_password(value: str, *, persist: bool) -> None:
+    global _TIDAL_USER_PASSWORD
+    _TIDAL_USER_PASSWORD = value.strip() if value else ""
+    if persist:
+        _persist_lidarr_settings()
+
+
+def get_tidal_user_password() -> str:
+    return _TIDAL_USER_PASSWORD or ""
+
+
+def set_discogs_key(value: str) -> None:
+    _set_discogs_key(value, persist=True)
+
+
+def set_discogs_key_runtime(value: str) -> None:
+    _set_discogs_key(value, persist=False)
+
+
+def _set_discogs_key(value: str, *, persist: bool) -> None:
+    global _DISCOGS_KEY
+    _DISCOGS_KEY = value.strip() if value else ""
+    if persist:
+        _persist_lidarr_settings()
+
+
+def get_discogs_key() -> str:
+    return _DISCOGS_KEY or ""
+
+
+def _read_enabled_flag(value: object, default: bool) -> bool:
+    if value is None:
+        return default
+    if isinstance(value, bool):
+        return value
+    text = str(value).strip().lower()
+    if text in {"1", "true", "yes", "on"}:
+        return True
+    if text in {"0", "false", "no", "off"}:
+        return False
+    return default
+
+
+def set_fanart_enabled(value: bool) -> None:
+    _set_fanart_enabled(value, persist=True)
+
+
+def _set_fanart_enabled(value: bool, *, persist: bool) -> None:
+    global _FANART_ENABLED
+    _FANART_ENABLED = bool(value)
+    if persist:
+        _persist_lidarr_settings()
+
+
+def get_fanart_enabled() -> bool:
+    return bool(_FANART_ENABLED)
+
+
+def set_tadb_enabled(value: bool) -> None:
+    _set_tadb_enabled(value, persist=True)
+
+
+def _set_tadb_enabled(value: bool, *, persist: bool) -> None:
+    global _TADB_ENABLED
+    _TADB_ENABLED = bool(value)
+    if persist:
+        _persist_lidarr_settings()
+
+
+def get_tadb_enabled() -> bool:
+    return bool(_TADB_ENABLED)
+
+
+def set_lastfm_enabled(value: bool) -> None:
+    _set_lastfm_enabled(value, persist=True)
+
+
+def _set_lastfm_enabled(value: bool, *, persist: bool) -> None:
+    global _LASTFM_ENABLED
+    _LASTFM_ENABLED = bool(value)
+    if persist:
+        _persist_lidarr_settings()
+
+
+def get_lastfm_enabled() -> bool:
+    return bool(_LASTFM_ENABLED)
+
+
+def set_tidal_enabled(value: bool) -> None:
+    _set_tidal_enabled(value, persist=True)
+
+
+def _set_tidal_enabled(value: bool, *, persist: bool) -> None:
+    global _TIDAL_ENABLED
+    _TIDAL_ENABLED = bool(value)
+    if persist:
+        _persist_lidarr_settings()
+
+
+def get_tidal_enabled() -> bool:
+    return bool(_TIDAL_ENABLED)
+
+
+def set_discogs_enabled(value: bool) -> None:
+    _set_discogs_enabled(value, persist=True)
+
+
+def _set_discogs_enabled(value: bool, *, persist: bool) -> None:
+    global _DISCOGS_ENABLED
+    _DISCOGS_ENABLED = bool(value)
+    if persist:
+        _persist_lidarr_settings()
+
+
+def get_discogs_enabled() -> bool:
+    return bool(_DISCOGS_ENABLED)
+
+
+def set_apple_music_enabled(value: bool) -> None:
+    _set_apple_music_enabled(value, persist=True)
+
+
+def _set_apple_music_enabled(value: bool, *, persist: bool) -> None:
+    global _APPLE_MUSIC_ENABLED
+    _APPLE_MUSIC_ENABLED = bool(value)
+    if persist:
+        _persist_lidarr_settings()
+
+
+def get_apple_music_enabled() -> bool:
+    return bool(_APPLE_MUSIC_ENABLED)
+
+
+def set_apple_music_max_image_size(value: str) -> None:
+    _set_apple_music_max_image_size(value, persist=True)
+
+
+def _set_apple_music_max_image_size(value: str, *, persist: bool) -> None:
+    global _APPLE_MUSIC_MAX_IMAGE_SIZE
+    _APPLE_MUSIC_MAX_IMAGE_SIZE = value.strip() if value else ""
+    if persist:
+        _persist_lidarr_settings()
+
+
+def get_apple_music_max_image_size() -> str:
+    return _APPLE_MUSIC_MAX_IMAGE_SIZE or ""
+
+
+def set_apple_music_allow_upscale(value: bool) -> None:
+    _set_apple_music_allow_upscale(value, persist=True)
+
+
+def _set_apple_music_allow_upscale(value: bool, *, persist: bool) -> None:
+    global _APPLE_MUSIC_ALLOW_UPSCALE
+    _APPLE_MUSIC_ALLOW_UPSCALE = bool(value)
+    if persist:
+        _persist_lidarr_settings()
+
+
+def get_apple_music_allow_upscale() -> bool:
+    return bool(_APPLE_MUSIC_ALLOW_UPSCALE)
 
 
 def _is_localhost_url(value: str) -> bool:
@@ -1228,6 +1680,22 @@ def register_root_route() -> None:
             "__LIMBO_URL_HOST__": html.escape(limbo_host_url),
             "__LIMBO_URL_MODE__": html.escape(limbo_mode),
             "__LIMBO_URL_CUSTOM__": html.escape(limbo_custom_url),
+            "__FANART_KEY__": html.escape(get_fanart_key()),
+            "__TADB_KEY__": html.escape(get_tadb_key()),
+            "__LASTFM_KEY__": html.escape(get_lastfm_key()),
+            "__LASTFM_SECRET__": html.escape(get_lastfm_secret()),
+            "__TIDAL_CLIENT_ID__": html.escape(get_tidal_client_id()),
+            "__TIDAL_CLIENT_SECRET__": html.escape(get_tidal_client_secret()),
+            "__TIDAL_COUNTRY_CODE__": html.escape(get_tidal_country_code()),
+            "__TIDAL_USER__": html.escape(get_tidal_user()),
+            "__TIDAL_USER_PASSWORD__": html.escape(get_tidal_user_password()),
+            "__DISCOGS_KEY__": html.escape(get_discogs_key()),
+            "__FANART_ENABLED__": "true" if get_fanart_enabled() else "false",
+            "__TADB_ENABLED__": "true" if get_tadb_enabled() else "false",
+            "__LASTFM_ENABLED__": "true" if get_lastfm_enabled() else "false",
+            "__TIDAL_ENABLED__": "true" if get_tidal_enabled() else "false",
+            "__DISCOGS_ENABLED__": "true" if get_discogs_enabled() else "false",
+            "__APPLE_MUSIC_ENABLED__": "true" if get_apple_music_enabled() else "false",
             "__MBMS_REPLICATION_SCHEDULE__": safe["mbms_replication_schedule"],
             "__MBMS_INDEX_SCHEDULE__": safe["mbms_index_schedule"],
             "__METADATA_VERSION__": safe["metadata_version"],

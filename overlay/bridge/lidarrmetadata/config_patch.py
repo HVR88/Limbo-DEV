@@ -38,6 +38,11 @@ def register_config_routes() -> None:
                         "lidarr_api_key": root_patch.get_lidarr_api_key(),
                         "limbo_url_mode": root_patch.get_limbo_url_mode(),
                         "limbo_url": root_patch.get_limbo_url_custom(),
+                        "fanart_key": root_patch.get_fanart_key(),
+                        "tadb_key": root_patch.get_tadb_key(),
+                        "lastfm_key": root_patch.get_lastfm_key(),
+                        "lastfm_secret": root_patch.get_lastfm_secret(),
+                        "discogs_key": root_patch.get_discogs_key(),
                     }
                 )
             payload = await request.get_json(silent=True) or {}
@@ -45,6 +50,11 @@ def register_config_routes() -> None:
                 payload = {}
             base_url = str(payload.get("lidarr_base_url") or "").strip()
             api_key = str(payload.get("lidarr_api_key") or "").strip()
+            fanart_key = str(payload.get("fanart_key") or "").strip()
+            tadb_key = str(payload.get("tadb_key") or "").strip()
+            lastfm_key = str(payload.get("lastfm_key") or "").strip()
+            lastfm_secret = str(payload.get("lastfm_secret") or "").strip()
+            discogs_key = str(payload.get("discogs_key") or "").strip()
             limbo_url_mode = str(payload.get("limbo_url_mode") or "").strip().lower()
             if limbo_url_mode not in {"auto-referrer", "auto-host", "custom"}:
                 limbo_url_mode = "auto-referrer"
@@ -91,6 +101,16 @@ def register_config_routes() -> None:
                     root_patch.set_limbo_url_custom(limbo_url_custom)
                 else:
                     root_patch.set_limbo_url_custom(limbo_url)
+                if "fanart_key" in payload:
+                    root_patch.set_fanart_key(fanart_key)
+                if "tadb_key" in payload:
+                    root_patch.set_tadb_key(tadb_key)
+                if "lastfm_key" in payload:
+                    root_patch.set_lastfm_key(lastfm_key)
+                if "lastfm_secret" in payload:
+                    root_patch.set_lastfm_secret(lastfm_secret)
+                if "discogs_key" in payload:
+                    root_patch.set_discogs_key(discogs_key)
                 if lidarr_version:
                     root_patch.set_lidarr_version(lidarr_version)
             return jsonify(
@@ -104,6 +124,132 @@ def register_config_routes() -> None:
                     "metadata_update_error": metadata_update_error,
                 }
             )
+
+    if "/config/limbo-url" not in existing_rules:
+        @upstream_app.app.route("/config/limbo-url", methods=["GET"])
+        async def _limbo_url_refresh():
+            referrer_url, referrer_error = _resolve_limbo_referrer_url()
+            host_url, host_error = _resolve_limbo_host_url("")
+            return jsonify(
+                {
+                    "ok": True,
+                    "limbo_url_referrer": referrer_url,
+                    "limbo_url_host": host_url,
+                    "referrer_error": referrer_error,
+                    "host_error": host_error,
+                }
+            )
+
+    if "/config/tidal-settings" not in existing_rules:
+        @upstream_app.app.route("/config/tidal-settings", methods=["POST"])
+        async def _limbo_tidal_settings():
+            payload = await request.get_json(silent=True) or {}
+            if not isinstance(payload, dict):
+                payload = {}
+            root_patch.set_tidal_client_id(str(payload.get("tidal_client_id") or "").strip())
+            root_patch.set_tidal_client_secret(
+                str(payload.get("tidal_client_secret") or "").strip()
+            )
+            root_patch.set_tidal_country_code(
+                str(payload.get("tidal_country_code") or "").strip()
+            )
+            root_patch.set_tidal_user(str(payload.get("tidal_user") or "").strip())
+            root_patch.set_tidal_user_password(
+                str(payload.get("tidal_user_password") or "").strip()
+            )
+            root_patch.set_tidal_enabled(True)
+            return jsonify({"ok": True})
+
+    if "/config/fanart-settings" not in existing_rules:
+        @upstream_app.app.route("/config/fanart-settings", methods=["POST"])
+        async def _limbo_fanart_settings():
+            payload = await request.get_json(silent=True) or {}
+            if not isinstance(payload, dict):
+                payload = {}
+            root_patch.set_fanart_key(str(payload.get("fanart_key") or "").strip())
+            root_patch.set_fanart_enabled(True)
+            return jsonify({"ok": True})
+
+    if "/config/tadb-settings" not in existing_rules:
+        @upstream_app.app.route("/config/tadb-settings", methods=["POST"])
+        async def _limbo_tadb_settings():
+            payload = await request.get_json(silent=True) or {}
+            if not isinstance(payload, dict):
+                payload = {}
+            root_patch.set_tadb_key(str(payload.get("tadb_key") or "").strip())
+            root_patch.set_tadb_enabled(True)
+            return jsonify({"ok": True})
+
+    if "/config/discogs-settings" not in existing_rules:
+        @upstream_app.app.route("/config/discogs-settings", methods=["POST"])
+        async def _limbo_discogs_settings():
+            payload = await request.get_json(silent=True) or {}
+            if not isinstance(payload, dict):
+                payload = {}
+            root_patch.set_discogs_key(str(payload.get("discogs_key") or "").strip())
+            root_patch.set_discogs_enabled(True)
+            return jsonify({"ok": True})
+
+    if "/config/lastfm-settings" not in existing_rules:
+        @upstream_app.app.route("/config/lastfm-settings", methods=["POST"])
+        async def _limbo_lastfm_settings():
+            payload = await request.get_json(silent=True) or {}
+            if not isinstance(payload, dict):
+                payload = {}
+            root_patch.set_lastfm_key(str(payload.get("lastfm_key") or "").strip())
+            root_patch.set_lastfm_secret(str(payload.get("lastfm_secret") or "").strip())
+            root_patch.set_lastfm_enabled(True)
+            return jsonify({"ok": True})
+
+    if "/config/apple-music-settings" not in existing_rules:
+        @upstream_app.app.route("/config/apple-music-settings", methods=["POST"])
+        async def _limbo_apple_music_settings():
+            payload = await request.get_json(silent=True) or {}
+            if not isinstance(payload, dict):
+                payload = {}
+            root_patch.set_apple_music_max_image_size(
+                str(payload.get("apple_music_max_image_size") or "").strip()
+            )
+            root_patch.set_apple_music_allow_upscale(
+                _is_truthy(payload.get("apple_music_allow_upscale"))
+            )
+            root_patch.set_apple_music_enabled(True)
+            return jsonify({"ok": True})
+
+    if "/config/service-disable" not in existing_rules:
+        @upstream_app.app.route("/config/service-disable", methods=["POST"])
+        async def _limbo_service_disable():
+            payload = await request.get_json(silent=True) or {}
+            if not isinstance(payload, dict):
+                payload = {}
+            provider = str(payload.get("provider") or "").strip().lower()
+            if provider == "fanart":
+                root_patch.set_fanart_key("")
+                root_patch.set_fanart_enabled(False)
+            elif provider == "tadb":
+                root_patch.set_tadb_key("")
+                root_patch.set_tadb_enabled(False)
+            elif provider == "discogs":
+                root_patch.set_discogs_key("")
+                root_patch.set_discogs_enabled(False)
+            elif provider == "lastfm":
+                root_patch.set_lastfm_key("")
+                root_patch.set_lastfm_secret("")
+                root_patch.set_lastfm_enabled(False)
+            elif provider == "tidal":
+                root_patch.set_tidal_client_id("")
+                root_patch.set_tidal_client_secret("")
+                root_patch.set_tidal_country_code("")
+                root_patch.set_tidal_user("")
+                root_patch.set_tidal_user_password("")
+                root_patch.set_tidal_enabled(False)
+            elif provider == "apple":
+                root_patch.set_apple_music_max_image_size("")
+                root_patch.set_apple_music_allow_upscale(False)
+                root_patch.set_apple_music_enabled(False)
+            else:
+                return jsonify({"ok": False, "error": "Unknown provider."}), 400
+            return jsonify({"ok": True})
 
     if "/config/release-filter" not in existing_rules:
         @upstream_app.app.route("/config/release-filter", methods=["GET", "POST"])
@@ -126,7 +272,7 @@ def register_config_routes() -> None:
                         "preferValue": data["prefer_value"],
                     }
                 )
-                return jsonify(data)
+            return jsonify(data)
             payload = await request.get_json(silent=True) or {}
             enabled = _is_truthy(payload.get("enabled", True))
             lidarr_base_url, base_url_provided = _extract_lidarr_base_url(payload)
@@ -225,6 +371,15 @@ def _resolve_limbo_base_url(lidarr_base_url: str) -> Tuple[str, str]:
         return "", f"Unable to resolve Limbo IP: {exc}"
     limbo_port = os.getenv("LIMBO_PORT", "").strip() or "5001"
     return f"http://{local_ip}:{limbo_port}", ""
+
+
+def _resolve_limbo_referrer_url() -> Tuple[str, str]:
+    forwarded_proto = (request.headers.get("X-Forwarded-Proto") or "").strip()
+    scheme = forwarded_proto or (request.scheme or "").strip()
+    host = (request.host or "").strip()
+    if scheme and host:
+        return f"{scheme}://{host}", ""
+    return "", "Missing referrer host."
 
 
 def _resolve_limbo_host_url(_lidarr_base_url: str) -> Tuple[str, str]:

@@ -280,11 +280,11 @@ jobs:
             gh release upload "$tag" "/tmp/${zip_name}" -R "${DEPLOY_REPO}" --clobber
           else
             if [[ "${{ inputs.channel }}" == "test" ]]; then
-              title="Limbo Bridge Test Package ${NEW_VERSION}"
-              notes="Package bundle for Limbo Bridge Test ${NEW_VERSION}."
+              title="Limbo Bridge Test Container ${NEW_VERSION}"
+              notes="Automatic build. Version: ${NEW_VERSION}"
             else
-              title="Limbo Bridge Package ${RELEASE_VERSION}"
-              notes="Package bundle for Limbo Bridge ${RELEASE_VERSION}."
+              title="Limbo Bridge Container ${RELEASE_VERSION}"
+              notes="Automatic build. Version: ${RELEASE_VERSION}"
             fi
             gh release create "$tag" "/tmp/${zip_name}" -R "${DEPLOY_REPO}" \
               --title "${title}" \
