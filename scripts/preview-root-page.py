@@ -108,6 +108,8 @@ def build_preview_html() -> str:
         "__THEME__": "dark",
         "__REPLICATION_PILL_CLASS__": "pill has-action",
         "__LIMBO_APIKEY__": "",
+        "__LIDARR_BASE_URL__": "http://lidarr-ip:port",
+        "__LIDARR_API_KEY__": "lkd9a8s7df0a9s8d7f0a9s8d7f0a9s8d",
         "__SETTINGS_ICON__": read_svg("limbo-settings.svg"),
         "__THEME_ICON_DARK__": read_svg("limbo-dark.svg"),
         "__THEME_ICON_LIGHT__": read_svg("limbo-light.svg"),

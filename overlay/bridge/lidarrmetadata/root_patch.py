@@ -49,6 +49,15 @@ _REPLICATION_NOTIFY_FILE = Path(
 )
 _LAST_REPLICATION_NOTIFY: Optional[dict] = None
 _THEME_FILE = Path(os.getenv("LIMBO_THEME_FILE", str(_STATE_DIR / "theme.txt")))
+_SETTINGS_FILE = Path(
+    os.getenv("LIMBO_SETTINGS_FILE", str(_STATE_DIR / "limbo-settings.json"))
+)
+_LIDARR_FALLBACK_STATE_FILE = Path(
+    os.getenv(
+        "LIMBO_RELEASE_FILTER_STATE_FILE",
+        str(_STATE_DIR / "release-filter.json"),
+    )
+)
 
 
 def _normalize_version_string(value: Optional[str]) -> str:
@@ -147,9 +156,45 @@ def _read_mbms_plus_version() -> str:
     return value or "not MBMS"
 
 
+def _load_lidarr_settings() -> None:
+    global _LIDARR_BASE_URL, _LIDARR_API_KEY
+    try:
+        data = json.loads(_SETTINGS_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        data = {}
+    _LIDARR_BASE_URL = str(data.get("lidarr_base_url") or _LIDARR_BASE_URL or "").strip()
+    _LIDARR_API_KEY = str(data.get("lidarr_api_key") or _LIDARR_API_KEY or "").strip()
+    if _LIDARR_BASE_URL and _LIDARR_API_KEY:
+        return
+    try:
+        data = json.loads(_LIDARR_FALLBACK_STATE_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        return
+    fallback_base = str(data.get("lidarr_base_url") or "").strip()
+    fallback_key = str(data.get("lidarr_api_key") or "").strip()
+    if fallback_base and not _LIDARR_BASE_URL:
+        _LIDARR_BASE_URL = fallback_base
+    if fallback_key and not _LIDARR_API_KEY:
+        _LIDARR_API_KEY = fallback_key
+    _persist_lidarr_settings()
+
+
+def _persist_lidarr_settings() -> None:
+    try:
+        _SETTINGS_FILE.parent.mkdir(parents=True, exist_ok=True)
+        payload = {
+            "lidarr_base_url": _LIDARR_BASE_URL or "",
+            "lidarr_api_key": _LIDARR_API_KEY or "",
+        }
+        _SETTINGS_FILE.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    except Exception:
+        return
+
+
 def set_lidarr_base_url(value: str) -> None:
     global _LIDARR_BASE_URL
     _LIDARR_BASE_URL = value.strip() if value else ""
+    _persist_lidarr_settings()
 
 
 def get_lidarr_base_url() -> str:
@@ -159,6 +204,7 @@ def get_lidarr_base_url() -> str:
 def set_lidarr_api_key(value: str) -> None:
     global _LIDARR_API_KEY
     _LIDARR_API_KEY = value.strip() if value else ""
+    _persist_lidarr_settings()
 
 
 def get_lidarr_api_key() -> str:
@@ -588,6 +634,7 @@ def register_root_route() -> None:
     from quart import Response, request, send_file, jsonify
 
     assets_dir = Path(__file__).resolve().parent / "assets"
+    _load_lidarr_settings()
     limbo_api_key = (
         os.getenv("LIMBO_APIKEY")
         or upstream_app.app.config.get("LIMBO_APIKEY")
@@ -1045,6 +1092,8 @@ def register_root_route() -> None:
             "__MBMS_PLUS_VERSION__": safe["mbms_plus_version"],
             "__LIDARR_VERSION__": safe["lidarr_version"],
             "__LIDARR_VERSION_LABEL__": safe["lidarr_version_label"],
+            "__LIDARR_BASE_URL__": html.escape(get_lidarr_base_url()),
+            "__LIDARR_API_KEY__": html.escape(get_lidarr_api_key()),
             "__MBMS_REPLICATION_SCHEDULE__": safe["mbms_replication_schedule"],
             "__MBMS_INDEX_SCHEDULE__": safe["mbms_index_schedule"],
             "__METADATA_VERSION__": safe["metadata_version"],

@@ -17,27 +17,27 @@
     <path
        id="path8"
        d="m 143.372,74.3563 c -7.393,-7.072 -19.16,-6.811 -26.233,0.582 -7.071,7.393 -6.81,19.161 0.582,26.2317 2.372,2.269 5.311,3.871 8.497,4.633 l 1.836,0.439 -0.711,-1.748 c -2.461,-6.0587 -1.134,-13.0237 3.382,-17.7437 4.064,-4.249 10.149,-6.038 15.881,-4.668 l 1.835,0.439 -0.71,-1.748 c -0.989,-2.437 -2.456,-4.596 -4.359,-6.417 z"
-       style="fill:#979797;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       style="fill:currentColor;fill-opacity:1;fill-rule:evenodd;stroke:none"
        transform="matrix(1.3333333,0,0,-1.3333333,0,254.66667)" />
     <path
        id="path10"
        d="m 130.585,114.099 c 0,1.84 1.493,3.333 3.333,3.333 1.84,0 3.333,-1.493 3.333,-3.333 v -3.333 c 0,-1.84 -1.493,-3.334 -3.333,-3.334 -1.84,0 -3.333,1.494 -3.333,3.334 z"
-       style="fill:#979797;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       style="fill:currentColor;fill-opacity:1;fill-rule:evenodd;stroke:none"
        transform="matrix(1.3333333,0,0,-1.3333333,0,254.66667)" />
     <path
        id="path14"
        d="m 153.385,87.9658 c -1.84,0 -3.334,1.493 -3.334,3.333 0,1.84 1.494,3.333 3.334,3.333 h 3.333 c 1.84,0 3.333,-1.493 3.333,-3.333 0,-1.84 -1.493,-3.333 -3.333,-3.333 z"
-       style="fill:#979797;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       style="fill:currentColor;fill-opacity:1;fill-rule:evenodd;stroke:none"
        transform="matrix(1.3333333,0,0,-1.3333333,0,254.66667)" />
     <path
        id="path16"
        d="m 147.683,109.778 c 1.301,1.301 3.413,1.301 4.714,0 1.301,-1.301 1.301,-3.413 0,-4.714 l -2.357,-2.357 c -1.301,-1.301 -3.413,-1.301 -4.714,0 -1.301,1.301 -1.301,3.413 0,4.714 z"
-       style="fill:#979797;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       style="fill:currentColor;fill-opacity:1;fill-rule:evenodd;stroke:none"
        transform="matrix(1.3333333,0,0,-1.3333333,0,254.66667)" />
     <path
        id="path20"
        d="m 142.848,84.629 c -3.711,-0.0261 -7.343,1.4639 -9.955,4.1951 -3.256,3.4029 -4.488,8.2301 -3.364,12.7229 1.347,0.578 2.831,0.899 4.389,0.899 6.153,0 11.147,-4.995 11.147,-11.1472 0,-2.5003 -0.824,-4.8094 -2.217,-6.6698 z"
-       style="fill:#979797;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       style="fill:currentColor;fill-opacity:1;fill-rule:evenodd;stroke:none"
        transform="matrix(1.3333333,0,0,-1.3333333,0,254.66667)" />
   </g>
 </svg>

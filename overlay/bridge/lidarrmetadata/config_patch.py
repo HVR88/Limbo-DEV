@@ -25,6 +25,25 @@ def register_config_routes() -> None:
 
     _load_persisted_config()
 
+    if "/config/lidarr-settings" not in existing_rules:
+        @upstream_app.app.route("/config/lidarr-settings", methods=["GET", "POST"])
+        async def _limbo_lidarr_settings():
+            if request.method == "GET":
+                return jsonify(
+                    {
+                        "lidarr_base_url": root_patch.get_lidarr_base_url(),
+                        "lidarr_api_key": root_patch.get_lidarr_api_key(),
+                    }
+                )
+            payload = await request.get_json(silent=True) or {}
+            if not isinstance(payload, dict):
+                payload = {}
+            base_url = str(payload.get("lidarr_base_url") or "").strip()
+            api_key = str(payload.get("lidarr_api_key") or "").strip()
+            root_patch.set_lidarr_base_url(base_url)
+            root_patch.set_lidarr_api_key(api_key)
+            return jsonify({"ok": True})
+
     if "/config/release-filter" not in existing_rules:
         @upstream_app.app.route("/config/release-filter", methods=["GET", "POST"])
         async def _limbo_release_filter_config():
