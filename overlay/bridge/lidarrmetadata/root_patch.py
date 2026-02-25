@@ -162,9 +162,11 @@ def _load_lidarr_settings() -> None:
     try:
         data = json.loads(_SETTINGS_FILE.read_text(encoding="utf-8"))
     except Exception:
-        data = {}
-    _LIDARR_BASE_URL = str(data.get("lidarr_base_url") or _LIDARR_BASE_URL or "").strip()
-    _LIDARR_API_KEY = str(data.get("lidarr_api_key") or _LIDARR_API_KEY or "").strip()
+        _LIDARR_BASE_URL = ""
+        _LIDARR_API_KEY = ""
+        return
+    _LIDARR_BASE_URL = str(data.get("lidarr_base_url") or "").strip()
+    _LIDARR_API_KEY = str(data.get("lidarr_api_key") or "").strip()
     return
 
 
