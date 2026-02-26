@@ -496,62 +496,41 @@ async def _update_lidarr_metadata_source(
 
             async with aiohttp.ClientSession(timeout=timeout) as session:
                 for mbid in mbids:
-                    variants = _mbid_variants(mbid)
-                    found_album = False
-                    found_artist = False
-                    for candidate in variants:
-                        album_id_url = base_url.rstrip("/") + f"/api/v1/album/{candidate}"
-                        try:
-                            async with session.get(album_id_url, headers=headers) as resp:
-                                if resp.status == 200:
-                                    album_payload = await resp.json()
-                                    album_id = album_payload.get("id")
-                                    if isinstance(album_id, int):
-                                        resolved_ids.append(album_id)
-                                        found_album = True
-                                        break
-                                elif resp.status not in {404, 400}:
-                                    errors.append(f"MBID {mbid}: status {resp.status}")
-                        except Exception as exc:
-                            errors.append(f"MBID {mbid}: {exc}")
-                    if found_album:
-                        continue
-                    for candidate in variants:
-                        artist_id_url = base_url.rstrip("/") + f"/api/v1/artist/{candidate}"
-                        try:
-                            async with session.get(artist_id_url, headers=headers) as resp:
-                                if resp.status == 200:
-                                    artist_payload = await resp.json()
-                                    artist_id = artist_payload.get("id")
-                                    if isinstance(artist_id, int):
-                                        resolved_artist_ids.append(artist_id)
-                                        found_artist = True
-                                        break
-                                elif resp.status not in {404, 400}:
-                                    errors.append(f"Artist MBID {mbid}: status {resp.status}")
-                        except Exception as exc:
-                            errors.append(f"Artist MBID {mbid}: {exc}")
-                    if found_artist:
-                        continue
-                    url = base_url.rstrip("/") + "/api/v1/album"
-                    data = None
-                    for candidate in variants:
-                        try:
-                            async with session.get(
-                                url,
-                                headers=headers,
-                                params={"foreignAlbumId": candidate},
-                            ) as resp:
-                                if resp.status != 200:
-                                    errors.append(f"MBID {mbid}: status {resp.status}")
+                    album_id_url = base_url.rstrip("/") + f"/api/v1/album/{mbid}"
+                    try:
+                        async with session.get(album_id_url, headers=headers) as resp:
+                            if resp.status == 200:
+                                album_payload = await resp.json()
+                                album_id = album_payload.get("id")
+                                if isinstance(album_id, int):
+                                    resolved_ids.append(album_id)
                                     continue
-                                data = await resp.json()
-                        except Exception as exc:
-                            errors.append(f"MBID {mbid}: {exc}")
-                            continue
-                        if data:
-                            break
-                    if data is None:
+                            elif resp.status not in {404, 400}:
+                                errors.append(f"MBID {mbid}: status {resp.status}")
+                    except Exception as exc:
+                        errors.append(f"MBID {mbid}: {exc}")
+                    artist_id_url = base_url.rstrip("/") + f"/api/v1/artist/{mbid}"
+                    try:
+                        async with session.get(artist_id_url, headers=headers) as resp:
+                            if resp.status == 200:
+                                artist_payload = await resp.json()
+                                artist_id = artist_payload.get("id")
+                                if isinstance(artist_id, int):
+                                    resolved_artist_ids.append(artist_id)
+                                    continue
+                            elif resp.status not in {404, 400}:
+                                errors.append(f"Artist MBID {mbid}: status {resp.status}")
+                    except Exception as exc:
+                        errors.append(f"Artist MBID {mbid}: {exc}")
+                    url = base_url.rstrip("/") + "/api/v1/album"
+                    try:
+                        async with session.get(url, headers=headers, params={"foreignAlbumId": mbid}) as resp:
+                            if resp.status != 200:
+                                errors.append(f"MBID {mbid}: status {resp.status}")
+                                continue
+                            data = await resp.json()
+                    except Exception as exc:
+                        errors.append(f"MBID {mbid}: {exc}")
                         continue
                     if data:
                         for item in data:
@@ -562,19 +541,11 @@ async def _update_lidarr_metadata_source(
 
                     artist_url = base_url.rstrip("/") + "/api/v1/artist"
                     try:
-                        artist_data = None
-                        for candidate in variants:
-                            async with session.get(
-                                artist_url,
-                                headers=headers,
-                                params={"mbId": candidate},
-                            ) as resp:
-                                if resp.status != 200:
-                                    errors.append(f"Artist MBID {mbid}: status {resp.status}")
-                                    continue
-                                artist_data = await resp.json()
-                                if artist_data:
-                                    break
+                        async with session.get(artist_url, headers=headers, params={"mbId": mbid}) as resp:
+                            if resp.status != 200:
+                                errors.append(f"Artist MBID {mbid}: status {resp.status}")
+                                continue
+                            artist_data = await resp.json()
                     except Exception as exc:
                         errors.append(f"Artist MBID {mbid}: {exc}")
                         continue
@@ -654,59 +625,46 @@ async def _update_lidarr_metadata_source(
 
             async with aiohttp.ClientSession(timeout=timeout) as session:
                 for mbid in mbids:
-                    variants = _mbid_variants(mbid)
-                    matched = False
-                    for candidate in variants:
-                        album_id_url = base_url.rstrip("/") + f"/api/v1/album/{candidate}"
-                        try:
-                            async with session.get(album_id_url, headers=headers) as resp:
-                                if resp.status == 200:
-                                    mbid_valid.append(mbid)
-                                    matched = True
-                                    break
-                                if resp.status not in {404, 400}:
-                                    errors.append(f"MBID {mbid}: status {resp.status}")
-                        except Exception as exc:
-                            errors.append(f"MBID {mbid}: {exc}")
-                    if matched:
-                        continue
-                    for candidate in variants:
-                        artist_id_url = base_url.rstrip("/") + f"/api/v1/artist/{candidate}"
-                        try:
-                            async with session.get(artist_id_url, headers=headers) as resp:
-                                if resp.status == 200:
-                                    mbid_valid.append(mbid)
-                                    matched = True
-                                    break
-                                if resp.status not in {404, 400}:
-                                    errors.append(f"Artist MBID {mbid}: status {resp.status}")
-                        except Exception as exc:
-                            errors.append(f"Artist MBID {mbid}: {exc}")
-                    if matched:
-                        continue
+                    album_id_url = base_url.rstrip("/") + f"/api/v1/album/{mbid}"
+                    artist_id_url = base_url.rstrip("/") + f"/api/v1/artist/{mbid}"
+                    try:
+                        async with session.get(album_id_url, headers=headers) as resp:
+                            if resp.status == 200:
+                                mbid_valid.append(mbid)
+                                continue
+                            if resp.status not in {404, 400}:
+                                errors.append(f"MBID {mbid}: status {resp.status}")
+                    except Exception as exc:
+                        errors.append(f"MBID {mbid}: {exc}")
+                    try:
+                        async with session.get(artist_id_url, headers=headers) as resp:
+                            if resp.status == 200:
+                                mbid_valid.append(mbid)
+                                continue
+                            if resp.status not in {404, 400}:
+                                errors.append(f"Artist MBID {mbid}: status {resp.status}")
+                    except Exception as exc:
+                        errors.append(f"Artist MBID {mbid}: {exc}")
                     url = base_url.rstrip("/") + "/api/v1/album"
                     album_data = None
                     album_error = None
-                    for candidate in variants:
-                        for params in (
-                            {"foreignAlbumId": candidate},
-                            {"foreignArtistId": candidate},
-                            {"mbid": candidate},
-                            {"mbId": candidate},
-                        ):
-                            try:
-                                async with session.get(url, headers=headers, params=params) as resp:
-                                    if resp.status != 200:
-                                        album_error = f"MBID {mbid}: status {resp.status}"
-                                        continue
-                                    data = await resp.json()
-                            except Exception as exc:
-                                album_error = f"MBID {mbid}: {exc}"
-                                continue
-                            if data:
-                                album_data = data
-                                break
-                        if album_data:
+                    for params in (
+                        {"foreignAlbumId": mbid},
+                        {"foreignArtistId": mbid},
+                        {"mbid": mbid},
+                        {"mbId": mbid},
+                    ):
+                        try:
+                            async with session.get(url, headers=headers, params=params) as resp:
+                                if resp.status != 200:
+                                    album_error = f"MBID {mbid}: status {resp.status}"
+                                    continue
+                                data = await resp.json()
+                        except Exception as exc:
+                            album_error = f"MBID {mbid}: {exc}"
+                            continue
+                        if data:
+                            album_data = data
                             break
                     if album_data:
                         mbid_valid.append(mbid)
@@ -716,28 +674,19 @@ async def _update_lidarr_metadata_source(
                     artist_url = base_url.rstrip("/") + "/api/v1/artist"
                     artist_data = None
                     artist_error = None
-                    for candidate in variants:
-                        if artist_data:
+                    for params in ({"mbId": mbid}, {"foreignArtistId": mbid}, {"mbid": mbid}):
+                        try:
+                            async with session.get(artist_url, headers=headers, params=params) as resp:
+                                if resp.status != 200:
+                                    artist_error = f"Artist MBID {mbid}: status {resp.status}"
+                                    continue
+                                data = await resp.json()
+                        except Exception as exc:
+                            artist_error = f"Artist MBID {mbid}: {exc}"
+                            continue
+                        if data:
+                            artist_data = data
                             break
-                        for params in (
-                            {"mbId": candidate},
-                            {"foreignArtistId": candidate},
-                            {"mbid": candidate},
-                        ):
-                            if artist_data:
-                                break
-                            try:
-                                async with session.get(artist_url, headers=headers, params=params) as resp:
-                                    if resp.status != 200:
-                                        artist_error = f"Artist MBID {mbid}: status {resp.status}"
-                                        continue
-                                    data = await resp.json()
-                            except Exception as exc:
-                                artist_error = f"Artist MBID {mbid}: {exc}"
-                                continue
-                            if data:
-                                artist_data = data
-                                break
                     if artist_data:
                         mbid_valid.append(mbid)
                     else:
@@ -958,17 +907,6 @@ def _parse_mbid_list(values) -> List[str]:
         if text:
             out.append(text)
     return out
-
-
-def _mbid_variants(value: str) -> List[str]:
-    base = str(value or "").strip()
-    if not base:
-        return []
-    variants: List[str] = []
-    for item in (base, base.lower(), base.upper()):
-        if item and item not in variants:
-            variants.append(item)
-    return variants
 
 
 def _load_persisted_config() -> None:
