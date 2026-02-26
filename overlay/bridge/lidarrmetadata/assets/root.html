@@ -492,6 +492,7 @@
               data-placeholder="Paste artist or release IDs, MBIDs, Lidarr or MusicBrainz URLs here..."
             ></div>
           </div>
+          <div class="refresh-status" data-refresh-status></div>
           <div class="refresh-modal__actions">
             <button
               class="modal-link modal-link-text modal-link-cancel"
@@ -1218,6 +1219,7 @@
       const refreshDebugBody = document.querySelector(
         "[data-refresh-debug-body]",
       );
+      const refreshStatus = document.querySelector("[data-refresh-status]");
       const refreshModal = document.querySelector(
         '[data-modal="refresh-modal"]',
       );
@@ -1350,6 +1352,7 @@
       let refreshValidateController = null;
       let refreshInputGuard = false;
       let refreshDebugEnabled = false;
+      let refreshValidationActive = false;
 
       const setRefreshDebug = (lines, options = {}) => {
         if (!refreshDebugBody) {
@@ -1595,6 +1598,35 @@
           ? `mbid:${token.toLowerCase()}`
           : `lidarr:${token}`;
 
+      const updateRefreshStatus = () => {
+        if (!refreshStatus) {
+          return;
+        }
+        const tokens = getEditorTokens();
+        if (!tokens.length) {
+          refreshStatus.textContent = "";
+          return;
+        }
+        let valid = 0;
+        let invalid = 0;
+        let pending = 0;
+        tokens.forEach((token) => {
+          const key = getTokenKey(token);
+          const status = refreshTokenState.get(key) || "pending";
+          if (status === "valid") {
+            valid += 1;
+          } else if (status === "invalid") {
+            invalid += 1;
+          } else {
+            pending += 1;
+          }
+        });
+        refreshStatus.innerHTML =
+          `VALID <span class="refresh-status__count">${valid}</span>` +
+          ` INVALID <span class="refresh-status__count">${invalid}</span>` +
+          ` PENDING <span class="refresh-status__count">${pending}</span>`;
+      };
+
       const statusClassForToken = (token) => {
         const key = getTokenKey(token);
         const status = refreshTokenState.get(key) || "pending";
@@ -1830,6 +1862,9 @@
       };
 
       const scheduleRefreshValidation = (mbids, lidarrIds) => {
+        if (!refreshValidationActive) {
+          return;
+        }
         if (refreshValidateTimer) {
           clearTimeout(refreshValidateTimer);
         }
@@ -1839,6 +1874,9 @@
       };
 
       const runRefreshValidation = async (mbids, lidarrIds) => {
+        if (!refreshValidationActive) {
+          return;
+        }
         if (!mbids.size && !lidarrIds.size) {
           return;
         }
@@ -1908,6 +1946,7 @@
             refreshTokenState.set(`lidarr:${value}`, "invalid");
           });
           updateTokenClasses();
+          updateRefreshStatus();
         } catch (error) {
           if (error && error.name === "AbortError") {
             return;
@@ -1943,6 +1982,8 @@
             refreshTokenState.delete(key);
           }
         });
+        updateTokenClasses();
+        updateRefreshStatus();
         scheduleRefreshValidation(mbids, lidarrIds);
       };
 
@@ -2152,10 +2193,6 @@
           openInfo(`Request failed: ${error}`);
         } finally {
           refreshButton.disabled = false;
-          if (refreshEditor) {
-            refreshEditor.textContent = "";
-            updateRefreshState();
-          }
         }
       };
 
@@ -2183,6 +2220,10 @@
           const { mbids, lidarrIds } = extractIds();
           if (!mbids.length && !lidarrIds.length) {
             return;
+          }
+          refreshValidationActive = false;
+          if (refreshValidateController) {
+            refreshValidateController.abort();
           }
           closeModal(refreshModal);
           const totalIds = mbids.length + lidarrIds.length;
@@ -4497,6 +4538,8 @@
             if (editor) {
               requestAnimationFrame(() => editor.focus());
             }
+            refreshValidationActive = true;
+            updateRefreshState();
           }
           if (
             modal?.classList.contains("service-modal") ||
@@ -4516,6 +4559,12 @@
             }
             settingsRestoreEnabled = false;
           }
+          if (modal?.getAttribute("data-modal") === "refresh-modal") {
+            refreshValidationActive = false;
+            if (refreshValidateController) {
+              refreshValidateController.abort();
+            }
+          }
           closeModal(modal);
         });
       });
@@ -4532,6 +4581,12 @@
             }
             settingsRestoreEnabled = false;
           }
+          if (modal?.getAttribute("data-modal") === "refresh-modal") {
+            refreshValidationActive = false;
+            if (refreshValidateController) {
+              refreshValidateController.abort();
+            }
+          }
           closeModal(modal);
         });
       });
@@ -4541,6 +4596,12 @@
           return;
         }
         document.querySelectorAll("[data-modal].open").forEach((modal) => {
+          if (modal?.getAttribute("data-modal") === "refresh-modal") {
+            refreshValidationActive = false;
+            if (refreshValidateController) {
+              refreshValidateController.abort();
+            }
+          }
           closeModal(modal);
         });
       });

@@ -1098,6 +1098,18 @@ body[data-theme="dark"] .corner-button__inner {
   margin-top: 22px;
   align-self: end;
 }
+.refresh-status {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.refresh-status__count {
+  color: var(--text);
+}
 .refresh-debug {
   width: 100%;
 }
