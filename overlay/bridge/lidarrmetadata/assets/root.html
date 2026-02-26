@@ -345,6 +345,13 @@
                 >
                   <span class="settings-list__symbol settings-list__symbol--minus">-</span>
                 </button>
+                <button
+                  class="modal-link modal-link-text"
+                  type="button"
+                  data-service-priority-edit
+                >
+                  EDIT
+                </button>
                 <div class="settings-list__menu-wrap">
                   <button
                     class="modal-link modal-link-text"
@@ -1360,6 +1367,9 @@
       );
       const priorityTestButton = document.querySelector(
         "[data-service-priority-test]",
+      );
+      const priorityEditButton = document.querySelector(
+        "[data-service-priority-edit]",
       );
       let settingsSnapshot = null;
       let settingsRestoreEnabled = false;
@@ -4679,6 +4689,21 @@
           );
           setServicePriorityOrder(order);
           renderPriorityList();
+        });
+      }
+      if (priorityEditButton && servicesPriorityList) {
+        priorityEditButton.addEventListener("click", () => {
+          const selected = servicesPriorityList.querySelector(
+            ".settings-list__item.selected",
+          );
+          if (!selected) {
+            return;
+          }
+          const id = selected.dataset.serviceId;
+          if (!id) {
+            return;
+          }
+          openServiceModal(id);
         });
       }
 
