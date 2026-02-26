@@ -1642,6 +1642,9 @@ def register_root_route() -> None:
         )
         lm_repo_url = "https://github.com/HVR88/Limbo_Bridge"
         mbms_url = "https://github.com/HVR88/MBMS_PLUS"
+        musicbrainz_ui_url = (
+            f"{base_path}/musicbrainz" if base_path else "/musicbrainz"
+        )
 
         def fmt_config_value(value: object, *, empty_label: str = "none") -> str:
             if value is None:
@@ -1803,6 +1806,7 @@ def register_root_route() -> None:
             "__CACHE_EXPIRE_URL__": html.escape(cache_expire_url),
             "__REPLICATION_START_URL__": html.escape(replication_start_url),
             "__REPLICATION_STATUS_URL__": html.escape(replication_status_url),
+            "__MUSICBRAINZ_UI_URL__": html.escape(musicbrainz_ui_url),
             "__REPLICATION_PILL_CLASS__": replication_pill_class,
             "__LIMBO_APIKEY__": html.escape(
                 upstream_app.app.config.get("LIMBO_APIKEY") or ""

@@ -876,6 +876,28 @@
         </div>
       </div>
     </div>
+    <div class="modal settings-modal service-modal" data-modal="musicbrainz-settings" aria-hidden="true">
+      <div class="modal__backdrop" data-modal-backdrop></div>
+      <div class="modal__panel settings-modal__panel" role="dialog" aria-modal="true" aria-label="MusicBrainz Settings">
+        <button class="modal__esc-hint" type="button" data-modal-close>esc</button>
+        <div class="settings-modal__content">
+          <h2 class="settings-modal__title">MusicBrainz</h2>
+          <div class="settings-field">
+            <label class="settings-field__label">Data Source</label>
+            <div class="settings-field__value">Primary source for artist and album metadata.</div>
+          </div>
+          <div class="settings-field">
+            <label class="settings-field__label">Web UI</label>
+            <div class="settings-field__value">
+              <a class="config-link" href="__MUSICBRAINZ_UI_URL__" target="_blank" rel="noopener">Open MusicBrainz</a>
+            </div>
+          </div>
+          <div class="refresh-modal__actions">
+            <button class="modal-link modal-link-text modal-link-cancel" type="button" data-modal-close>CANCEL</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <script>
       const cacheButtons = document.querySelectorAll("[data-cache-action]");
       const invalidateApiKey = "__LIMBO_APIKEY__";
@@ -4067,7 +4089,7 @@
         { id: "discogs", label: "DISCOGS", modal: "discogs-settings" },
         { id: "fanart", label: "FANART.TV", modal: "fanart-settings" },
         { id: "lastfm", label: "LAST.FM", modal: "lastfm-settings" },
-        { id: "musicbrainz", label: "MUSICBRAINZ" },
+        { id: "musicbrainz", label: "MUSICBRAINZ", modal: "musicbrainz-settings" },
         { id: "tadb", label: "THE AUDIODB", modal: "tadb-settings" },
         { id: "tidal", label: "TIDAL", modal: "tidal-settings" },
       ];
@@ -4818,6 +4840,14 @@
           }
         });
       }
+      const musicbrainzCloseButtons = document.querySelectorAll(
+        '[data-modal="musicbrainz-settings"] [data-modal-close]',
+      );
+      musicbrainzCloseButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          closeModal(getModalById("musicbrainz-settings"));
+        });
+      });
 
       if (tidalSaveButton) {
         tidalSaveButton.addEventListener("click", async () => {
