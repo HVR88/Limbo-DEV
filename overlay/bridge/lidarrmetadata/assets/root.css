@@ -1121,32 +1121,6 @@ body[data-theme="dark"] .corner-button__inner {
   display: inline-block;
   text-align: right;
 }
-.refresh-debug {
-  width: 100%;
-}
-.refresh-debug__title {
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--accent);
-  margin-bottom: 8px;
-}
-.refresh-debug__body {
-  margin: 0;
-  width: 100%;
-  min-height: 120px;
-  resize: vertical;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--panel);
-  padding: 12px;
-  box-shadow: var(--soft-shadow);
-  font-size: 12px;
-  line-height: 1.4;
-  color: var(--muted);
-  font-family: "IBM Plex Mono", "Fira Mono", "Source Code Pro", monospace;
-  white-space: pre;
-}
 .modal-link-primary {
   font-weight: 700;
   color: var(--accent);
