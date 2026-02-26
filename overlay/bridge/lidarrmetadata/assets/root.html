@@ -1352,9 +1352,8 @@
       let refreshInputGuard = false;
       let refreshValidationActive = false;
       let refreshValidationSeq = 0;
-      let refreshValidationKey = "";
-      let refreshValidationInFlight = false;
-      let refreshValidationBackupTimer = null;
+      let refreshWarmupOnLoadDone = false;
+      let refreshWarmupOnOpenDone = false;
 
       const sanitizeApiKey = (value = "") =>
         value.replace(/[^a-z0-9]/gi, "").toLowerCase().slice(0, 255);
@@ -1631,8 +1630,8 @@
         }
       };
 
-      const runRefreshWarmup = async () => {
-        if (!refreshValidationActive) {
+      const runRefreshWarmup = async (force = false) => {
+        if (!force && !refreshValidationActive) {
           return;
         }
         try {
@@ -1642,7 +1641,7 @@
             body: JSON.stringify({ mbids: [], lidarr_ids: [] }),
           });
         } catch (error) {
-          // warmup is best-effort only
+          // best-effort warmup only
         }
       };
 
@@ -1904,9 +1903,6 @@
         }
         refreshValidateController = new AbortController();
         const validationSeq = ++refreshValidationSeq;
-        const validationKey = getValidationKey(mbids, lidarrIds);
-        refreshValidationKey = validationKey;
-        refreshValidationInFlight = true;
         const payload = {
           mbids: Array.from(mbids),
           lidarr_ids: Array.from(lidarrIds).map((value) => Number(value)),
@@ -1922,17 +1918,6 @@
           if (validationSeq !== refreshValidationSeq) {
             return;
           }
-          if (validationKey !== refreshValidationKey) {
-            return;
-          }
-          const currentSets = getTokenSets();
-          const currentKey = getValidationKey(
-            currentSets.mbids,
-            currentSets.lidarrIds,
-          );
-          if (validationKey !== currentKey) {
-            return;
-          }
           if (!response.ok || !data.ok) {
             return;
           }
@@ -1942,18 +1927,6 @@
               "valid",
             );
           });
-          const mbidValidSet = new Set(
-            (data.mbid_valid || []).map((mbid) => String(mbid).toLowerCase()),
-          );
-          const mbidInvalidSet = new Set(
-            (data.mbid_invalid || []).map((mbid) => String(mbid).toLowerCase()),
-          );
-          const lidarrValidSet = new Set(
-            (data.lidarr_valid || []).map((value) => String(value)),
-          );
-          const lidarrInvalidSet = new Set(
-            (data.lidarr_invalid || []).map((value) => String(value)),
-          );
           (data.mbid_artist_valid || []).forEach((mbid) => {
             refreshTokenKind.set(`mbid:${String(mbid).toLowerCase()}`, "artist");
           });
@@ -1973,25 +1946,12 @@
           (data.lidarr_invalid || []).forEach((value) => {
             refreshTokenState.set(`lidarr:${value}`, "invalid");
           });
-          const currentSetsAfter = getTokenSets();
-          currentSetsAfter.mbids.forEach((mbid) => {
-            if (!mbidValidSet.has(mbid) && !mbidInvalidSet.has(mbid)) {
-              refreshTokenState.set(`mbid:${mbid}`, "invalid");
-            }
-          });
-          currentSetsAfter.lidarrIds.forEach((value) => {
-            if (!lidarrValidSet.has(value) && !lidarrInvalidSet.has(value)) {
-              refreshTokenState.set(`lidarr:${value}`, "invalid");
-            }
-          });
           updateTokenClasses();
           updateRefreshStatus();
         } catch (error) {
           if (error && error.name === "AbortError") {
             return;
           }
-        } finally {
-          refreshValidationInFlight = false;
         }
       };
 
@@ -2024,22 +1984,6 @@
         updateTokenClasses();
         updateRefreshStatus();
         scheduleRefreshValidation(mbids, lidarrIds);
-        if (refreshValidationBackupTimer) {
-          clearTimeout(refreshValidationBackupTimer);
-        }
-        refreshValidationBackupTimer = setTimeout(() => {
-          if (!refreshValidationActive || refreshValidationInFlight) {
-            return;
-          }
-          const pending = Array.from(refreshTokenState.values()).some(
-            (value) => value === "pending",
-          );
-          if (!pending) {
-            return;
-          }
-          const current = getTokenSets();
-          runRefreshValidation(current.mbids, current.lidarrIds);
-        }, 1200);
       };
 
       const handleRefreshPaste = (event) => {
@@ -4583,7 +4527,10 @@
             }
             refreshValidationActive = true;
             updateRefreshState();
-            runRefreshWarmup();
+            if (!refreshWarmupOnOpenDone) {
+              refreshWarmupOnOpenDone = true;
+              runRefreshWarmup(true);
+            }
           }
           if (
             modal?.classList.contains("service-modal") ||
@@ -4608,7 +4555,6 @@
             if (refreshValidateController) {
               refreshValidateController.abort();
             }
-            refreshValidationInFlight = false;
           }
           closeModal(modal);
         });
@@ -4631,7 +4577,6 @@
             if (refreshValidateController) {
               refreshValidateController.abort();
             }
-            refreshValidationInFlight = false;
           }
           closeModal(modal);
         });
@@ -4647,16 +4592,15 @@
             if (refreshValidateController) {
               refreshValidateController.abort();
             }
-            refreshValidationInFlight = false;
           }
           closeModal(modal);
         });
       });
+
+      if (!refreshWarmupOnLoadDone) {
+        refreshWarmupOnLoadDone = true;
+        runRefreshWarmup(true);
+      }
     </script>
   </body>
 </html>
-      const getValidationKey = (mbids, lidarrIds) => {
-        const mbidList = Array.from(mbids || []).map(String).sort();
-        const lidarrList = Array.from(lidarrIds || []).map(String).sort();
-        return `${mbidList.join(",")}|${lidarrList.join(",")}`;
-      };
