@@ -1755,6 +1755,7 @@ def register_root_route() -> None:
         theme_light_svg = _read_inline_svg("limbo-light.svg")
         theme_auto_svg = _read_inline_svg("limbo-auto.svg")
         tall_arrow_svg = _read_inline_svg("limbo-tall-arrow.svg")
+        thick_arrow_rt_svg = _read_inline_svg("limbo-arrow-thick-rt.svg")
 
         replacements = {
             "__ICON_URL__": html.escape(icon_url),
@@ -1812,6 +1813,7 @@ def register_root_route() -> None:
             "__THEME_ICON_LIGHT__": theme_light_svg,
             "__THEME_ICON_AUTO__": theme_auto_svg,
             "__TALL_ARROW_ICON__": tall_arrow_svg,
+            "__THICK_ARROW_RT_ICON__": thick_arrow_rt_svg,
             "__CONFIG_MENU_ICON__": config_menu_svg,
             "__CONFIG_HTML__": config_html,
         }

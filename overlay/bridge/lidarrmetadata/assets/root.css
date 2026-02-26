@@ -791,6 +791,22 @@ body[data-theme="dark"] .settings-list {
   opacity: 0.8;
   flex: 0 0 auto;
 }
+.settings-list__handle--icon {
+  width: 16px;
+  height: 16px;
+  margin-left: auto;
+  background: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  opacity: 0.8;
+  flex: 0 0 auto;
+}
+.settings-list__handle--icon svg {
+  display: block;
+  width: 14px;
+  height: 14px;
+}
 .settings-list__item:hover {
   background: rgba(11, 125, 109, 0.12);
   box-shadow: 0 0 0 3px rgba(11, 125, 109, 0.12);
