@@ -1841,7 +1841,7 @@ def register_root_route() -> None:
         )
 
         lm_latest, mbms_latest = await asyncio.gather(
-            _fetch_latest_release_version("HVR88", "Limbo"),
+            _fetch_latest_release_version("HVR88", "Limbo_Bridge"),
             _fetch_latest_release_version("HVR88", "MBMS_PLUS"),
         )
 
@@ -1872,12 +1872,8 @@ def register_root_route() -> None:
                 True,
             )
 
-        if lm_update:
-            lm_pill_class = "pill has-action"
-            lm_pill_href = html.escape(lm_repo_url)
-        else:
-            lm_pill_class = "pill has-action"
-            lm_pill_href = html.escape(version_url)
+        lm_pill_class = "pill has-action"
+        lm_pill_href = html.escape(lm_repo_url)
 
         if plugin_update:
             replacements["__PLUGIN_PILL_CLASS__"] = "pill"
@@ -1892,13 +1888,6 @@ def register_root_route() -> None:
         mbms_value_class = "value has-update" if mbms_has_update else "value"
         mbms_pills = "\n".join(
             [
-                '          <button type="button" class="pill has-action" data-pill-href="{}">'.format(
-                    html.escape(mbms_url)
-                ),
-                '            <div class="label">Limbo</div>',
-                f'            <div class="{mbms_value_class}">{mbms_version_value}</div>',
-                f'            <span class="pill-arrow" aria-hidden="true">{tall_arrow_svg}</span>',
-                "          </button>",
                 '          <button type="button" class="pill" data-pill-href="" data-modal-open="schedule-indexer">',
                 '            <div class="label">DB Indexing Schedule</div>',
                 f'            <div class="value">{index_schedule_html}</div>',
@@ -1920,9 +1909,27 @@ def register_root_route() -> None:
             lm_pill_tag_open = '<button type="button" class="{}" disabled>'.format(
                 lm_pill_class
             )
-        lm_version_value = "{} ({})".format(
-            html.escape(safe["mbms_plus_version"]),
-            html.escape(safe["version"]),
+        mbms_version_label = html.escape(safe["mbms_plus_version"])
+        bridge_version_label = html.escape(safe["version"])
+        mbms_title = (
+            f"New: {html.escape(mbms_update)}" if mbms_update else ""
+        )
+        bridge_title = (
+            f"New: {html.escape(lm_update)}" if lm_update else ""
+        )
+        mbms_class = "version-part"
+        if mbms_update:
+            mbms_class += " version-part--update"
+        bridge_class = "version-part"
+        if lm_update:
+            bridge_class += " version-part--update"
+        lm_version_value = (
+            f'<span class="{mbms_class}"'
+            f'{f" title=\\"{mbms_title}\\"" if mbms_title else ""}>'
+            f"{mbms_version_label}</span> "
+            f'(<span class="{bridge_class}"'
+            f'{f" title=\\"{bridge_title}\\"" if bridge_title else ""}>'
+            f"{bridge_version_label}</span>)"
         )
         lm_value_class = "value"
         lm_pill_html = "\n".join(

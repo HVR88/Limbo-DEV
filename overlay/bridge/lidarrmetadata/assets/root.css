@@ -328,6 +328,26 @@ body.menu-modal-open .modal.open * {
 .version-update {
   white-space: nowrap;
 }
+.version-part {
+  display: inline-block;
+}
+.version-part--update {
+  position: relative;
+  padding-bottom: 2px;
+}
+.version-part--update::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 2px;
+  background: var(--accent);
+  box-shadow:
+    0 0 6px rgba(109, 208, 0, 0.7),
+    0 0 12px rgba(109, 208, 0, 0.45);
+  border-radius: 999px;
+}
 .value.has-update {
   display: inline-flex;
   align-items: baseline;
