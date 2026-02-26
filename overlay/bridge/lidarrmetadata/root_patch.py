@@ -213,6 +213,15 @@ def _read_mbms_plus_version() -> str:
     return value or "not MBMS"
 
 
+def _read_full_limbo_version() -> str:
+    version_path = Path(os.environ.get("LIMBO_VERSION_FILE", "/metadata/VERSION"))
+    try:
+        value = version_path.read_text().strip()
+    except OSError:
+        value = ""
+    return value or _read_version()
+
+
 def _load_lidarr_settings() -> None:
     global _LIDARR_BASE_URL, _LIDARR_API_KEY, _LIMBO_URL_MODE, _LIMBO_URL_CUSTOM
     global _FANART_KEY, _TADB_KEY, _LASTFM_KEY, _LASTFM_SECRET
@@ -1538,7 +1547,7 @@ def register_root_route() -> None:
         replication_schedule = _format_replication_schedule()
         index_schedule = _format_index_schedule()
         info = {
-            "version": fmt(_read_version()),
+            "version": fmt(_read_full_limbo_version()),
             "plugin_version": fmt(_read_last_plugin_version()),
             "mbms_plus_version": fmt(_read_mbms_plus_version()),
             "mbms_replication_schedule": fmt(replication_schedule),
