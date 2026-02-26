@@ -1609,8 +1609,8 @@ def register_root_route() -> None:
         index_schedule_html = _format_schedule_html(info["mbms_index_schedule"])
         theme_value = _read_theme()
         try:
-from lidarrmetadata import release_filters
-from lidarrmetadata.provider_capabilities import list_provider_capabilities
+            from lidarrmetadata import release_filters
+            from lidarrmetadata.provider_capabilities import list_provider_capabilities
 
             exclude = release_filters.get_runtime_media_exclude() or []
             include = release_filters.get_runtime_media_include() or []
