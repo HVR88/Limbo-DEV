@@ -17,7 +17,7 @@
     <path
        id="path4"
        d="M 178.736,62.88 148.528,32.6724 118.32,62.88 h 12.021 L 148.528,44.6932 166.714,62.88 Z"
-       style="fill:#ff3d3d;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       style="fill:currentColor;fill-opacity:1;fill-rule:evenodd;stroke:none"
        transform="matrix(1.3333333,0,0,-1.3333333,0,253.76)" />
   </g>
 </svg>
