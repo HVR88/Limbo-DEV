@@ -1912,12 +1912,12 @@
           lidarr_ids: Array.from(lidarrIds).map((value) => Number(value)),
         };
         try {
-              const response = await fetch("/config/validate-ids", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload),
-                signal: refreshValidateController.signal,
-              });
+          const response = await fetch("/config/validate-ids", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+            signal: refreshValidateController.signal,
+          });
           const data = await response.json().catch(() => ({}));
           if (validationSeq !== refreshValidationSeq) {
             return;
@@ -1973,13 +1973,13 @@
           (data.lidarr_invalid || []).forEach((value) => {
             refreshTokenState.set(`lidarr:${value}`, "invalid");
           });
-          const currentSets = getTokenSets();
-          currentSets.mbids.forEach((mbid) => {
+          const currentSetsAfter = getTokenSets();
+          currentSetsAfter.mbids.forEach((mbid) => {
             if (!mbidValidSet.has(mbid) && !mbidInvalidSet.has(mbid)) {
               refreshTokenState.set(`mbid:${mbid}`, "invalid");
             }
           });
-          currentSets.lidarrIds.forEach((value) => {
+          currentSetsAfter.lidarrIds.forEach((value) => {
             if (!lidarrValidSet.has(value) && !lidarrInvalidSet.has(value)) {
               refreshTokenState.set(`lidarr:${value}`, "invalid");
             }
