@@ -1923,12 +1923,14 @@ def register_root_route() -> None:
         bridge_class = "version-part"
         if lm_update:
             bridge_class += " version-part--update"
+        mbms_title_attr = f' title="{mbms_title}"' if mbms_title else ""
+        bridge_title_attr = f' title="{bridge_title}"' if bridge_title else ""
         lm_version_value = (
             f'<span class="{mbms_class}"'
-            f'{f" title=\\"{mbms_title}\\"" if mbms_title else ""}>'
+            f"{mbms_title_attr}>"
             f"{mbms_version_label}</span> "
             f'(<span class="{bridge_class}"'
-            f'{f" title=\\"{bridge_title}\\"" if bridge_title else ""}>'
+            f"{bridge_title_attr}>"
             f"{bridge_version_label}</span>)"
         )
         lm_value_class = "value"
