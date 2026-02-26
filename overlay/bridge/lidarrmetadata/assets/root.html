@@ -325,6 +325,12 @@
                     <span class="settings-list__symbol">+</span>
                   </button>
                   <div class="config-menu settings-list__menu" data-service-menu>
+                    <button type="button" data-service-option="coverart">
+                      COVER ART ARCHIVE
+                    </button>
+                    <button type="button" data-service-option="musicbrainz">
+                      MUSICBRAINZ
+                    </button>
                     <button type="button" data-service-option="apple">
                       APPLE MUSIC
                     </button>
@@ -3844,9 +3850,11 @@
       }
       const serviceCatalog = [
         { id: "apple", label: "APPLE MUSIC", modal: "apple-music-settings" },
+        { id: "coverart", label: "COVER ART ARCHIVE" },
         { id: "discogs", label: "DISCOGS", modal: "discogs-settings" },
         { id: "fanart", label: "FANART.TV", modal: "fanart-settings" },
         { id: "lastfm", label: "LAST.FM", modal: "lastfm-settings" },
+        { id: "musicbrainz", label: "MUSICBRAINZ" },
         { id: "tadb", label: "THE AUDIODB", modal: "tadb-settings" },
         { id: "tidal", label: "TIDAL", modal: "tidal-settings" },
       ];
@@ -4241,11 +4249,15 @@
         });
       }
 
-      const openServiceModal = (id) => {
-        const entry = serviceCatalog.find((item) => item.id === id);
       let serviceDragGhost = null;
 
+      const openServiceModal = (id) => {
+        const entry = serviceCatalog.find((item) => item.id === id);
+
         if (!entry) {
+          return;
+        }
+        if (!entry.modal) {
           return;
         }
         const modal = getModalById(entry.modal);
