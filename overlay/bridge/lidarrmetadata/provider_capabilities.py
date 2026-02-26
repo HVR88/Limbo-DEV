@@ -22,6 +22,16 @@ PROVIDER_CAPABILITIES: Dict[str, Dict[str, Any]] = {
         "pricing": "unknown",
         "notes": "Cover art via CAA URLs; links parsed into typed sources.",
     },
+    "cover_art_archive": {
+        "display_name": "Cover Art Archive",
+        "capabilities": ["album_art"],
+        "auth": {"type": "none", "fields": []},
+        "endpoints": {"base_url": "https://coverartarchive.org", "docs_url": ""},
+        "rate_limit": {"requests_per_second": None, "requests_per_minute": None, "notes": "Best effort"},
+        "supports_cache": True,
+        "pricing": "free",
+        "notes": "Album cover art for MusicBrainz release groups.",
+    },
     "fanart": {
         "display_name": "Fanart.tv",
         "capabilities": ["artist_images"],
