@@ -75,4 +75,4 @@ Source code, docs and licenses: https://github.com/HVR88/Limbo_Bridge_DEV
 
 ## Version
 
-Package version: `1.9.12.178`
+Package version: `1.9.12.179`

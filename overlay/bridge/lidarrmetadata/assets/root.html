@@ -1523,6 +1523,12 @@
         let text = String(value);
         text = text.replace(/https?:\/\//gi, " https://");
         text = text.replace(/https?:\/\/\S+/gi, (url) => {
+          const pathGuidMatch = url.match(
+            /\/(?:album|artist)\/([0-9a-fA-F-]{36})/i,
+          );
+          if (pathGuidMatch && mbidMatchRegex.test(pathGuidMatch[1])) {
+            return pathGuidMatch[1];
+          }
           const pathMatch = url.match(/\/(?:album|artist)\/([0-9]+)/i);
           if (pathMatch) {
             return pathMatch[1];
