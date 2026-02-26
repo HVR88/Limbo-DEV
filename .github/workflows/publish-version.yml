@@ -206,7 +206,7 @@ jobs:
           context: .
           file: Dockerfile
           build-args: |
-            APP_VERSION=${{ steps.docker-tags.outputs.docker_tag }}
+            APP_VERSION=${{ steps.bump.outputs.new_version }}
           platforms: ${{ inputs.platforms }}
           push: true
           tags: |
@@ -217,7 +217,7 @@ jobs:
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
             org.opencontainers.image.url=https://github.com/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
-            org.opencontainers.image.version=${{ steps.docker-tags.outputs.docker_tag }}
+            org.opencontainers.image.version=${{ steps.bump.outputs.new_version }}
 
       - name: Update Docker Hub description
         if: ${{ inputs.publish_container == 'true' }}
