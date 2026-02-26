@@ -489,6 +489,7 @@ def register_config_routes() -> None:
             timeout = aiohttp.ClientTimeout(total=4)
             headers = {"X-Api-Key": api_key}
 
+            parallel_per_mbid = len(mbids) <= 2
             async with aiohttp.ClientSession(timeout=timeout) as session:
                 semaphore = asyncio.Semaphore(4)
                 artist_url = base_url.rstrip("/") + "/api/v1/artist"
@@ -497,55 +498,75 @@ def register_config_routes() -> None:
                 async def validate_mbid(mbid: str) -> None:
                     async with semaphore:
                         add_debug(f"mbid={mbid}")
-                        try:
-                            async with session.get(artist_url, headers=headers, params={"mbId": mbid}) as resp:
-                                add_debug(f"  artist/search status={resp.status}")
-                                if resp.status == 200:
-                                    artist_data = await resp.json()
-                                    if artist_data:
-                                        mbid_valid.append(mbid)
-                                        mbid_artist_valid.append(mbid)
-                                        add_debug("  -> valid (artist/search)")
-                                        return
-                                else:
-                                    errors.append(f"Artist MBID {mbid}: status {resp.status}")
-                        except Exception as exc:
-                            message = str(exc).strip()
-                            if message:
-                                errors.append(f"Artist MBID {mbid}: {message}")
-                                add_debug(f"  artist/search error={message}")
-
-                        album_data = None
-                        album_error = None
-                        for params in (
-                            {"foreignAlbumId": mbid},
-                        ):
+                        async def check_artist() -> bool:
                             try:
-                                async with session.get(album_url, headers=headers, params=params) as resp:
-                                    add_debug(f"  album/search {params} status={resp.status}")
-                                    if resp.status != 200:
-                                        album_error = f"MBID {mbid}: status {resp.status}"
-                                        continue
-                                    data = await resp.json()
+                                async with session.get(
+                                    artist_url, headers=headers, params={"mbId": mbid}
+                                ) as resp:
+                                    add_debug(f"  artist/search status={resp.status}")
+                                    if resp.status == 200:
+                                        artist_data = await resp.json()
+                                        return bool(artist_data)
+                                    errors.append(f"Artist MBID {mbid}: status {resp.status}")
                             except Exception as exc:
                                 message = str(exc).strip()
                                 if message:
-                                    album_error = f"MBID {mbid}: {message}"
+                                    errors.append(f"Artist MBID {mbid}: {message}")
+                                    add_debug(f"  artist/search error={message}")
+                            return False
+
+                        async def check_album() -> bool:
+                            try:
+                                async with session.get(
+                                    album_url,
+                                    headers=headers,
+                                    params={"foreignAlbumId": mbid},
+                                ) as resp:
+                                    add_debug(
+                                        f"  album/search {{'foreignAlbumId': '{mbid}'}} status={resp.status}"
+                                    )
+                                    if resp.status != 200:
+                                        errors.append(f"MBID {mbid}: status {resp.status}")
+                                        return False
+                                    data = await resp.json()
+                                    if data:
+                                        add_debug(
+                                            f"  album/search hit count={len(data) if hasattr(data, '__len__') else 'n/a'}"
+                                        )
+                                        return True
+                            except Exception as exc:
+                                message = str(exc).strip()
+                                if message:
+                                    errors.append(f"MBID {mbid}: {message}")
                                     add_debug(f"  album/search error={message}")
-                                continue
-                            if data:
-                                add_debug(
-                                    f"  album/search hit count={len(data) if hasattr(data, '__len__') else 'n/a'}"
-                                )
-                                album_data = data
-                                break
-                        if album_data:
-                            mbid_valid.append(mbid)
-                            mbid_album_valid.append(mbid)
-                            add_debug("  -> valid (album/search)")
-                            return
-                        if album_error:
-                            errors.append(album_error)
+                            return False
+
+                        if parallel_per_mbid:
+                            artist_ok, album_ok = await asyncio.gather(
+                                check_artist(), check_album()
+                            )
+                            if artist_ok:
+                                mbid_valid.append(mbid)
+                                mbid_artist_valid.append(mbid)
+                                add_debug("  -> valid (artist/search)")
+                                return
+                            if album_ok:
+                                mbid_valid.append(mbid)
+                                mbid_album_valid.append(mbid)
+                                add_debug("  -> valid (album/search)")
+                                return
+                        else:
+                            if await check_artist():
+                                mbid_valid.append(mbid)
+                                mbid_artist_valid.append(mbid)
+                                add_debug("  -> valid (artist/search)")
+                                return
+                            if await check_album():
+                                mbid_valid.append(mbid)
+                                mbid_album_valid.append(mbid)
+                                add_debug("  -> valid (album/search)")
+                                return
+
                         mbid_invalid.append(mbid)
                         add_debug("  -> invalid")
 
