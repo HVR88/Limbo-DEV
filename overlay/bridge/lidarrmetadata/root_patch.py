@@ -62,6 +62,9 @@ _DISCOGS_ENABLED: Optional[bool] = None
 _APPLE_MUSIC_ENABLED: Optional[bool] = None
 _APPLE_MUSIC_MAX_IMAGE_SIZE: Optional[str] = None
 _APPLE_MUSIC_ALLOW_UPSCALE: Optional[bool] = None
+_COVERART_ENABLED: Optional[bool] = None
+_COVERART_SIZE: Optional[str] = None
+_MUSICBRAINZ_ENABLED: Optional[bool] = None
 _GITHUB_RELEASE_CACHE: Dict[str, Tuple[float, Optional[str]]] = {}
 _GITHUB_RELEASE_CACHE_TTL = 300.0
 _REPLICATION_NOTIFY_FILE = Path(
@@ -218,6 +221,7 @@ def _load_lidarr_settings() -> None:
     global _FANART_ENABLED, _TADB_ENABLED, _LASTFM_ENABLED
     global _TIDAL_ENABLED, _DISCOGS_ENABLED, _APPLE_MUSIC_ENABLED
     global _APPLE_MUSIC_MAX_IMAGE_SIZE, _APPLE_MUSIC_ALLOW_UPSCALE
+    global _COVERART_ENABLED, _COVERART_SIZE, _MUSICBRAINZ_ENABLED
     try:
         data = json.loads(_SETTINGS_FILE.read_text(encoding="utf-8"))
     except Exception:
@@ -243,6 +247,9 @@ def _load_lidarr_settings() -> None:
         _APPLE_MUSIC_ENABLED = False
         _APPLE_MUSIC_MAX_IMAGE_SIZE = "2500"
         _APPLE_MUSIC_ALLOW_UPSCALE = False
+        _COVERART_ENABLED = True
+        _COVERART_SIZE = "original"
+        _MUSICBRAINZ_ENABLED = True
         return
     _LIDARR_BASE_URL = str(data.get("lidarr_base_url") or "").strip()
     _LIDARR_API_KEY = str(data.get("lidarr_api_key") or "").strip()
@@ -261,6 +268,7 @@ def _load_lidarr_settings() -> None:
     _TIDAL_USER = str(data.get("tidal_user") or "").strip()
     _TIDAL_USER_PASSWORD = str(data.get("tidal_user_password") or "").strip()
     _DISCOGS_KEY = str(data.get("discogs_key") or "").strip()
+    _COVERART_SIZE = str(data.get("coverart_size") or "").strip()
     _APPLE_MUSIC_MAX_IMAGE_SIZE = str(
         data.get("apple_music_max_image_size") or ""
     ).strip()
@@ -298,8 +306,12 @@ def _load_lidarr_settings() -> None:
         data.get("discogs_enabled"), bool(discogs_env)
     )
     _APPLE_MUSIC_ENABLED = _read_enabled_flag(data.get("apple_music_enabled"), False)
+    _COVERART_ENABLED = _read_enabled_flag(data.get("coverart_enabled"), True)
+    _MUSICBRAINZ_ENABLED = _read_enabled_flag(data.get("musicbrainz_enabled"), True)
     if _APPLE_MUSIC_ENABLED and not _APPLE_MUSIC_MAX_IMAGE_SIZE:
         _APPLE_MUSIC_MAX_IMAGE_SIZE = "2500"
+    if _COVERART_ENABLED and not _COVERART_SIZE:
+        _COVERART_SIZE = "original"
     if _FANART_ENABLED and not _FANART_KEY:
         _FANART_KEY = fanart_env
     if _TADB_ENABLED and not _TADB_KEY:
@@ -341,6 +353,9 @@ def _persist_lidarr_settings() -> None:
             "tidal_user": _TIDAL_USER or "",
             "tidal_user_password": _TIDAL_USER_PASSWORD or "",
             "discogs_key": _DISCOGS_KEY or "",
+            "coverart_enabled": bool(_COVERART_ENABLED),
+            "coverart_size": _COVERART_SIZE or "",
+            "musicbrainz_enabled": bool(_MUSICBRAINZ_ENABLED),
             "fanart_enabled": bool(_FANART_ENABLED),
             "tadb_enabled": bool(_TADB_ENABLED),
             "lastfm_enabled": bool(_LASTFM_ENABLED),
@@ -755,6 +770,51 @@ def _set_apple_music_allow_upscale(value: bool, *, persist: bool) -> None:
 
 def get_apple_music_allow_upscale() -> bool:
     return bool(_APPLE_MUSIC_ALLOW_UPSCALE)
+
+
+def set_coverart_enabled(value: bool) -> None:
+    _set_coverart_enabled(value, persist=True)
+
+
+def _set_coverart_enabled(value: bool, *, persist: bool) -> None:
+    global _COVERART_ENABLED
+    _COVERART_ENABLED = bool(value)
+    if persist:
+        _persist_lidarr_settings()
+
+
+def get_coverart_enabled() -> bool:
+    return bool(_COVERART_ENABLED)
+
+
+def set_coverart_size(value: str) -> None:
+    _set_coverart_size(value, persist=True)
+
+
+def _set_coverart_size(value: str, *, persist: bool) -> None:
+    global _COVERART_SIZE
+    _COVERART_SIZE = value.strip().lower() if value else ""
+    if persist:
+        _persist_lidarr_settings()
+
+
+def get_coverart_size() -> str:
+    return _COVERART_SIZE or ""
+
+
+def set_musicbrainz_enabled(value: bool) -> None:
+    _set_musicbrainz_enabled(value, persist=True)
+
+
+def _set_musicbrainz_enabled(value: bool, *, persist: bool) -> None:
+    global _MUSICBRAINZ_ENABLED
+    _MUSICBRAINZ_ENABLED = bool(value)
+    if persist:
+        _persist_lidarr_settings()
+
+
+def get_musicbrainz_enabled() -> bool:
+    return bool(_MUSICBRAINZ_ENABLED)
 
 
 def _is_localhost_url(value: str) -> bool:
@@ -1696,6 +1756,9 @@ def register_root_route() -> None:
             "__TIDAL_ENABLED__": "true" if get_tidal_enabled() else "false",
             "__DISCOGS_ENABLED__": "true" if get_discogs_enabled() else "false",
             "__APPLE_MUSIC_ENABLED__": "true" if get_apple_music_enabled() else "false",
+            "__COVERART_ENABLED__": "true" if get_coverart_enabled() else "false",
+            "__COVERART_SIZE__": html.escape(get_coverart_size()),
+            "__MUSICBRAINZ_ENABLED__": "true" if get_musicbrainz_enabled() else "false",
             "__MBMS_REPLICATION_SCHEDULE__": safe["mbms_replication_schedule"],
             "__MBMS_INDEX_SCHEDULE__": safe["mbms_index_schedule"],
             "__METADATA_VERSION__": safe["metadata_version"],

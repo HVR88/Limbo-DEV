@@ -302,12 +302,15 @@
                 data-service-tidal-user="__TIDAL_USER__"
                 data-service-fanart-key="__FANART_KEY__"
                 data-service-tadb-key="__TADB_KEY__"
-                data-service-lastfm-key="__LASTFM_KEY__"
-                data-service-lastfm-secret="__LASTFM_SECRET__"
-                data-service-discogs-key="__DISCOGS_KEY__"
-                data-service-apple-max="__APPLE_MUSIC_MAX_IMAGE_SIZE__"
-                data-service-apple-upscale="__APPLE_MUSIC_ALLOW_UPSCALE__"
-              ></div>
+              data-service-lastfm-key="__LASTFM_KEY__"
+              data-service-lastfm-secret="__LASTFM_SECRET__"
+              data-service-discogs-key="__DISCOGS_KEY__"
+              data-service-apple-max="__APPLE_MUSIC_MAX_IMAGE_SIZE__"
+              data-service-apple-upscale="__APPLE_MUSIC_ALLOW_UPSCALE__"
+              data-service-coverart="__COVERART_ENABLED__"
+              data-service-coverart-size="__COVERART_SIZE__"
+              data-service-musicbrainz="__MUSICBRAINZ_ENABLED__"
+            ></div>
               <div class="settings-list__actions">
                 <button
                   class="modal-link modal-link-text"
@@ -783,6 +786,47 @@
         </div>
       </div>
     </div>
+    <div class="modal settings-modal service-modal" data-modal="coverart-settings" aria-hidden="true">
+      <div class="modal__backdrop" data-modal-backdrop></div>
+      <div class="modal__panel settings-modal__panel" role="dialog" aria-modal="true" aria-label="Cover Art Archive Settings">
+        <button class="modal__esc-hint" type="button" data-modal-close>esc</button>
+        <div class="settings-modal__content">
+          <h2 class="settings-modal__title">Cover Art Archive Settings</h2>
+          <div class="settings-field">
+            <label class="settings-field__label" for="coverart-size">Maximum image size</label>
+            <div class="settings-field__control settings-field__control--framed" data-coverart-control>
+              <input
+                id="coverart-size"
+                class="settings-field__input settings-field__input--framed"
+                type="text"
+                spellcheck="false"
+                autocomplete="off"
+                value="__COVERART_SIZE__"
+                readonly
+              />
+              <button
+                class="config-action settings-field__menu-toggle"
+                type="button"
+                aria-label="Cover Art Archive size menu"
+                data-coverart-menu-toggle
+              >
+                <span class="config-action__icon"></span>
+              </button>
+              <div class="config-menu settings-field__menu" data-coverart-menu>
+                <button type="button" data-coverart-option="original">ORIGINAL</button>
+                <button type="button" data-coverart-option="1200">1200</button>
+                <button type="button" data-coverart-option="500">500</button>
+                <button type="button" data-coverart-option="250">250</button>
+              </div>
+            </div>
+          </div>
+          <div class="refresh-modal__actions">
+            <button class="modal-link modal-link-text modal-link-cancel" type="button" data-modal-close>CANCEL</button>
+            <button class="modal-link modal-link-text" type="button" data-coverart-save>SAVE</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <script>
       const cacheButtons = document.querySelectorAll("[data-cache-action]");
       const invalidateApiKey = "__LIMBO_APIKEY__";
@@ -1246,11 +1290,18 @@
       const lastfmSecretInput = document.querySelector("#lastfm-secret");
       const appleMusicMaxInput = document.querySelector("#apple-music-max-image");
       const appleMusicUpscaleInput = document.querySelector("#apple-music-upscale");
+      const coverartSizeInput = document.querySelector("#coverart-size");
+      const coverartMenuToggle = document.querySelector("[data-coverart-menu-toggle]");
+      const coverartMenu = document.querySelector("[data-coverart-menu]");
+      const coverartMenuOptions = Array.from(
+        document.querySelectorAll("[data-coverart-option]"),
+      );
       const fanartSaveButton = document.querySelector("[data-fanart-save]");
       const tadbSaveButton = document.querySelector("[data-tadb-save]");
       const discogsSaveButton = document.querySelector("[data-discogs-save]");
       const lastfmSaveButton = document.querySelector("[data-lastfm-save]");
       const appleMusicSaveButton = document.querySelector("[data-apple-music-save]");
+      const coverartSaveButton = document.querySelector("[data-coverart-save]");
       const servicesList = document.querySelector("[data-services]");
       const serviceRemoveButton = document.querySelector("[data-service-remove]");
       let settingsSnapshot = null;
@@ -1311,6 +1362,38 @@
         }
       };
       applyInputSanitizers();
+      const normalizeCoverartSize = (value) => {
+        const normalized = String(value || "").trim().toLowerCase();
+        if (!normalized) {
+          return "original";
+        }
+        if (normalized === "original") {
+          return "original";
+        }
+        if (["1200", "500", "250"].includes(normalized)) {
+          return normalized;
+        }
+        return "original";
+      };
+      const formatCoverartLabel = (value) => {
+        const normalized = normalizeCoverartSize(value);
+        return normalized === "original" ? "ORIGINAL" : normalized;
+      };
+      const setCoverartSize = (value, { updateDataset = true } = {}) => {
+        const normalized = normalizeCoverartSize(value);
+        if (coverartSizeInput) {
+          coverartSizeInput.value = formatCoverartLabel(normalized);
+        }
+        if (servicesList && updateDataset) {
+          servicesList.dataset.serviceCoverartSize = normalized;
+        }
+        coverartMenuOptions.forEach((option) => {
+          option.classList.toggle(
+            "selected",
+            option.dataset.coverartOption === normalized,
+          );
+        });
+      };
       const serviceTestButton = document.querySelector("[data-service-test]");
       const settingsModalPanel = document.querySelector(
         '[data-modal="settings"] .modal__panel',
@@ -3687,6 +3770,31 @@
           event.stopPropagation();
         });
       }
+      if (coverartMenuToggle && coverartMenu) {
+        coverartMenuToggle.addEventListener("click", (event) => {
+          event.stopPropagation();
+          coverartMenu.classList.toggle("open");
+          if (coverartMenu.classList.contains("open")) {
+            setCoverartSize(servicesList?.dataset.serviceCoverartSize || "", {
+              updateDataset: false,
+            });
+            requestAnimationFrame(() => adjustMenuPosition(coverartMenu));
+          }
+        });
+      }
+      if (coverartMenu) {
+        coverartMenu.addEventListener("click", (event) => {
+          event.stopPropagation();
+          const option = event.target.closest("[data-coverart-option]");
+          if (!option) {
+            return;
+          }
+          setCoverartSize(option.dataset.coverartOption || "");
+          coverartMenu.classList.remove("open");
+          coverartMenu.style.removeProperty("--menu-shift-x");
+          coverartMenu.style.removeProperty("--menu-shift-y");
+        });
+      }
       if (limboUrlInput && limboControl) {
         limboUrlInput.addEventListener("focus", () => {
           if (limboUrlInput.readOnly) {
@@ -3848,6 +3956,10 @@
           upscaleRaw === "true" || upscaleRaw === "1" || upscaleRaw === "yes";
         appleMusicUpscaleInput.checked = enabled;
       }
+      if (coverartSizeInput && servicesList) {
+        const storedSize = servicesList.dataset.serviceCoverartSize || "";
+        setCoverartSize(storedSize, { updateDataset: false });
+      }
       const serviceCatalog = [
         { id: "apple", label: "APPLE MUSIC", modal: "apple-music-settings" },
         { id: "coverart", label: "COVER ART ARCHIVE" },
@@ -3902,6 +4014,7 @@
           tidalPassword: tidalUserPasswordInput?.value || "",
           appleMax: appleMusicMaxInput?.value || "",
           appleUpscale: appleMusicUpscaleInput?.checked || false,
+          coverartSize: servicesList?.dataset.serviceCoverartSize || "",
         };
         settingsRestoreEnabled = true;
       };
@@ -3949,6 +4062,11 @@
           appleMusicMaxInput.value = settingsSnapshot.appleMax;
         if (appleMusicUpscaleInput)
           appleMusicUpscaleInput.checked = settingsSnapshot.appleUpscale;
+        if (coverartSizeInput) {
+          setCoverartSize(settingsSnapshot.coverartSize, {
+            updateDataset: true,
+          });
+        }
         if (servicesList) {
           Object.entries(settingsSnapshot.servicesDataset || {}).forEach(
             ([key, value]) => {
@@ -4011,6 +4129,14 @@
         }
         if (id === "apple") {
           return Boolean((appleMusicMaxInput?.value || "").trim());
+        }
+        if (id === "coverart") {
+          return Boolean(
+            (servicesList?.dataset.serviceCoverartSize || "").trim(),
+          );
+        }
+        if (id === "musicbrainz") {
+          return true;
         }
         return false;
       };
@@ -4310,7 +4436,7 @@
 
       if (serviceMenuOptions.length) {
         serviceMenuOptions.forEach((option) => {
-          option.addEventListener("click", (event) => {
+          option.addEventListener("click", async (event) => {
             event.stopPropagation();
             const id = option.dataset.serviceOption;
             if (!id) {
@@ -4319,7 +4445,15 @@
             if (serviceMenu) {
               serviceMenu.classList.remove("open");
             }
-            openServiceModal(id);
+            const entry = serviceCatalog.find((item) => item.id === id);
+            if (entry?.modal) {
+              openServiceModal(id);
+              return;
+            }
+            const ok = await saveService(id, {}, id);
+            if (ok) {
+              clearServiceSelection();
+            }
           });
         });
       }
@@ -4380,6 +4514,12 @@
             if (id === "apple") {
               if (appleMusicMaxInput) appleMusicMaxInput.value = "";
               if (appleMusicUpscaleInput) appleMusicUpscaleInput.checked = false;
+            }
+            if (id === "coverart") {
+              setCoverartSize("original");
+              if (servicesList) {
+                servicesList.dataset.serviceCoverartSize = "";
+              }
             }
             setServiceEnabled(id, false);
             renderServiceList();
@@ -4479,6 +4619,25 @@
           if (ok) {
             disableModalRestore("apple-music-settings");
             closeModal(getModalById("apple-music-settings"));
+          }
+        });
+      }
+      if (coverartSaveButton) {
+        coverartSaveButton.addEventListener("click", async () => {
+          const sizeValue = normalizeCoverartSize(
+            servicesList?.dataset.serviceCoverartSize ||
+              coverartSizeInput?.value ||
+              "",
+          );
+          setCoverartSize(sizeValue);
+          const ok = await saveService(
+            "coverart",
+            { coverart_size: sizeValue },
+            "coverart",
+          );
+          if (ok) {
+            disableModalRestore("coverart-settings");
+            closeModal(getModalById("coverart-settings"));
           }
         });
       }

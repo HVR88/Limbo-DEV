@@ -114,12 +114,14 @@ def register_config_routes() -> None:
                     root_patch.set_tadb_key(tadb_key)
                 if "lastfm_key" in payload:
                     root_patch.set_lastfm_key(lastfm_key)
-                if "lastfm_secret" in payload:
-                    root_patch.set_lastfm_secret(lastfm_secret)
-                if "discogs_key" in payload:
-                    root_patch.set_discogs_key(discogs_key)
-                if lidarr_version:
-                    root_patch.set_lidarr_version(lidarr_version)
+            if "lastfm_secret" in payload:
+                root_patch.set_lastfm_secret(lastfm_secret)
+            if "discogs_key" in payload:
+                root_patch.set_discogs_key(discogs_key)
+            if "coverart_size" in payload:
+                root_patch.set_coverart_size(str(payload.get("coverart_size") or "").strip())
+            if lidarr_version:
+                root_patch.set_lidarr_version(lidarr_version)
             return jsonify(
                 {
                     "ok": True,
@@ -197,6 +199,23 @@ def register_config_routes() -> None:
             root_patch.set_discogs_enabled(True)
             return jsonify({"ok": True})
 
+    if "/config/coverart-settings" not in existing_rules:
+        @upstream_app.app.route("/config/coverart-settings", methods=["POST"])
+        async def _limbo_coverart_settings():
+            payload = await request.get_json(silent=True) or {}
+            if not isinstance(payload, dict):
+                payload = {}
+            size_value = str(payload.get("coverart_size") or "").strip().lower()
+            root_patch.set_coverart_size(size_value)
+            root_patch.set_coverart_enabled(True)
+            return jsonify({"ok": True})
+
+    if "/config/musicbrainz-settings" not in existing_rules:
+        @upstream_app.app.route("/config/musicbrainz-settings", methods=["POST"])
+        async def _limbo_musicbrainz_settings():
+            root_patch.set_musicbrainz_enabled(True)
+            return jsonify({"ok": True})
+
     if "/config/lastfm-settings" not in existing_rules:
         @upstream_app.app.route("/config/lastfm-settings", methods=["POST"])
         async def _limbo_lastfm_settings():
@@ -254,6 +273,11 @@ def register_config_routes() -> None:
                 root_patch.set_apple_music_max_image_size("")
                 root_patch.set_apple_music_allow_upscale(False)
                 root_patch.set_apple_music_enabled(False)
+            elif provider == "coverart":
+                root_patch.set_coverart_size("")
+                root_patch.set_coverart_enabled(False)
+            elif provider == "musicbrainz":
+                root_patch.set_musicbrainz_enabled(False)
             else:
                 return jsonify({"ok": False, "error": "Unknown provider."}), 400
             return jsonify({"ok": True})
