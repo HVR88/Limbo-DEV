@@ -314,6 +314,29 @@
               data-service-coverart-size="__COVERART_SIZE__"
               data-service-musicbrainz="__MUSICBRAINZ_ENABLED__"
             ></div>
+            </div>
+            <div class="settings-tab-panel" data-tab-panel="priorities">
+              <div
+                class="settings-list"
+                data-services-priority
+                data-service-fanart="__FANART_ENABLED__"
+                data-service-tadb="__TADB_ENABLED__"
+                data-service-lastfm="__LASTFM_ENABLED__"
+                data-service-discogs="__DISCOGS_ENABLED__"
+                data-service-tidal="__TIDAL_ENABLED__"
+                data-service-apple="__APPLE_MUSIC_ENABLED__"
+                data-service-tidal-user="__TIDAL_USER__"
+                data-service-fanart-key="__FANART_KEY__"
+                data-service-tadb-key="__TADB_KEY__"
+              data-service-lastfm-key="__LASTFM_KEY__"
+              data-service-lastfm-secret="__LASTFM_SECRET__"
+              data-service-discogs-key="__DISCOGS_KEY__"
+              data-service-apple-max="__APPLE_MUSIC_MAX_IMAGE_SIZE__"
+              data-service-apple-upscale="__APPLE_MUSIC_ALLOW_UPSCALE__"
+              data-service-coverart="__COVERART_ENABLED__"
+              data-service-coverart-size="__COVERART_SIZE__"
+              data-service-musicbrainz="__MUSICBRAINZ_ENABLED__"
+            ></div>
               <div class="settings-list__actions">
                 <button
                   class="modal-link modal-link-text"
@@ -361,83 +384,6 @@
                   class="modal-link modal-link-text settings-list__test-toggle"
                   type="button"
                   data-service-test
-                >
-                  TEST
-                </button>
-              </div>
-            </div>
-            <div class="settings-tab-panel" data-tab-panel="priorities">
-              <div
-                class="settings-list"
-                data-services-priority
-                data-service-fanart="__FANART_ENABLED__"
-                data-service-tadb="__TADB_ENABLED__"
-                data-service-lastfm="__LASTFM_ENABLED__"
-                data-service-discogs="__DISCOGS_ENABLED__"
-                data-service-tidal="__TIDAL_ENABLED__"
-                data-service-apple="__APPLE_MUSIC_ENABLED__"
-                data-service-tidal-user="__TIDAL_USER__"
-                data-service-fanart-key="__FANART_KEY__"
-                data-service-tadb-key="__TADB_KEY__"
-              data-service-lastfm-key="__LASTFM_KEY__"
-              data-service-lastfm-secret="__LASTFM_SECRET__"
-              data-service-discogs-key="__DISCOGS_KEY__"
-              data-service-apple-max="__APPLE_MUSIC_MAX_IMAGE_SIZE__"
-              data-service-apple-upscale="__APPLE_MUSIC_ALLOW_UPSCALE__"
-              data-service-coverart="__COVERART_ENABLED__"
-              data-service-coverart-size="__COVERART_SIZE__"
-              data-service-musicbrainz="__MUSICBRAINZ_ENABLED__"
-            ></div>
-              <div class="settings-list__actions">
-                <button
-                  class="modal-link modal-link-text"
-                  type="button"
-                  data-service-priority-remove
-                >
-                  <span class="settings-list__symbol settings-list__symbol--minus">-</span>
-                </button>
-                <div class="settings-list__menu-wrap">
-                  <button
-                    class="modal-link modal-link-text"
-                    type="button"
-                    data-service-priority-add
-                  >
-                    <span class="settings-list__symbol">+</span>
-                  </button>
-                  <div
-                    class="config-menu settings-list__menu"
-                    data-service-priority-menu
-                  >
-                    <button type="button" data-service-priority-option="coverart">
-                      COVER ART ARCHIVE
-                    </button>
-                    <button type="button" data-service-priority-option="musicbrainz">
-                      MUSICBRAINZ
-                    </button>
-                    <button type="button" data-service-priority-option="apple">
-                      APPLE MUSIC
-                    </button>
-                    <button type="button" data-service-priority-option="discogs">
-                      DISCOGS
-                    </button>
-                    <button type="button" data-service-priority-option="fanart">
-                      FANART.TV
-                    </button>
-                    <button type="button" data-service-priority-option="lastfm">
-                      LAST.FM
-                    </button>
-                    <button type="button" data-service-priority-option="tadb">
-                      THE AUDIODB
-                    </button>
-                    <button type="button" data-service-priority-option="tidal">
-                      TIDAL
-                    </button>
-                  </div>
-                </div>
-                <button
-                  class="modal-link modal-link-text settings-list__test-toggle"
-                  type="button"
-                  data-service-priority-test
                 >
                   TEST
                 </button>
@@ -1400,7 +1346,7 @@
       const coverartSaveButton = document.querySelector("[data-coverart-save]");
       const servicesList = document.querySelector("[data-services]");
       const servicesPriorityList = document.querySelector("[data-services-priority]");
-      const serviceRemoveButton = document.querySelector("[data-service-remove]");
+      let serviceRemoveButton = document.querySelector("[data-service-remove]");
       let settingsSnapshot = null;
       let settingsRestoreEnabled = false;
 
@@ -4016,8 +3962,8 @@
       }
 
       const settingsTabsRoot = document.querySelector("[data-settings-tabs]");
-      const serviceAddButton = document.querySelector("[data-service-add]");
-      const serviceMenu = document.querySelector("[data-service-menu]");
+      let serviceAddButton = document.querySelector("[data-service-add]");
+      let serviceMenu = document.querySelector("[data-service-menu]");
       if (settingsTabsRoot) {
         const settingsButtons = Array.from(
           settingsTabsRoot.querySelectorAll("[data-tab]"),
