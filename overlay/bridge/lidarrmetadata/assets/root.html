@@ -1933,12 +1933,24 @@
           if (!response.ok || !data.ok) {
             return;
           }
-              (data.mbid_valid || []).forEach((mbid) => {
-                refreshTokenState.set(
-                  `mbid:${String(mbid).toLowerCase()}`,
-                  "valid",
-                );
-              });
+          (data.mbid_valid || []).forEach((mbid) => {
+            refreshTokenState.set(
+              `mbid:${String(mbid).toLowerCase()}`,
+              "valid",
+            );
+          });
+          const mbidValidSet = new Set(
+            (data.mbid_valid || []).map((mbid) => String(mbid).toLowerCase()),
+          );
+          const mbidInvalidSet = new Set(
+            (data.mbid_invalid || []).map((mbid) => String(mbid).toLowerCase()),
+          );
+          const lidarrValidSet = new Set(
+            (data.lidarr_valid || []).map((value) => String(value)),
+          );
+          const lidarrInvalidSet = new Set(
+            (data.lidarr_invalid || []).map((value) => String(value)),
+          );
           (data.mbid_artist_valid || []).forEach((mbid) => {
             refreshTokenKind.set(`mbid:${String(mbid).toLowerCase()}`, "artist");
           });
@@ -1957,6 +1969,17 @@
           });
           (data.lidarr_invalid || []).forEach((value) => {
             refreshTokenState.set(`lidarr:${value}`, "invalid");
+          });
+          const currentSets = getTokenSets();
+          currentSets.mbids.forEach((mbid) => {
+            if (!mbidValidSet.has(mbid) && !mbidInvalidSet.has(mbid)) {
+              refreshTokenState.set(`mbid:${mbid}`, "invalid");
+            }
+          });
+          currentSets.lidarrIds.forEach((value) => {
+            if (!lidarrValidSet.has(value) && !lidarrInvalidSet.has(value)) {
+              refreshTokenState.set(`lidarr:${value}`, "invalid");
+            }
           });
           updateTokenClasses();
           updateRefreshStatus();
