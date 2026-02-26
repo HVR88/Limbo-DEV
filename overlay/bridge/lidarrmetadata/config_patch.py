@@ -871,7 +871,7 @@ def _parse_mbid_list(values) -> List[str]:
         values = [v for v in values.replace(",", " ").split(" ") if v]
     out: List[str] = []
     for value in values:
-        text = str(value).strip()
+        text = str(value).strip().lower()
         if text:
             out.append(text)
     return out
