@@ -492,8 +492,21 @@
               data-placeholder="Paste artist or release IDs, MBIDs, Lidarr or MusicBrainz URLs here..."
             ></div>
           </div>
-          <div class="refresh-status" data-refresh-status></div>
           <div class="refresh-modal__actions">
+            <div class="refresh-status" data-refresh-status>
+              <span class="refresh-status__item">
+                Artists:
+                <span class="refresh-status__count" data-refresh-count-artist>0</span>
+              </span>
+              <span class="refresh-status__item">
+                Releases:
+                <span class="refresh-status__count" data-refresh-count-release>0</span>
+              </span>
+              <span class="refresh-status__item">
+                Invalid:
+                <span class="refresh-status__count" data-refresh-count-invalid>0</span>
+              </span>
+            </div>
             <button
               class="modal-link modal-link-text modal-link-cancel"
               type="button"
@@ -1220,6 +1233,15 @@
         "[data-refresh-debug-body]",
       );
       const refreshStatus = document.querySelector("[data-refresh-status]");
+      const refreshArtistCount = document.querySelector(
+        "[data-refresh-count-artist]",
+      );
+      const refreshReleaseCount = document.querySelector(
+        "[data-refresh-count-release]",
+      );
+      const refreshInvalidCount = document.querySelector(
+        "[data-refresh-count-invalid]",
+      );
       const refreshModal = document.querySelector(
         '[data-modal="refresh-modal"]',
       );
@@ -1348,6 +1370,7 @@
       const tokenRegex =
         /[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}|\b[0-9]{2,12}\b/g;
       const refreshTokenState = new Map();
+      const refreshTokenKind = new Map();
       let refreshValidateTimer = null;
       let refreshValidateController = null;
       let refreshInputGuard = false;
@@ -1604,27 +1627,45 @@
         }
         const tokens = getEditorTokens();
         if (!tokens.length) {
-          refreshStatus.textContent = "";
+          if (refreshArtistCount) {
+            refreshArtistCount.textContent = "0";
+          }
+          if (refreshReleaseCount) {
+            refreshReleaseCount.textContent = "0";
+          }
+          if (refreshInvalidCount) {
+            refreshInvalidCount.textContent = "0";
+          }
           return;
         }
         let valid = 0;
         let invalid = 0;
-        let pending = 0;
+        let artistValid = 0;
+        let releaseValid = 0;
         tokens.forEach((token) => {
           const key = getTokenKey(token);
           const status = refreshTokenState.get(key) || "pending";
           if (status === "valid") {
             valid += 1;
+            const kind = refreshTokenKind.get(key);
+            if (kind === "artist") {
+              artistValid += 1;
+            } else if (kind === "release") {
+              releaseValid += 1;
+            }
           } else if (status === "invalid") {
             invalid += 1;
-          } else {
-            pending += 1;
           }
         });
-        refreshStatus.innerHTML =
-          `VALID <span class="refresh-status__count">${valid}</span>` +
-          ` INVALID <span class="refresh-status__count">${invalid}</span>` +
-          ` PENDING <span class="refresh-status__count">${pending}</span>`;
+        if (refreshArtistCount) {
+          refreshArtistCount.textContent = String(artistValid);
+        }
+        if (refreshReleaseCount) {
+          refreshReleaseCount.textContent = String(releaseValid);
+        }
+        if (refreshInvalidCount) {
+          refreshInvalidCount.textContent = String(invalid);
+        }
       };
 
       const statusClassForToken = (token) => {
@@ -1933,6 +1974,12 @@
               "valid",
             );
           });
+          (data.mbid_artist_valid || []).forEach((mbid) => {
+            refreshTokenKind.set(`mbid:${String(mbid).toLowerCase()}`, "artist");
+          });
+          (data.mbid_album_valid || []).forEach((mbid) => {
+            refreshTokenKind.set(`mbid:${String(mbid).toLowerCase()}`, "release");
+          });
           (data.mbid_invalid || []).forEach((mbid) => {
             refreshTokenState.set(
               `mbid:${String(mbid).toLowerCase()}`,
@@ -1941,6 +1988,7 @@
           });
           (data.lidarr_valid || []).forEach((value) => {
             refreshTokenState.set(`lidarr:${value}`, "valid");
+            refreshTokenKind.set(`lidarr:${value}`, "release");
           });
           (data.lidarr_invalid || []).forEach((value) => {
             refreshTokenState.set(`lidarr:${value}`, "invalid");
@@ -1980,6 +2028,7 @@
         Array.from(refreshTokenState.keys()).forEach((key) => {
           if (!liveKeys.has(key)) {
             refreshTokenState.delete(key);
+            refreshTokenKind.delete(key);
           }
         });
         updateTokenClasses();

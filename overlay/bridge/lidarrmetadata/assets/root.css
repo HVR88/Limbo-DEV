@@ -1097,18 +1097,29 @@ body[data-theme="dark"] .corner-button__inner {
   width: 100%;
   margin-top: 22px;
   align-self: end;
+  align-items: center;
 }
 .refresh-status {
+  margin-right: auto;
   display: flex;
-  gap: 16px;
+  gap: 28px;
   align-items: center;
   font-size: 12px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
 }
+.refresh-status__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-variant-numeric: tabular-nums;
+}
 .refresh-status__count {
   color: var(--text);
+  min-width: 4ch;
+  display: inline-block;
+  text-align: right;
 }
 .refresh-debug {
   width: 100%;

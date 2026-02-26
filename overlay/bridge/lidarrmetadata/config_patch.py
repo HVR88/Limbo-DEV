@@ -480,6 +480,8 @@ def register_config_routes() -> None:
                 return jsonify({"ok": False, "error": "Missing Lidarr base URL or API key."}), 400
 
             mbid_valid: List[str] = []
+            mbid_artist_valid: List[str] = []
+            mbid_album_valid: List[str] = []
             mbid_invalid: List[str] = []
             lidarr_valid: List[int] = []
             lidarr_invalid: List[int] = []
@@ -502,6 +504,7 @@ def register_config_routes() -> None:
                                     artist_data = await resp.json()
                                     if artist_data:
                                         mbid_valid.append(mbid)
+                                        mbid_artist_valid.append(mbid)
                                         add_debug("  -> valid (artist/search)")
                                         return
                                 else:
@@ -512,28 +515,10 @@ def register_config_routes() -> None:
                                 errors.append(f"Artist MBID {mbid}: {message}")
                                 add_debug(f"  artist/search error={message}")
 
-                        album_id_url = base_url.rstrip("/") + f"/api/v1/album/{mbid}"
-                        try:
-                            async with session.get(album_id_url, headers=headers) as resp:
-                                add_debug(f"  album/id status={resp.status}")
-                                if resp.status == 200:
-                                    mbid_valid.append(mbid)
-                                    add_debug("  -> valid (album/id)")
-                                    return
-                                if resp.status not in {404, 400}:
-                                    errors.append(f"MBID {mbid}: status {resp.status}")
-                        except Exception as exc:
-                            message = str(exc).strip()
-                            if message:
-                                errors.append(f"MBID {mbid}: {message}")
-                                add_debug(f"  album/id error={message}")
-
                         album_data = None
                         album_error = None
                         for params in (
                             {"foreignAlbumId": mbid},
-                            {"mbid": mbid},
-                            {"mbId": mbid},
                         ):
                             try:
                                 async with session.get(album_url, headers=headers, params=params) as resp:
@@ -556,6 +541,7 @@ def register_config_routes() -> None:
                                 break
                         if album_data:
                             mbid_valid.append(mbid)
+                            mbid_album_valid.append(mbid)
                             add_debug("  -> valid (album/search)")
                             return
                         if album_error:
@@ -586,6 +572,8 @@ def register_config_routes() -> None:
                 {
                     "ok": True,
                     "mbid_valid": sorted(set(mbid_valid)),
+                    "mbid_artist_valid": sorted(set(mbid_artist_valid)),
+                    "mbid_album_valid": sorted(set(mbid_album_valid)),
                     "mbid_invalid": sorted(set(mbid_invalid)),
                     "lidarr_valid": sorted(set(lidarr_valid)),
                     "lidarr_invalid": sorted(set(lidarr_invalid)),
