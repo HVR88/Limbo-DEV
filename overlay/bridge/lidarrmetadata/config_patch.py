@@ -475,12 +475,10 @@ async def _update_lidarr_metadata_source(
     except Exception as exc:
         return False, f"{exc}"
 
-    if "/config/refresh-releases" not in existing_rules:
-        @upstream_app.app.route("/config/refresh-releases", methods=["POST"])
-        async def _limbo_refresh_releases():
-            payload = await request.get_json(silent=True) or {}
-            lidarr_ids = _parse_int_list(payload.get("lidarr_ids") or payload.get("lidarrIds"))
-            mbids = _parse_mbid_list(payload.get("mbids") or payload.get("mbid") or payload.get("foreignAlbumIds"))
+    async def _limbo_refresh_releases():
+        payload = await request.get_json(silent=True) or {}
+        lidarr_ids = _parse_int_list(payload.get("lidarr_ids") or payload.get("lidarrIds"))
+        mbids = _parse_mbid_list(payload.get("mbids") or payload.get("mbid") or payload.get("foreignAlbumIds"))
 
             base_url = root_patch.get_lidarr_base_url()
             api_key = root_patch.get_lidarr_api_key()
@@ -590,14 +588,21 @@ async def _update_lidarr_metadata_source(
                 }
             )
 
-    if "/config/validate-ids" not in existing_rules:
-        @upstream_app.app.route("/config/validate-ids", methods=["POST"])
-        async def _limbo_validate_ids():
-            payload = await request.get_json(silent=True) or {}
-            lidarr_ids = _parse_int_list(payload.get("lidarr_ids") or payload.get("lidarrIds"))
-            mbids = _parse_mbid_list(payload.get("mbids") or payload.get("mbid") or payload.get("foreignAlbumIds"))
-            debug_enabled = _is_truthy(payload.get("debug"))
-            debug_lines: List[str] = []
+    try:
+        upstream_app.app.add_url_rule(
+            "/config/refresh-releases",
+            view_func=_limbo_refresh_releases,
+            methods=["POST"],
+        )
+    except AssertionError:
+        pass
+
+    async def _limbo_validate_ids():
+        payload = await request.get_json(silent=True) or {}
+        lidarr_ids = _parse_int_list(payload.get("lidarr_ids") or payload.get("lidarrIds"))
+        mbids = _parse_mbid_list(payload.get("mbids") or payload.get("mbid") or payload.get("foreignAlbumIds"))
+        debug_enabled = _is_truthy(payload.get("debug"))
+        debug_lines: List[str] = []
 
             def add_debug(line: str) -> None:
                 if debug_enabled:
@@ -710,6 +715,15 @@ async def _update_lidarr_metadata_source(
                     **({"debug": debug_lines} if debug_enabled else {}),
                 }
             )
+
+    try:
+        upstream_app.app.add_url_rule(
+            "/config/validate-ids",
+            view_func=_limbo_validate_ids,
+            methods=["POST"],
+        )
+    except AssertionError:
+        pass
 
 
 def _is_truthy(value) -> bool:
