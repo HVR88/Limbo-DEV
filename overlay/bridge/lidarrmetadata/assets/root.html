@@ -312,9 +312,10 @@
               data-service-plex="__PLEX_ENABLED__"
               data-service-apple-max="__APPLE_MUSIC_MAX_IMAGE_SIZE__"
               data-service-apple-upscale="__APPLE_MUSIC_ALLOW_UPSCALE__"
-              data-service-coverart="__COVERART_ENABLED__"
-              data-service-coverart-size="__COVERART_SIZE__"
-              data-service-musicbrainz="__MUSICBRAINZ_ENABLED__"
+                data-service-coverart="__COVERART_ENABLED__"
+                data-service-coverart-size="__COVERART_SIZE__"
+                data-service-musicbrainz="__MUSICBRAINZ_ENABLED__"
+                data-service-wikipedia="__WIKIPEDIA_ENABLED__"
             ></div>
             </div>
             <div class="settings-tab-panel" data-tab-panel="priorities">
@@ -395,6 +396,9 @@
                     </button>
                     <button type="button" data-service-priority-option="musicbrainz">
                       MUSICBRAINZ
+                    </button>
+                    <button type="button" data-service-priority-option="wikipedia">
+                      WIKIPEDIA
                     </button>
                     <button type="button" data-service-priority-option="apple">
                       APPLE MUSIC
@@ -926,6 +930,29 @@
         </div>
       </div>
     </div>
+    <div class="modal settings-modal service-modal" data-modal="wikipedia-settings" aria-hidden="true">
+      <div class="modal__backdrop" data-modal-backdrop></div>
+      <div class="modal__panel settings-modal__panel" role="dialog" aria-modal="true" aria-label="Wikipedia Settings">
+        <button class="modal__esc-hint" type="button" data-modal-close>esc</button>
+        <div class="settings-modal__content">
+          <h2 class="settings-modal__title">Wikipedia</h2>
+          <div class="settings-field">
+            <label class="settings-field__label">Artist Overviews</label>
+            <div class="settings-field__value">Summaries are fetched from Wikipedia or Wikidata when available.</div>
+          </div>
+          <div class="settings-field">
+            <label class="settings-field__label">Web UI</label>
+            <div class="settings-field__value">
+              <a class="config-link" href="__WIKIPEDIA_UI_URL__" target="_blank" rel="noopener">Open Wikipedia</a>
+            </div>
+          </div>
+          <div class="refresh-modal__actions">
+            <button class="modal-link modal-link-text modal-link-cancel" type="button" data-modal-close>CANCEL</button>
+            <button class="modal-link modal-link-text" type="button" data-wikipedia-save>SAVE</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="modal settings-modal service-modal" data-modal="plex-settings" aria-hidden="true">
       <div class="modal__backdrop" data-modal-backdrop></div>
       <div class="modal__panel settings-modal__panel" role="dialog" aria-modal="true" aria-label="Plex Settings">
@@ -1431,6 +1458,7 @@
       const appleMusicSaveButton = document.querySelector("[data-apple-music-save]");
       const coverartSaveButton = document.querySelector("[data-coverart-save]");
       const plexSaveButton = document.querySelector("[data-plex-save]");
+      const wikipediaSaveButton = document.querySelector("[data-wikipedia-save]");
       const servicesList = document.querySelector("[data-services]");
       const servicesPriorityList = document.querySelector("[data-services-priority]");
       const priorityAddButton = document.querySelector(
@@ -1462,6 +1490,22 @@
       );
       let settingsSnapshot = null;
       let settingsRestoreEnabled = false;
+      const resolveProviderId = (id) => {
+        const map = {
+          coverart: "cover_art_archive",
+          apple: "apple_music",
+          tadb: "theaudiodb",
+        };
+        return map[id] || id;
+      };
+      const getProviderMeta = (id) => {
+        const lookup = resolveProviderId(id);
+        return (
+          providerCapabilities.find((entry) => entry.id === lookup) ||
+          providerCapabilities.find((entry) => entry.id === id) ||
+          { lock_status: "none", lock_warning: "" }
+        );
+      };
 
       const applyInputSanitizers = () => {
         if (lidarrUrlInput) {
@@ -4215,6 +4259,7 @@
         { id: "fanart", label: "FANART.TV", modal: "fanart-settings" },
         { id: "lastfm", label: "LAST.FM", modal: "lastfm-settings" },
         { id: "musicbrainz", label: "MUSICBRAINZ", modal: "musicbrainz-settings" },
+        { id: "wikipedia", label: "WIKIPEDIA", modal: "wikipedia-settings" },
         { id: "tadb", label: "THE AUDIODB", modal: "tadb-settings" },
         { id: "plex", label: "PLEX", modal: "plex-settings" },
         { id: "tidal", label: "TIDAL", modal: "tidal-settings" },
@@ -4393,6 +4438,9 @@
         if (id === "musicbrainz") {
           return true;
         }
+        if (id === "wikipedia") {
+          return true;
+        }
         if (id === "plex") {
           return true;
         }
@@ -4429,8 +4477,7 @@
           label.textContent = item.label;
           const isEnabled = getServiceEnabled(item.id);
           row.classList.toggle("selected", isEnabled);
-          const toggleEnabled = () => {
-            const nextEnabled = !getServiceEnabled(item.id);
+          const applyToggle = (nextEnabled) => {
             setServiceEnabled(item.id, nextEnabled);
             row.classList.toggle("selected", nextEnabled);
             if (!nextEnabled && !isLocalPreview) {
@@ -4440,6 +4487,26 @@
                 body: JSON.stringify({ provider: item.id }),
               }).catch(() => {});
             }
+          };
+          const toggleEnabled = () => {
+            const nextEnabled = !getServiceEnabled(item.id);
+            if (!nextEnabled) {
+              const provider = getProviderMeta(item.id);
+              const lockStatus = provider.lock_status || "none";
+              if (lockStatus === "hard") {
+                suppressHover();
+                openInfo("This provider is required and cannot be disabled.");
+                return;
+              }
+              if (lockStatus === "soft") {
+                const warning =
+                  provider.lock_warning ||
+                  `Disable ${item.label}?`;
+                openConfirm(warning, () => applyToggle(false));
+                return;
+              }
+            }
+            applyToggle(nextEnabled);
           };
           row.appendChild(label);
           const handle = document.createElement("span");
@@ -4559,7 +4626,22 @@
         let dragSuppressClick = false;
         const configuredIds = serviceCatalog
           .filter((item) => isServiceConfigured(item.id))
-          .map((item) => item.id);
+          .map((item) => item.id)
+          .filter((id) => {
+            const requiredCaps = priorityTypeCapabilityMap[priorityType] || [];
+            const allowIds = priorityTypeAllowList[priorityType] || [];
+            const lookupId = resolveProviderId(id);
+            const provider =
+              providerCapabilities.find((entry) => entry.id === lookupId) ||
+              providerCapabilities.find((entry) => entry.id === id);
+            const caps = provider?.capabilities || [];
+            const supportsType = allowIds.includes(id)
+              ? true
+              : requiredCaps.length
+                ? requiredCaps.some((cap) => caps.includes(cap))
+                : true;
+            return supportsType;
+          });
         const order = getServicePriorityOrder();
         const orderedIds = order.filter((id) => configuredIds.includes(id));
         configuredIds.forEach((id) => {
@@ -5067,6 +5149,15 @@
           if (ok) {
             disableModalRestore("plex-settings");
             closeModal(getModalById("plex-settings"));
+          }
+        });
+      }
+      if (wikipediaSaveButton) {
+        wikipediaSaveButton.addEventListener("click", async () => {
+          const ok = await saveService("wikipedia", {}, "wikipedia");
+          if (ok) {
+            disableModalRestore("wikipedia-settings");
+            closeModal(getModalById("wikipedia-settings"));
           }
         });
       }

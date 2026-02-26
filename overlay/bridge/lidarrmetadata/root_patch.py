@@ -66,6 +66,7 @@ _APPLE_MUSIC_ALLOW_UPSCALE: Optional[bool] = None
 _COVERART_ENABLED: Optional[bool] = None
 _COVERART_SIZE: Optional[str] = None
 _MUSICBRAINZ_ENABLED: Optional[bool] = None
+_WIKIPEDIA_ENABLED: Optional[bool] = None
 _REFRESH_RESOLVE_NAMES: Optional[bool] = None
 _GITHUB_RELEASE_CACHE: Dict[str, Tuple[float, Optional[str]]] = {}
 _GITHUB_RELEASE_CACHE_TTL = 300.0
@@ -233,37 +234,56 @@ def _load_lidarr_settings() -> None:
     global _FANART_ENABLED, _TADB_ENABLED, _LASTFM_ENABLED
     global _TIDAL_ENABLED, _DISCOGS_ENABLED, _APPLE_MUSIC_ENABLED, _PLEX_ENABLED
     global _APPLE_MUSIC_MAX_IMAGE_SIZE, _APPLE_MUSIC_ALLOW_UPSCALE
-    global _COVERART_ENABLED, _COVERART_SIZE, _MUSICBRAINZ_ENABLED
+    global _COVERART_ENABLED, _COVERART_SIZE, _MUSICBRAINZ_ENABLED, _WIKIPEDIA_ENABLED
     global _REFRESH_RESOLVE_NAMES
     try:
         data = json.loads(_SETTINGS_FILE.read_text(encoding="utf-8"))
     except Exception:
+        fanart_env = str(os.getenv("FANART_KEY") or "").strip()
+        tadb_env = str(os.getenv("TADB_KEY") or "").strip()
+        lastfm_env = str(os.getenv("LASTFM_KEY") or "").strip()
+        lastfm_secret_env = str(os.getenv("LASTFM_SECRET") or "").strip()
+        tidal_client_id_env = str(os.getenv("TIDAL_CLIENT_ID") or "").strip()
+        tidal_client_secret_env = str(os.getenv("TIDAL_CLIENT_SECRET") or "").strip()
+        tidal_country_code_env = str(os.getenv("TIDAL_COUNTRY_CODE") or "").strip()
+        tidal_user_env = str(os.getenv("TIDAL_USER") or "").strip()
+        tidal_user_password_env = str(os.getenv("TIDAL_USER_PASSWORD") or "").strip()
+        discogs_env = str(os.getenv("DISCOGS_KEY") or "").strip()
+        plex_url_env = str(os.getenv("PLEX_URL") or "").strip()
+        plex_token_env = str(os.getenv("PLEX_TOKEN") or "").strip()
         _LIDARR_BASE_URL = ""
         _LIDARR_API_KEY = ""
         _LIMBO_URL_MODE = "auto-referrer"
         _LIMBO_URL_CUSTOM = ""
-        _FANART_KEY = ""
-        _TADB_KEY = ""
-        _LASTFM_KEY = ""
-        _LASTFM_SECRET = ""
-        _TIDAL_CLIENT_ID = ""
-        _TIDAL_CLIENT_SECRET = ""
-        _TIDAL_COUNTRY_CODE = ""
-        _TIDAL_USER = ""
-        _TIDAL_USER_PASSWORD = ""
-        _DISCOGS_KEY = ""
-        _FANART_ENABLED = True
-        _TADB_ENABLED = True
-        _LASTFM_ENABLED = True
-        _TIDAL_ENABLED = True
-        _DISCOGS_ENABLED = True
-        _APPLE_MUSIC_ENABLED = False
-        _PLEX_ENABLED = False
+        _FANART_KEY = fanart_env
+        _TADB_KEY = tadb_env
+        _LASTFM_KEY = lastfm_env
+        _LASTFM_SECRET = lastfm_secret_env
+        _TIDAL_CLIENT_ID = tidal_client_id_env
+        _TIDAL_CLIENT_SECRET = tidal_client_secret_env
+        _TIDAL_COUNTRY_CODE = tidal_country_code_env
+        _TIDAL_USER = tidal_user_env
+        _TIDAL_USER_PASSWORD = tidal_user_password_env
+        _DISCOGS_KEY = discogs_env
+        _FANART_ENABLED = bool(fanart_env)
+        _TADB_ENABLED = bool(tadb_env)
+        _LASTFM_ENABLED = bool(lastfm_env or lastfm_secret_env)
+        _TIDAL_ENABLED = bool(
+            tidal_client_id_env
+            or tidal_client_secret_env
+            or tidal_country_code_env
+            or tidal_user_env
+            or tidal_user_password_env
+        )
+        _DISCOGS_ENABLED = bool(discogs_env)
+        _APPLE_MUSIC_ENABLED = True
+        _PLEX_ENABLED = bool(plex_url_env or plex_token_env)
         _APPLE_MUSIC_MAX_IMAGE_SIZE = "2500"
         _APPLE_MUSIC_ALLOW_UPSCALE = False
         _COVERART_ENABLED = True
         _COVERART_SIZE = "original"
         _MUSICBRAINZ_ENABLED = True
+        _WIKIPEDIA_ENABLED = True
         _REFRESH_RESOLVE_NAMES = True
         return
     _LIDARR_BASE_URL = str(data.get("lidarr_base_url") or "").strip()
@@ -323,10 +343,11 @@ def _load_lidarr_settings() -> None:
     _DISCOGS_ENABLED = _read_enabled_flag(
         data.get("discogs_enabled"), bool(discogs_env)
     )
-    _APPLE_MUSIC_ENABLED = _read_enabled_flag(data.get("apple_music_enabled"), False)
+    _APPLE_MUSIC_ENABLED = _read_enabled_flag(data.get("apple_music_enabled"), True)
     _PLEX_ENABLED = _read_enabled_flag(data.get("plex_enabled"), False)
     _COVERART_ENABLED = _read_enabled_flag(data.get("coverart_enabled"), True)
     _MUSICBRAINZ_ENABLED = _read_enabled_flag(data.get("musicbrainz_enabled"), True)
+    _WIKIPEDIA_ENABLED = _read_enabled_flag(data.get("wikipedia_enabled"), True)
     if _APPLE_MUSIC_ENABLED and not _APPLE_MUSIC_MAX_IMAGE_SIZE:
         _APPLE_MUSIC_MAX_IMAGE_SIZE = "2500"
     if _COVERART_ENABLED and not _COVERART_SIZE:
@@ -375,6 +396,7 @@ def _persist_lidarr_settings() -> None:
             "coverart_enabled": bool(_COVERART_ENABLED),
             "coverart_size": _COVERART_SIZE or "",
             "musicbrainz_enabled": bool(_MUSICBRAINZ_ENABLED),
+            "wikipedia_enabled": bool(_WIKIPEDIA_ENABLED),
             "refresh_resolve_names": bool(_REFRESH_RESOLVE_NAMES),
             "fanart_enabled": bool(_FANART_ENABLED),
             "tadb_enabled": bool(_TADB_ENABLED),
@@ -851,6 +873,21 @@ def _set_musicbrainz_enabled(value: bool, *, persist: bool) -> None:
 
 def get_musicbrainz_enabled() -> bool:
     return bool(_MUSICBRAINZ_ENABLED)
+
+
+def set_wikipedia_enabled(value: bool) -> None:
+    _set_wikipedia_enabled(value, persist=True)
+
+
+def _set_wikipedia_enabled(value: bool, *, persist: bool) -> None:
+    global _WIKIPEDIA_ENABLED
+    _WIKIPEDIA_ENABLED = bool(value)
+    if persist:
+        _persist_lidarr_settings()
+
+
+def get_wikipedia_enabled() -> bool:
+    return bool(_WIKIPEDIA_ENABLED)
 
 
 def set_plex_enabled(value: bool) -> None:
@@ -1666,6 +1703,7 @@ def register_root_route() -> None:
         musicbrainz_ui_url = (
             f"{base_path}/musicbrainz" if base_path else "/musicbrainz"
         )
+        wikipedia_ui_url = "https://www.wikipedia.org"
 
         def fmt_config_value(value: object, *, empty_label: str = "none") -> str:
             if value is None:
@@ -1821,6 +1859,7 @@ def register_root_route() -> None:
             "__COVERART_ENABLED__": "true" if get_coverart_enabled() else "false",
             "__COVERART_SIZE__": html.escape(get_coverart_size()),
             "__MUSICBRAINZ_ENABLED__": "true" if get_musicbrainz_enabled() else "false",
+            "__WIKIPEDIA_ENABLED__": "true" if get_wikipedia_enabled() else "false",
             "__MBMS_REPLICATION_SCHEDULE__": safe["mbms_replication_schedule"],
             "__MBMS_INDEX_SCHEDULE__": safe["mbms_index_schedule"],
             "__METADATA_VERSION__": safe["metadata_version"],
@@ -1835,6 +1874,7 @@ def register_root_route() -> None:
             "__REPLICATION_START_URL__": html.escape(replication_start_url),
             "__REPLICATION_STATUS_URL__": html.escape(replication_status_url),
             "__MUSICBRAINZ_UI_URL__": html.escape(musicbrainz_ui_url),
+            "__WIKIPEDIA_UI_URL__": html.escape(wikipedia_ui_url),
             "__REPLICATION_PILL_CLASS__": replication_pill_class,
             "__LIMBO_APIKEY__": html.escape(
                 upstream_app.app.config.get("LIMBO_APIKEY") or ""

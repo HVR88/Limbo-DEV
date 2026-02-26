@@ -15,6 +15,8 @@ PROVIDER_CAPABILITIES: Dict[str, Dict[str, Any]] = {
             "id_redirects",
             "spotify_mapping",
         ],
+        "lock_status": "hard",
+        "lock_warning": "",
         "auth": {"type": "none", "fields": []},
         "endpoints": {"base_url": "musicbrainz_db", "docs_url": ""},
         "moreinfo_url": "https://musicbrainz.org/",
@@ -27,6 +29,8 @@ PROVIDER_CAPABILITIES: Dict[str, Dict[str, Any]] = {
     "cover_art_archive": {
         "display_name": "Cover Art Archive",
         "capabilities": ["album_art"],
+        "lock_status": "soft",
+        "lock_warning": "Disabling Cover Art Archive will remove album artwork. Continue?",
         "auth": {"type": "none", "fields": []},
         "endpoints": {"base_url": "https://coverartarchive.org", "docs_url": ""},
         "moreinfo_url": "https://coverartarchive.org/",
@@ -128,6 +132,20 @@ PROVIDER_CAPABILITIES: Dict[str, Dict[str, Any]] = {
         "pricing": "free",
         "notes": "Top artists/albums only.",
     },
+    "wikipedia": {
+        "display_name": "Wikipedia",
+        "capabilities": ["artist_metadata", "artist_bio"],
+        "lock_status": "soft",
+        "lock_warning": "Disabling Wikipedia will remove artist summaries. Continue?",
+        "auth": {"type": "none", "fields": []},
+        "endpoints": {"base_url": "https://www.wikipedia.org", "docs_url": ""},
+        "moreinfo_url": "https://www.wikipedia.org/",
+        "rate_limit": {"requests_per_second": None, "requests_per_minute": None, "notes": "Best effort"},
+        "image_sizing": {"supports": False, "method": "", "original": "", "notes": ""},
+        "supports_cache": True,
+        "pricing": "free",
+        "notes": "Artist overview summaries via Wikipedia/Wikidata links.",
+    },
     "plex": {
         "display_name": "Plex",
         "capabilities": ["artist_metadata", "album_metadata", "artist_images", "album_art"],
@@ -144,4 +162,15 @@ PROVIDER_CAPABILITIES: Dict[str, Dict[str, Any]] = {
 
 
 def list_provider_capabilities() -> List[Dict[str, Any]]:
-    return [PROVIDER_CAPABILITIES[key] | {"id": key} for key in sorted(PROVIDER_CAPABILITIES)]
+    items: List[Dict[str, Any]] = []
+    for key in sorted(PROVIDER_CAPABILITIES):
+        provider = PROVIDER_CAPABILITIES[key]
+        items.append(
+            provider
+            | {
+                "id": key,
+                "lock_status": provider.get("lock_status", "none"),
+                "lock_warning": provider.get("lock_warning", ""),
+            }
+        )
+    return items

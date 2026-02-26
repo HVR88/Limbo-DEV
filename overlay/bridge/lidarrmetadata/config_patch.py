@@ -222,6 +222,12 @@ def register_config_routes() -> None:
             root_patch.set_plex_enabled(True)
             return jsonify({"ok": True})
 
+    if "/config/wikipedia-settings" not in existing_rules:
+        @upstream_app.app.route("/config/wikipedia-settings", methods=["POST"])
+        async def _limbo_wikipedia_settings():
+            root_patch.set_wikipedia_enabled(True)
+            return jsonify({"ok": True})
+
     if "/config/refresh-settings" not in existing_rules:
         @upstream_app.app.route("/config/refresh-settings", methods=["POST"])
         async def _limbo_refresh_settings():
@@ -270,12 +276,12 @@ def register_config_routes() -> None:
             elif provider == "tadb":
                 root_patch.set_tadb_key("")
                 root_patch.set_tadb_enabled(False)
-        elif provider == "discogs":
-            root_patch.set_discogs_key("")
-            root_patch.set_discogs_enabled(False)
-        elif provider == "plex":
-            root_patch.set_plex_enabled(False)
-        elif provider == "lastfm":
+            elif provider == "discogs":
+                root_patch.set_discogs_key("")
+                root_patch.set_discogs_enabled(False)
+            elif provider == "plex":
+                root_patch.set_plex_enabled(False)
+            elif provider == "lastfm":
                 root_patch.set_lastfm_key("")
                 root_patch.set_lastfm_secret("")
                 root_patch.set_lastfm_enabled(False)
@@ -295,6 +301,8 @@ def register_config_routes() -> None:
                 root_patch.set_coverart_enabled(False)
             elif provider == "musicbrainz":
                 root_patch.set_musicbrainz_enabled(False)
+            elif provider == "wikipedia":
+                root_patch.set_wikipedia_enabled(False)
             else:
                 return jsonify({"ok": False, "error": "Unknown provider."}), 400
             return jsonify({"ok": True})
