@@ -1352,6 +1352,8 @@
       let refreshInputGuard = false;
       let refreshValidationActive = false;
       let refreshValidationSeq = 0;
+      let refreshValidationKey = "";
+      const refreshValidationRetryKeys = new Set();
       let refreshWarmupOnLoadDone = false;
       let refreshWarmupOnOpenDone = false;
 
@@ -1694,6 +1696,12 @@
         return { mbids, lidarrIds };
       };
 
+      const getValidationKey = (mbids, lidarrIds) => {
+        const mbidList = Array.from(mbids || []).map(String).sort();
+        const lidarrList = Array.from(lidarrIds || []).map(String).sort();
+        return `${mbidList.join(",")}|${lidarrList.join(",")}`;
+      };
+
       const updateTokenClasses = () => {
         if (!refreshEditor) {
           return;
@@ -1903,6 +1911,8 @@
         }
         refreshValidateController = new AbortController();
         const validationSeq = ++refreshValidationSeq;
+        const validationKey = getValidationKey(mbids, lidarrIds);
+        refreshValidationKey = validationKey;
         const payload = {
           mbids: Array.from(mbids),
           lidarr_ids: Array.from(lidarrIds).map((value) => Number(value)),
@@ -1916,6 +1926,17 @@
           });
           const data = await response.json().catch(() => ({}));
           if (validationSeq !== refreshValidationSeq) {
+            return;
+          }
+          if (validationKey !== refreshValidationKey) {
+            return;
+          }
+          const currentSets = getTokenSets();
+          const currentKey = getValidationKey(
+            currentSets.mbids,
+            currentSets.lidarrIds,
+          );
+          if (validationKey !== currentKey) {
             return;
           }
           if (!response.ok || !data.ok) {
@@ -1948,6 +1969,32 @@
           });
           updateTokenClasses();
           updateRefreshStatus();
+
+          const validCount =
+            (data.mbid_valid || []).length + (data.lidarr_valid || []).length;
+          const invalidCount =
+            (data.mbid_invalid || []).length + (data.lidarr_invalid || []).length;
+          if (
+            invalidCount > 0 &&
+            validCount === 0 &&
+            !refreshValidationRetryKeys.has(validationKey)
+          ) {
+            refreshValidationRetryKeys.add(validationKey);
+            setTimeout(() => {
+              if (!refreshValidationActive) {
+                return;
+              }
+              const retrySets = getTokenSets();
+              const retryKey = getValidationKey(
+                retrySets.mbids,
+                retrySets.lidarrIds,
+              );
+              if (retryKey !== validationKey) {
+                return;
+              }
+              runRefreshValidation(retrySets.mbids, retrySets.lidarrIds);
+            }, 600);
+          }
         } catch (error) {
           if (error && error.name === "AbortError") {
             return;
