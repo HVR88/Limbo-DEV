@@ -14,6 +14,7 @@ from quart import jsonify, request
 from lidarrmetadata import app as upstream_app
 from lidarrmetadata import release_filters
 from lidarrmetadata import root_patch
+from lidarrmetadata import provider_capabilities
 
 _STATE_DIR = Path(os.environ.get("LIMBO_INIT_STATE_DIR", "/metadata/init-state"))
 _STATE_FILE = Path(
@@ -340,6 +341,16 @@ def register_config_routes() -> None:
                     "include_media_formats": release_filters.get_runtime_media_include() or [],
                     "keep_only_media_count": release_filters.get_runtime_media_keep_only(),
                     "prefer": release_filters.get_runtime_media_prefer(),
+                }
+            )
+
+    if "/config/service-capabilities" not in existing_rules:
+        @upstream_app.app.route("/config/service-capabilities", methods=["GET"])
+        async def _limbo_service_capabilities():
+            return jsonify(
+                {
+                    "ok": True,
+                    "providers": provider_capabilities.list_provider_capabilities(),
                 }
             )
 
