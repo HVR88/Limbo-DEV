@@ -216,6 +216,15 @@ def register_config_routes() -> None:
             root_patch.set_musicbrainz_enabled(True)
             return jsonify({"ok": True})
 
+    if "/config/refresh-settings" not in existing_rules:
+        @upstream_app.app.route("/config/refresh-settings", methods=["POST"])
+        async def _limbo_refresh_settings():
+            payload = await request.get_json(silent=True) or {}
+            root_patch.set_refresh_resolve_names(
+                _is_truthy(payload.get("resolve_names"))
+            )
+            return jsonify({"ok": True})
+
     if "/config/lastfm-settings" not in existing_rules:
         @upstream_app.app.route("/config/lastfm-settings", methods=["POST"])
         async def _limbo_lastfm_settings():

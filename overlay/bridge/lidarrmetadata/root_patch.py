@@ -65,6 +65,7 @@ _APPLE_MUSIC_ALLOW_UPSCALE: Optional[bool] = None
 _COVERART_ENABLED: Optional[bool] = None
 _COVERART_SIZE: Optional[str] = None
 _MUSICBRAINZ_ENABLED: Optional[bool] = None
+_REFRESH_RESOLVE_NAMES: Optional[bool] = None
 _GITHUB_RELEASE_CACHE: Dict[str, Tuple[float, Optional[str]]] = {}
 _GITHUB_RELEASE_CACHE_TTL = 300.0
 _REPLICATION_NOTIFY_FILE = Path(
@@ -231,6 +232,7 @@ def _load_lidarr_settings() -> None:
     global _TIDAL_ENABLED, _DISCOGS_ENABLED, _APPLE_MUSIC_ENABLED
     global _APPLE_MUSIC_MAX_IMAGE_SIZE, _APPLE_MUSIC_ALLOW_UPSCALE
     global _COVERART_ENABLED, _COVERART_SIZE, _MUSICBRAINZ_ENABLED
+    global _REFRESH_RESOLVE_NAMES
     try:
         data = json.loads(_SETTINGS_FILE.read_text(encoding="utf-8"))
     except Exception:
@@ -259,6 +261,7 @@ def _load_lidarr_settings() -> None:
         _COVERART_ENABLED = True
         _COVERART_SIZE = "original"
         _MUSICBRAINZ_ENABLED = True
+        _REFRESH_RESOLVE_NAMES = True
         return
     _LIDARR_BASE_URL = str(data.get("lidarr_base_url") or "").strip()
     _LIDARR_API_KEY = str(data.get("lidarr_api_key") or "").strip()
@@ -283,6 +286,9 @@ def _load_lidarr_settings() -> None:
     ).strip()
     _APPLE_MUSIC_ALLOW_UPSCALE = _read_enabled_flag(
         data.get("apple_music_allow_upscale"), False
+    )
+    _REFRESH_RESOLVE_NAMES = _read_enabled_flag(
+        data.get("refresh_resolve_names"), True
     )
     fanart_env = str(os.getenv("FANART_KEY") or "").strip()
     tadb_env = str(os.getenv("TADB_KEY") or "").strip()
@@ -365,6 +371,7 @@ def _persist_lidarr_settings() -> None:
             "coverart_enabled": bool(_COVERART_ENABLED),
             "coverart_size": _COVERART_SIZE or "",
             "musicbrainz_enabled": bool(_MUSICBRAINZ_ENABLED),
+            "refresh_resolve_names": bool(_REFRESH_RESOLVE_NAMES),
             "fanart_enabled": bool(_FANART_ENABLED),
             "tadb_enabled": bool(_TADB_ENABLED),
             "lastfm_enabled": bool(_LASTFM_ENABLED),
@@ -809,6 +816,21 @@ def _set_coverart_size(value: str, *, persist: bool) -> None:
 
 def get_coverart_size() -> str:
     return _COVERART_SIZE or ""
+
+
+def set_refresh_resolve_names(value: bool) -> None:
+    _set_refresh_resolve_names(value, persist=True)
+
+
+def _set_refresh_resolve_names(value: bool, *, persist: bool) -> None:
+    global _REFRESH_RESOLVE_NAMES
+    _REFRESH_RESOLVE_NAMES = bool(value)
+    if persist:
+        _persist_lidarr_settings()
+
+
+def get_refresh_resolve_names() -> bool:
+    return bool(_REFRESH_RESOLVE_NAMES)
 
 
 def set_musicbrainz_enabled(value: bool) -> None:
@@ -1770,6 +1792,7 @@ def register_root_route() -> None:
             "__MBMS_REPLICATION_SCHEDULE__": safe["mbms_replication_schedule"],
             "__MBMS_INDEX_SCHEDULE__": safe["mbms_index_schedule"],
             "__METADATA_VERSION__": safe["metadata_version"],
+            "__REFRESH_RESOLVE_NAMES__": "checked" if get_refresh_resolve_names() else "",
             "__REPLICATION_DATE__": safe["replication_date"],
             "__REPLICATION_DATE_HTML__": replication_date_html,
             "__THEME__": html.escape(theme_value),

@@ -516,6 +516,19 @@
                 <span class="refresh-status__count" data-refresh-count-invalid>0</span>
               </span>
             </div>
+            <div class="refresh-resolve-toggle">
+              <span class="refresh-resolve-toggle__label">Resolve Names/Titles</span>
+              <label class="config-toggle">
+                <input
+                  type="checkbox"
+                  data-refresh-resolve-toggle
+                  __REFRESH_RESOLVE_NAMES__
+                />
+                <span class="config-toggle__track" aria-hidden="true">
+                  <span class="config-toggle__thumb"></span>
+                </span>
+              </label>
+            </div>
             <button
               class="modal-link modal-link-text modal-link-cancel"
               type="button"
@@ -1268,6 +1281,9 @@
       const refreshInvalidCount = document.querySelector(
         "[data-refresh-count-invalid]",
       );
+      const refreshResolveToggle = document.querySelector(
+        "[data-refresh-resolve-toggle]",
+      );
       const refreshModal = document.querySelector(
         '[data-modal="refresh-modal"]',
       );
@@ -1843,6 +1859,9 @@
         if (!refreshValidationActive || !mbids.size) {
           return;
         }
+        if (refreshResolveToggle && !refreshResolveToggle.checked) {
+          return;
+        }
         try {
           const response = await fetch("/config/resolve-names", {
             method: "POST",
@@ -2400,6 +2419,27 @@
           } else {
             runRefreshRequest(mbids, lidarrIds);
           }
+        });
+      }
+      if (refreshResolveToggle) {
+        refreshResolveToggle.addEventListener("change", () => {
+          if (!refreshEditor) {
+            return;
+          }
+          if (!isLocalPreview) {
+            fetch("/config/refresh-settings", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                resolve_names: Boolean(refreshResolveToggle.checked),
+              }),
+            }).catch(() => {});
+          }
+          if (!refreshResolveToggle.checked) {
+            return;
+          }
+          const { mbids } = getTokenSets();
+          runRefreshNameResolve(mbids);
         });
       }
 
