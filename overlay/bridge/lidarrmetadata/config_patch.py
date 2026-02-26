@@ -1,3 +1,4 @@
+import asyncio
 import json
 import os
 import socket
@@ -487,72 +488,82 @@ def register_config_routes() -> None:
             headers = {"X-Api-Key": api_key}
 
             async with aiohttp.ClientSession(timeout=timeout) as session:
-                for mbid in mbids:
-                    add_debug(f"mbid={mbid}")
-                    album_id_url = base_url.rstrip("/") + f"/api/v1/album/{mbid}"
-                    try:
-                        async with session.get(album_id_url, headers=headers) as resp:
-                            add_debug(f"  album/id status={resp.status}")
-                            if resp.status == 200:
-                                mbid_valid.append(mbid)
-                                add_debug("  -> valid (album/id)")
-                                continue
-                            if resp.status not in {404, 400}:
-                                errors.append(f"MBID {mbid}: status {resp.status}")
-                    except Exception as exc:
-                        errors.append(f"MBID {mbid}: {exc}")
-                        add_debug(f"  album/id error={exc}")
-                    url = base_url.rstrip("/") + "/api/v1/album"
-                    album_data = None
-                    album_error = None
-                    for params in (
-                        {"foreignAlbumId": mbid},
-                        {"mbid": mbid},
-                        {"mbId": mbid},
-                    ):
+                semaphore = asyncio.Semaphore(4)
+                artist_url = base_url.rstrip("/") + "/api/v1/artist"
+                album_url = base_url.rstrip("/") + "/api/v1/album"
+
+                async def validate_mbid(mbid: str) -> None:
+                    async with semaphore:
+                        add_debug(f"mbid={mbid}")
                         try:
-                            async with session.get(url, headers=headers, params=params) as resp:
-                                add_debug(
-                                    f"  album/search {params} status={resp.status}"
-                                )
-                                if resp.status != 200:
-                                    album_error = f"MBID {mbid}: status {resp.status}"
-                                    continue
-                                data = await resp.json()
+                            async with session.get(artist_url, headers=headers, params={"mbId": mbid}) as resp:
+                                add_debug(f"  artist/search status={resp.status}")
+                                if resp.status == 200:
+                                    artist_data = await resp.json()
+                                    if artist_data:
+                                        mbid_valid.append(mbid)
+                                        add_debug("  -> valid (artist/search)")
+                                        return
+                                else:
+                                    errors.append(f"Artist MBID {mbid}: status {resp.status}")
                         except Exception as exc:
-                            album_error = f"MBID {mbid}: {exc}"
-                            add_debug(f"  album/search error={exc}")
-                            continue
-                        if data:
-                            add_debug(
-                                f"  album/search hit count={len(data) if hasattr(data, '__len__') else 'n/a'}"
-                            )
-                            album_data = data
-                            break
-                    if album_data:
-                        mbid_valid.append(mbid)
-                        add_debug("  -> valid (album/search)")
-                        continue
-                    if album_error:
-                        errors.append(album_error)
-                    artist_url = base_url.rstrip("/") + "/api/v1/artist"
-                    try:
-                        async with session.get(artist_url, headers=headers, params={"mbId": mbid}) as resp:
-                            add_debug(f"  artist/search status={resp.status}")
-                            if resp.status != 200:
-                                errors.append(f"Artist MBID {mbid}: status {resp.status}")
+                            message = str(exc).strip()
+                            if message:
+                                errors.append(f"Artist MBID {mbid}: {message}")
+                                add_debug(f"  artist/search error={message}")
+
+                        album_id_url = base_url.rstrip("/") + f"/api/v1/album/{mbid}"
+                        try:
+                            async with session.get(album_id_url, headers=headers) as resp:
+                                add_debug(f"  album/id status={resp.status}")
+                                if resp.status == 200:
+                                    mbid_valid.append(mbid)
+                                    add_debug("  -> valid (album/id)")
+                                    return
+                                if resp.status not in {404, 400}:
+                                    errors.append(f"MBID {mbid}: status {resp.status}")
+                        except Exception as exc:
+                            message = str(exc).strip()
+                            if message:
+                                errors.append(f"MBID {mbid}: {message}")
+                                add_debug(f"  album/id error={message}")
+
+                        album_data = None
+                        album_error = None
+                        for params in (
+                            {"foreignAlbumId": mbid},
+                            {"mbid": mbid},
+                            {"mbId": mbid},
+                        ):
+                            try:
+                                async with session.get(album_url, headers=headers, params=params) as resp:
+                                    add_debug(f"  album/search {params} status={resp.status}")
+                                    if resp.status != 200:
+                                        album_error = f"MBID {mbid}: status {resp.status}"
+                                        continue
+                                    data = await resp.json()
+                            except Exception as exc:
+                                message = str(exc).strip()
+                                if message:
+                                    album_error = f"MBID {mbid}: {message}"
+                                    add_debug(f"  album/search error={message}")
                                 continue
-                            artist_data = await resp.json()
-                    except Exception as exc:
-                        errors.append(f"Artist MBID {mbid}: {exc}")
-                        add_debug(f"  artist/search error={exc}")
-                        continue
-                    if artist_data:
-                        mbid_valid.append(mbid)
-                        add_debug("  -> valid (artist/search)")
-                    else:
+                            if data:
+                                add_debug(
+                                    f"  album/search hit count={len(data) if hasattr(data, '__len__') else 'n/a'}"
+                                )
+                                album_data = data
+                                break
+                        if album_data:
+                            mbid_valid.append(mbid)
+                            add_debug("  -> valid (album/search)")
+                            return
+                        if album_error:
+                            errors.append(album_error)
                         mbid_invalid.append(mbid)
                         add_debug("  -> invalid")
+
+                await asyncio.gather(*(validate_mbid(mbid) for mbid in mbids))
 
                 for lidarr_id in lidarr_ids:
                     try:
@@ -567,7 +578,9 @@ def register_config_routes() -> None:
                             else:
                                 errors.append(f"Lidarr ID {lidarr_id}: status {resp.status}")
                     except Exception as exc:
-                        errors.append(f"Lidarr ID {lidarr_id}: {exc}")
+                        message = str(exc).strip()
+                        if message:
+                            errors.append(f"Lidarr ID {lidarr_id}: {message}")
 
             return jsonify(
                 {
