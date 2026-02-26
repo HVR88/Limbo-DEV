@@ -387,45 +387,56 @@ def register_config_routes() -> None:
             if not mbids:
                 return jsonify({"ok": True, "names": []})
 
-            now = provider.utcnow()
+            mbids = list(dict.fromkeys(mbids))
+            db_providers = provider.get_providers_implementing(provider.ArtistByIdMixin)
+            if not db_providers:
+                db_providers = provider.get_providers_implementing(
+                    provider.ReleaseGroupByIdMixin
+                )
+            if not db_providers:
+                return jsonify({"ok": True, "names": []})
 
-            async def get_artist_name(mbid: str) -> Optional[str]:
-                try:
-                    cached, expiry = await util.ARTIST_CACHE.get(mbid)
-                except Exception:
-                    return None
-                if not cached or expiry <= now:
-                    return None
-                if isinstance(cached, dict):
-                    return str(cached.get("ArtistName") or "").strip() or None
-                return None
+            db_provider = db_providers[0]
+            artist_sql = "SELECT gid, name FROM artist WHERE gid = ANY($1::uuid[])"
+            album_sql = "SELECT gid, name FROM release_group WHERE gid = ANY($1::uuid[])"
+            try:
+                artist_rows, album_rows = await asyncio.gather(
+                    db_provider.map_query(artist_sql, mbids),
+                    db_provider.map_query(album_sql, mbids),
+                )
+            except Exception:
+                return jsonify({"ok": True, "names": []})
 
-            async def get_album_title(mbid: str) -> Optional[str]:
-                try:
-                    cached, expiry = await util.ALBUM_CACHE.get(mbid)
-                except Exception:
-                    return None
-                if not cached or expiry <= now:
-                    return None
-                if isinstance(cached, dict):
-                    return str(cached.get("Title") or "").strip() or None
-                return None
-
-            tasks = []
-            for mbid in mbids:
-                tasks.append(get_artist_name(mbid))
-                tasks.append(get_album_title(mbid))
-            results = await asyncio.gather(*tasks)
+            artist_map = {
+                str(row.get("gid")).lower(): str(row.get("name")).strip()
+                for row in (artist_rows or [])
+                if row.get("gid") and row.get("name")
+            }
+            album_map = {
+                str(row.get("gid")).lower(): str(row.get("name")).strip()
+                for row in (album_rows or [])
+                if row.get("gid") and row.get("name")
+            }
 
             names = []
-            for index, mbid in enumerate(mbids):
-                artist_name = results[index * 2]
-                album_title = results[index * 2 + 1]
-                if artist_name:
-                    names.append({"mbid": mbid, "kind": "artist", "name": artist_name})
+            for mbid in mbids:
+                if mbid in artist_map:
+                    names.append(
+                        {
+                            "mbid": mbid,
+                            "kind": "artist",
+                            "name": artist_map[mbid],
+                        }
+                    )
                     continue
-                if album_title:
-                    names.append({"mbid": mbid, "kind": "release", "name": album_title})
+                if mbid in album_map:
+                    names.append(
+                        {
+                            "mbid": mbid,
+                            "kind": "release",
+                            "name": album_map[mbid],
+                        }
+                    )
             return jsonify({"ok": True, "names": names})
 
     if "/config/refresh-releases" not in existing_rules:
