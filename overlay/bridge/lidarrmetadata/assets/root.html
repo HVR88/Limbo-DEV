@@ -1351,12 +1351,20 @@
       let refreshInputGuard = false;
       let refreshDebugEnabled = false;
 
-      const setRefreshDebug = (lines) => {
+      const setRefreshDebug = (lines, options = {}) => {
         if (!refreshDebugBody) {
           return;
         }
-        const text = Array.isArray(lines) ? lines.filter(Boolean).join("\n") : "";
-        refreshDebugBody.textContent = text;
+        const { append = false } = options;
+        const text = Array.isArray(lines)
+          ? lines.filter(Boolean).join("\n")
+          : "";
+        if (!append || !refreshDebugBody.value) {
+          refreshDebugBody.value = text;
+        } else if (text) {
+          refreshDebugBody.value += `\n${text}`;
+        }
+        refreshDebugBody.scrollTop = refreshDebugBody.scrollHeight;
       };
 
       const sanitizeApiKey = (value = "") =>
@@ -1863,14 +1871,14 @@
           if (!response.ok || !data.ok) {
             if (refreshDebugEnabled) {
               const statusLine = `status=${response.status}`;
-              const debugLines = [statusLine];
+              const debugLines = [statusLine, `url=${response.url}`];
               if (data && data.error) {
                 debugLines.push(`error=${data.error}`);
               }
               if (Array.isArray(data.debug)) {
                 debugLines.push(...data.debug);
               }
-              setRefreshDebug(debugLines);
+              setRefreshDebug(debugLines, { append: true });
             }
             return;
           }
@@ -1879,7 +1887,7 @@
             if (Array.isArray(data.debug)) {
               debugLines.push(...data.debug);
             }
-            setRefreshDebug(debugLines);
+            setRefreshDebug(debugLines, { append: true });
           }
           (data.mbid_valid || []).forEach((mbid) => {
             refreshTokenState.set(
@@ -1905,7 +1913,7 @@
             return;
           }
           if (refreshDebugEnabled) {
-            setRefreshDebug([`request failed: ${error}`]);
+            setRefreshDebug([`request failed: ${error}`], { append: true });
           }
         }
       };
