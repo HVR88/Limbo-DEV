@@ -1569,9 +1569,7 @@
       const createTokenElement = (token) => {
         const span = document.createElement("span");
         span.className = `token ${statusClassForToken(token)}`;
-        const normalizedToken = mbidTokenRegex.test(token)
-          ? token.toUpperCase()
-          : token;
+        const normalizedToken = token;
         span.dataset.token = normalizedToken;
         span.dataset.tokenKey = getTokenKey(normalizedToken);
         const text = document.createElement("span");
