@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import sys
+from typing import Optional
 
 
 def _ensure_path(path: str) -> None:
@@ -8,7 +9,7 @@ def _ensure_path(path: str) -> None:
         sys.path.insert(0, path)
 
 
-def main() -> int:
+def main() -> Optional[int]:
     base_dir = os.path.dirname(os.path.abspath(__file__))
 
     # Ensure the repo root (parent of lidarrmetadata/) is on sys.path

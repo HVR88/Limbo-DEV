@@ -105,6 +105,7 @@ def _read_inline_svg(name: str) -> str:
     except Exception:
         return ""
     content = re.sub(r"<\\?xml[^>]*\\?>", "", content, flags=re.IGNORECASE).strip()
+    content = re.sub(r"<!--.*?-->", "", content, flags=re.DOTALL).strip()
     return content
 
 
@@ -1817,7 +1818,7 @@ def register_root_route() -> None:
             "__THEME_ICON_LIGHT__": theme_light_svg,
             "__THEME_ICON_AUTO__": theme_auto_svg,
             "__TALL_ARROW_ICON__": tall_arrow_svg,
-            "__THICK_ARROW_RT_ICON__": thick_arrow_rt_svg,
+            "__THICK_ARROW_RT_ICON__": json.dumps(thick_arrow_rt_svg),
             "__CONFIG_MENU_ICON__": config_menu_svg,
             "__CONFIG_HTML__": config_html,
         }
