@@ -4243,16 +4243,17 @@
         }
         servicesList.innerHTML = "";
         let dragSuppressClick = false;
-        const configuredIds = serviceCatalog
-          .filter((item) => isServiceConfigured(item.id))
-          .map((item) => item.id);
-        const order = getServiceOrder();
-        const orderedIds = order.filter((id) => configuredIds.includes(id));
-        configuredIds.forEach((id) => {
-          if (!orderedIds.includes(id)) {
-            orderedIds.push(id);
+        const stripArticle = (label) => {
+          const trimmed = label.trim();
+          const lower = trimmed.toLowerCase();
+          if (lower.startsWith("the ")) {
+            return lower.slice(4);
           }
-        });
+          return lower;
+        };
+        const orderedIds = [...serviceCatalog]
+          .sort((a, b) => stripArticle(a.label).localeCompare(stripArticle(b.label)))
+          .map((item) => item.id);
         orderedIds.forEach((id) => {
           const item = serviceCatalog.find((entry) => entry.id === id);
           if (!item) {
@@ -4260,7 +4261,6 @@
           }
           const row = document.createElement("div");
           row.className = "settings-list__item";
-          row.setAttribute("draggable", "true");
           if (item.id === selectedId) {
             row.classList.add("selected");
           }
@@ -4270,10 +4270,6 @@
           label.className = "settings-list__label";
           label.textContent = item.label;
           row.appendChild(label);
-          const handle = document.createElement("span");
-          handle.className = "settings-list__handle";
-          handle.setAttribute("aria-hidden", "true");
-          row.appendChild(handle);
           row.addEventListener("mousedown", (event) => {
             if (event.button !== 0) {
               return;
@@ -4293,59 +4289,11 @@
               .forEach((node) => node.classList.remove("selected"));
             row.classList.add("selected");
           });
-          row.addEventListener("dragstart", (event) => {
-            dragSuppressClick = true;
-            event.dataTransfer.effectAllowed = "move";
-            servicesList
-              .querySelectorAll(".settings-list__item.selected")
-              .forEach((node) => node.classList.remove("selected"));
-            row.classList.add("selected");
-            servicesList.classList.add("dragging");
-            if (event.dataTransfer.setDragImage) {
-              const rowRect = row.getBoundingClientRect();
-              const wrapper = document.createElement("div");
-              wrapper.className = "settings-list__drag-ghost";
-              wrapper.style.padding = "3px";
-              wrapper.style.width = `${rowRect.width + 6}px`;
-              wrapper.style.height = `${rowRect.height + 6}px`;
-              const ghost = row.cloneNode(true);
-              ghost.classList.add("selected");
-              ghost.classList.remove("dragging");
-              ghost.style.width = `${rowRect.width}px`;
-              ghost.style.height = `${rowRect.height}px`;
-              ghost.style.margin = "0";
-              ghost.style.boxSizing = "border-box";
-              wrapper.appendChild(ghost);
-              document.body.appendChild(wrapper);
-              serviceDragGhost = wrapper;
-              const offsetX = Math.max(0, event.clientX - rowRect.left);
-              const offsetY = Math.max(0, event.clientY - rowRect.top);
-              event.dataTransfer.setDragImage(wrapper, offsetX + 3, offsetY + 3);
-            }
-            event.dataTransfer.setData("text/plain", item.id);
-            requestAnimationFrame(() => {
-              row.classList.add("dragging");
-            });
-          });
-          row.addEventListener("dragend", () => {
-            row.classList.remove("dragging");
-            dragSuppressClick = false;
-            servicesList
-              .querySelectorAll(".settings-list__item.selected")
-              .forEach((node) => node.classList.remove("selected"));
-            row.classList.add("selected");
-            servicesList.classList.remove("dragging");
-            if (serviceDragGhost) {
-              serviceDragGhost.remove();
-              serviceDragGhost = null;
-            }
-          });
           row.addEventListener("dblclick", () => {
             openServiceModal(item.id);
           });
           servicesList.appendChild(row);
         });
-        setServiceOrder(orderedIds);
       };
       renderServiceList();
 
@@ -4552,52 +4500,6 @@
       }
 
       if (servicesList) {
-        servicesList.addEventListener("dragover", (event) => {
-          event.preventDefault();
-          event.dataTransfer.dropEffect = "move";
-          const dragging = servicesList.querySelector(".settings-list__item.dragging");
-          if (!dragging) {
-            return;
-          }
-          servicesList
-            .querySelectorAll(".settings-list__item.selected")
-            .forEach((node) => {
-              if (node !== dragging) {
-                node.classList.remove("selected");
-              }
-            });
-          const target = event.target.closest(".settings-list__item");
-          if (!target || target === dragging) {
-            return;
-          }
-          const targetRect = target.getBoundingClientRect();
-          const shouldInsertAfter =
-            event.clientY - targetRect.top > targetRect.height / 2;
-          if (shouldInsertAfter) {
-            if (target.nextSibling === dragging) {
-              return;
-            }
-            animateServiceReorder(servicesList, () => {
-              target.after(dragging);
-            });
-          } else {
-            if (target.previousSibling === dragging) {
-              return;
-            }
-            animateServiceReorder(servicesList, () => {
-              target.before(dragging);
-            });
-          }
-        });
-        servicesList.addEventListener("drop", (event) => {
-          event.preventDefault();
-          const orderedIds = Array.from(
-            servicesList.querySelectorAll(".settings-list__item"),
-          )
-            .map((node) => node.dataset.serviceId)
-            .filter(Boolean);
-          setServiceOrder(orderedIds);
-        });
         servicesList.addEventListener("click", (event) => {
           if (event.target === servicesList) {
             clearServiceSelection();
