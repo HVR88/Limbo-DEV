@@ -1,4 +1,5 @@
 import asyncio
+import asyncio
 import json
 import os
 import socket
@@ -22,6 +23,9 @@ _STATE_FILE = Path(
     )
 )
 _LIDARR_CONFIG_PATH = "/api/v1/config/metadataprovider"
+_LIDARR_WARMUP_MID = "88f69eab-8f07-343b-847c-b944ad33dfcf"
+_LIDARR_WARMED = False
+_LIDARR_WARM_LOCK = asyncio.Lock()
 
 
 def register_config_routes() -> None:
@@ -463,6 +467,25 @@ def register_config_routes() -> None:
             pass
 
     if "/config/validate-ids" not in existing_rules:
+        async def _warm_lidarr(base_url: str, api_key: str, session: aiohttp.ClientSession) -> None:
+            global _LIDARR_WARMED
+            if _LIDARR_WARMED:
+                return
+            async with _LIDARR_WARM_LOCK:
+                if _LIDARR_WARMED:
+                    return
+                warm_url = base_url.rstrip("/") + "/api/v1/album"
+                try:
+                    async with session.get(
+                        warm_url,
+                        headers={"X-Api-Key": api_key},
+                        params={"foreignAlbumId": _LIDARR_WARMUP_MID},
+                    ):
+                        pass
+                except Exception:
+                    pass
+                _LIDARR_WARMED = True
+
         async def _limbo_validate_ids():
             payload = await request.get_json(silent=True) or {}
             lidarr_ids = _parse_int_list(payload.get("lidarr_ids") or payload.get("lidarrIds"))
@@ -491,6 +514,7 @@ def register_config_routes() -> None:
 
             parallel_per_mbid = len(mbids) <= 2
             async with aiohttp.ClientSession(timeout=timeout) as session:
+                await _warm_lidarr(base_url, api_key, session)
                 semaphore = asyncio.Semaphore(4)
                 artist_url = base_url.rstrip("/") + "/api/v1/artist"
                 album_url = base_url.rstrip("/") + "/api/v1/album"

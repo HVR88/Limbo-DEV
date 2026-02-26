@@ -1352,8 +1352,6 @@
       let refreshInputGuard = false;
       let refreshValidationActive = false;
       let refreshValidationSeq = 0;
-      let refreshValidationKey = "";
-      const refreshValidationRetryKeys = new Set();
       let refreshWarmupOnLoadDone = false;
       let refreshWarmupOnOpenDone = false;
 
@@ -1632,10 +1630,7 @@
         }
       };
 
-      const runRefreshWarmup = async (force = false) => {
-        if (!force && !refreshValidationActive) {
-          return;
-        }
+      const runRefreshWarmup = async () => {
         try {
           await fetch("/config/validate-ids", {
             method: "POST",
@@ -1694,12 +1689,6 @@
           }
         });
         return { mbids, lidarrIds };
-      };
-
-      const getValidationKey = (mbids, lidarrIds) => {
-        const mbidList = Array.from(mbids || []).map(String).sort();
-        const lidarrList = Array.from(lidarrIds || []).map(String).sort();
-        return `${mbidList.join(",")}|${lidarrList.join(",")}`;
       };
 
       const updateTokenClasses = () => {
@@ -1911,43 +1900,30 @@
         }
         refreshValidateController = new AbortController();
         const validationSeq = ++refreshValidationSeq;
-        const validationKey = getValidationKey(mbids, lidarrIds);
-        refreshValidationKey = validationKey;
-        const payload = {
-          mbids: Array.from(mbids),
-          lidarr_ids: Array.from(lidarrIds).map((value) => Number(value)),
-        };
-        try {
-          const response = await fetch("/config/validate-ids", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-            signal: refreshValidateController.signal,
-          });
+            const payload = {
+              mbids: Array.from(mbids),
+              lidarr_ids: Array.from(lidarrIds).map((value) => Number(value)),
+            };
+            try {
+              const response = await fetch("/config/validate-ids", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+                signal: refreshValidateController.signal,
+              });
           const data = await response.json().catch(() => ({}));
           if (validationSeq !== refreshValidationSeq) {
-            return;
-          }
-          if (validationKey !== refreshValidationKey) {
-            return;
-          }
-          const currentSets = getTokenSets();
-          const currentKey = getValidationKey(
-            currentSets.mbids,
-            currentSets.lidarrIds,
-          );
-          if (validationKey !== currentKey) {
             return;
           }
           if (!response.ok || !data.ok) {
             return;
           }
-          (data.mbid_valid || []).forEach((mbid) => {
-            refreshTokenState.set(
-              `mbid:${String(mbid).toLowerCase()}`,
-              "valid",
-            );
-          });
+              (data.mbid_valid || []).forEach((mbid) => {
+                refreshTokenState.set(
+                  `mbid:${String(mbid).toLowerCase()}`,
+                  "valid",
+                );
+              });
           (data.mbid_artist_valid || []).forEach((mbid) => {
             refreshTokenKind.set(`mbid:${String(mbid).toLowerCase()}`, "artist");
           });
@@ -1969,38 +1945,12 @@
           });
           updateTokenClasses();
           updateRefreshStatus();
-
-          const validCount =
-            (data.mbid_valid || []).length + (data.lidarr_valid || []).length;
-          const invalidCount =
-            (data.mbid_invalid || []).length + (data.lidarr_invalid || []).length;
-          if (
-            invalidCount > 0 &&
-            validCount === 0 &&
-            !refreshValidationRetryKeys.has(validationKey)
-          ) {
-            refreshValidationRetryKeys.add(validationKey);
-            setTimeout(() => {
-              if (!refreshValidationActive) {
+            } catch (error) {
+              if (error && error.name === "AbortError") {
                 return;
               }
-              const retrySets = getTokenSets();
-              const retryKey = getValidationKey(
-                retrySets.mbids,
-                retrySets.lidarrIds,
-              );
-              if (retryKey !== validationKey) {
-                return;
-              }
-              runRefreshValidation(retrySets.mbids, retrySets.lidarrIds);
-            }, 600);
-          }
-        } catch (error) {
-          if (error && error.name === "AbortError") {
-            return;
-          }
-        }
-      };
+            }
+          };
 
       const updateRefreshState = () => {
         if (!refreshEditor) {
@@ -4576,7 +4526,7 @@
             updateRefreshState();
             if (!refreshWarmupOnOpenDone) {
               refreshWarmupOnOpenDone = true;
-              runRefreshWarmup(true);
+              runRefreshWarmup();
             }
           }
           if (
@@ -4646,7 +4596,7 @@
 
       if (!refreshWarmupOnLoadDone) {
         refreshWarmupOnLoadDone = true;
-        runRefreshWarmup(true);
+        runRefreshWarmup();
       }
     </script>
   </body>
