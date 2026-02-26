@@ -341,7 +341,7 @@
                 <button
                   class="modal-link modal-link-text"
                   type="button"
-                  data-service-remove
+                  data-service-priority-remove
                 >
                   <span class="settings-list__symbol settings-list__symbol--minus">-</span>
                 </button>
@@ -349,33 +349,36 @@
                   <button
                     class="modal-link modal-link-text"
                     type="button"
-                    data-service-add
+                    data-service-priority-add
                   >
                     <span class="settings-list__symbol">+</span>
                   </button>
-                  <div class="config-menu settings-list__menu" data-service-menu>
-                    <button type="button" data-service-option="coverart">
+                  <div
+                    class="config-menu settings-list__menu"
+                    data-service-priority-menu
+                  >
+                    <button type="button" data-service-priority-option="coverart">
                       COVER ART ARCHIVE
                     </button>
-                    <button type="button" data-service-option="musicbrainz">
+                    <button type="button" data-service-priority-option="musicbrainz">
                       MUSICBRAINZ
                     </button>
-                    <button type="button" data-service-option="apple">
+                    <button type="button" data-service-priority-option="apple">
                       APPLE MUSIC
                     </button>
-                    <button type="button" data-service-option="discogs">
+                    <button type="button" data-service-priority-option="discogs">
                       DISCOGS
                     </button>
-                    <button type="button" data-service-option="fanart">
+                    <button type="button" data-service-priority-option="fanart">
                       FANART.TV
                     </button>
-                    <button type="button" data-service-option="lastfm">
+                    <button type="button" data-service-priority-option="lastfm">
                       LAST.FM
                     </button>
-                    <button type="button" data-service-option="tadb">
+                    <button type="button" data-service-priority-option="tadb">
                       THE AUDIODB
                     </button>
-                    <button type="button" data-service-option="tidal">
+                    <button type="button" data-service-priority-option="tidal">
                       TIDAL
                     </button>
                   </div>
@@ -383,7 +386,7 @@
                 <button
                   class="modal-link modal-link-text settings-list__test-toggle"
                   type="button"
-                  data-service-test
+                  data-service-priority-test
                 >
                   TEST
                 </button>
@@ -1346,7 +1349,18 @@
       const coverartSaveButton = document.querySelector("[data-coverart-save]");
       const servicesList = document.querySelector("[data-services]");
       const servicesPriorityList = document.querySelector("[data-services-priority]");
-      let serviceRemoveButton = document.querySelector("[data-service-remove]");
+      const priorityAddButton = document.querySelector(
+        "[data-service-priority-add]",
+      );
+      const priorityMenu = document.querySelector(
+        "[data-service-priority-menu]",
+      );
+      const priorityRemoveButton = document.querySelector(
+        "[data-service-priority-remove]",
+      );
+      const priorityTestButton = document.querySelector(
+        "[data-service-priority-test]",
+      );
       let settingsSnapshot = null;
       let settingsRestoreEnabled = false;
 
@@ -1437,14 +1451,13 @@
           );
         });
       };
-      const serviceTestButton = document.querySelector("[data-service-test]");
       const settingsModalPanel = document.querySelector(
         '[data-modal="settings"] .modal__panel',
       );
-      let serviceMenuOptions = Array.from(
-        document.querySelectorAll("[data-service-option]"),
+      let priorityMenuOptions = Array.from(
+        document.querySelectorAll("[data-service-priority-option]"),
       );
-      if (serviceMenuOptions.length) {
+      if (priorityMenuOptions.length) {
         const stripArticle = (label) => {
           const trimmed = label.trim();
           const lower = trimmed.toLowerCase();
@@ -1453,16 +1466,16 @@
           }
           return lower;
         };
-        const sortedOptions = [...serviceMenuOptions].sort((a, b) => {
+        const sortedOptions = [...priorityMenuOptions].sort((a, b) => {
           const labelA = stripArticle(a.textContent || "");
           const labelB = stripArticle(b.textContent || "");
           return labelA.localeCompare(labelB);
         });
-        const menuRoot = serviceMenuOptions[0].parentElement;
+        const menuRoot = priorityMenuOptions[0].parentElement;
         if (menuRoot) {
           sortedOptions.forEach((option) => menuRoot.appendChild(option));
         }
-        serviceMenuOptions = sortedOptions;
+        priorityMenuOptions = sortedOptions;
       }
       const limboMenuToggle = document.querySelector(
         "[data-limbo-menu-toggle]",
@@ -3962,8 +3975,6 @@
       }
 
       const settingsTabsRoot = document.querySelector("[data-settings-tabs]");
-      let serviceAddButton = document.querySelector("[data-service-add]");
-      let serviceMenu = document.querySelector("[data-service-menu]");
       if (settingsTabsRoot) {
         const settingsButtons = Array.from(
           settingsTabsRoot.querySelectorAll("[data-tab]"),
@@ -4017,15 +4028,15 @@
           requestAnimationFrame(syncSettingsTabHeight);
         });
       }
-      if (serviceAddButton && serviceMenu) {
-        serviceAddButton.addEventListener("click", (event) => {
+      if (priorityAddButton && priorityMenu) {
+        priorityAddButton.addEventListener("click", (event) => {
           event.stopPropagation();
-          serviceMenu.classList.toggle("open");
-          if (serviceMenu.classList.contains("open")) {
-            requestAnimationFrame(() => adjustMenuPosition(serviceMenu));
+          priorityMenu.classList.toggle("open");
+          if (priorityMenu.classList.contains("open")) {
+            requestAnimationFrame(() => adjustMenuPosition(priorityMenu));
           }
         });
-        serviceMenu.addEventListener("click", (event) => {
+        priorityMenu.addEventListener("click", (event) => {
           event.stopPropagation();
         });
       }
@@ -4082,6 +4093,7 @@
           limboCustom: limboUrlInput?.dataset.limboCustom || "",
           servicesDataset: servicesList ? { ...servicesList.dataset } : {},
           serviceOrder: getServiceOrder(),
+          servicePriorityOrder: getServicePriorityOrder(),
           fanartKey: fanartKeyInput?.value || "",
           tadbKey: tadbKeyInput?.value || "",
           discogsKey: discogsKeyInput?.value || "",
@@ -4156,6 +4168,11 @@
           setServiceOrder(settingsSnapshot.serviceOrder || []);
           renderServiceList();
           clearServiceSelection();
+        }
+        if (servicesPriorityList) {
+          setServicePriorityOrder(settingsSnapshot.servicePriorityOrder || []);
+          renderPriorityList();
+          clearPrioritySelection();
         }
       };
       const getServiceEnabled = (id) => {
@@ -4329,21 +4346,159 @@
           servicesList.appendChild(row);
         });
         setServiceOrder(orderedIds);
-        if (servicesPriorityList) {
-          servicesPriorityList.innerHTML = servicesList.innerHTML;
-        }
-        serviceMenuOptions.forEach((option) => {
-          const id = option.dataset.serviceOption;
-          option.style.display = isServiceConfigured(id) ? "none" : "";
-        });
       };
       renderServiceList();
+
+      const servicePriorityOrderKey = "limbo-service-priority-artist";
+      const getServicePriorityOrder = () => {
+        try {
+          const raw = localStorage.getItem(servicePriorityOrderKey);
+          if (!raw) {
+            return [];
+          }
+          const parsed = JSON.parse(raw);
+          return Array.isArray(parsed) ? parsed : [];
+        } catch (error) {
+          return [];
+        }
+      };
+      const setServicePriorityOrder = (order) => {
+        try {
+          localStorage.setItem(servicePriorityOrderKey, JSON.stringify(order));
+        } catch (error) {
+          // ignore
+        }
+      };
+      const renderPriorityList = (selectedId = null) => {
+        if (!servicesPriorityList) {
+          return;
+        }
+        servicesPriorityList.innerHTML = "";
+        let dragSuppressClick = false;
+        const configuredIds = serviceCatalog
+          .filter((item) => isServiceConfigured(item.id))
+          .map((item) => item.id);
+        const order = getServicePriorityOrder();
+        const orderedIds = order.filter((id) => configuredIds.includes(id));
+        configuredIds.forEach((id) => {
+          if (!orderedIds.includes(id)) {
+            orderedIds.push(id);
+          }
+        });
+        orderedIds.forEach((id) => {
+          const item = serviceCatalog.find((entry) => entry.id === id);
+          if (!item) {
+            return;
+          }
+          const row = document.createElement("div");
+          row.className = "settings-list__item";
+          row.setAttribute("draggable", "true");
+          if (item.id === selectedId) {
+            row.classList.add("selected");
+          }
+          row.dataset.serviceId = item.id;
+          row.textContent = "";
+          const label = document.createElement("span");
+          label.className = "settings-list__label";
+          label.textContent = item.label;
+          row.appendChild(label);
+          const handle = document.createElement("span");
+          handle.className = "settings-list__handle";
+          handle.setAttribute("aria-hidden", "true");
+          row.appendChild(handle);
+          row.addEventListener("mousedown", (event) => {
+            if (event.button !== 0) {
+              return;
+            }
+            servicesPriorityList
+              .querySelectorAll(".settings-list__item")
+              .forEach((node) => node.classList.remove("selected"));
+            row.classList.add("selected");
+          });
+          row.addEventListener("click", () => {
+            if (dragSuppressClick) {
+              dragSuppressClick = false;
+              return;
+            }
+            servicesPriorityList
+              .querySelectorAll(".settings-list__item")
+              .forEach((node) => node.classList.remove("selected"));
+            row.classList.add("selected");
+          });
+          row.addEventListener("dragstart", (event) => {
+            dragSuppressClick = true;
+            event.dataTransfer.effectAllowed = "move";
+            servicesPriorityList
+              .querySelectorAll(".settings-list__item.selected")
+              .forEach((node) => node.classList.remove("selected"));
+            row.classList.add("selected");
+            servicesPriorityList.classList.add("dragging");
+            if (event.dataTransfer.setDragImage) {
+              const rowRect = row.getBoundingClientRect();
+              const wrapper = document.createElement("div");
+              wrapper.className = "settings-list__drag-ghost";
+              wrapper.style.padding = "3px";
+              wrapper.style.width = `${rowRect.width + 6}px`;
+              wrapper.style.height = `${rowRect.height + 6}px`;
+              const ghost = row.cloneNode(true);
+              ghost.classList.add("selected");
+              ghost.classList.remove("dragging");
+              ghost.style.width = `${rowRect.width}px`;
+              ghost.style.height = `${rowRect.height}px`;
+              ghost.style.margin = "0";
+              ghost.style.boxSizing = "border-box";
+              wrapper.appendChild(ghost);
+              document.body.appendChild(wrapper);
+              serviceDragGhost = wrapper;
+              const offsetX = Math.max(0, event.clientX - rowRect.left);
+              const offsetY = Math.max(0, event.clientY - rowRect.top);
+              event.dataTransfer.setDragImage(wrapper, offsetX + 3, offsetY + 3);
+            }
+            event.dataTransfer.setData("text/plain", item.id);
+            requestAnimationFrame(() => {
+              row.classList.add("dragging");
+            });
+          });
+          row.addEventListener("dragend", () => {
+            row.classList.remove("dragging");
+            dragSuppressClick = false;
+            servicesPriorityList
+              .querySelectorAll(".settings-list__item.selected")
+              .forEach((node) => node.classList.remove("selected"));
+            row.classList.add("selected");
+            servicesPriorityList.classList.remove("dragging");
+            if (serviceDragGhost) {
+              serviceDragGhost.remove();
+              serviceDragGhost = null;
+            }
+          });
+          row.addEventListener("dblclick", () => {
+            openServiceModal(item.id);
+          });
+          servicesPriorityList.appendChild(row);
+        });
+        setServicePriorityOrder(orderedIds);
+        priorityMenuOptions.forEach((option) => {
+          const id = option.dataset.servicePriorityOption;
+          option.style.display =
+            isServiceConfigured(id) && !orderedIds.includes(id) ? "" : "none";
+        });
+      };
+      renderPriorityList();
 
       const clearServiceSelection = () => {
         if (!servicesList) {
           return;
         }
         servicesList
+          .querySelectorAll(".settings-list__item.selected")
+          .forEach((node) => node.classList.remove("selected"));
+      };
+      const clearPrioritySelection = () => {
+        if (!servicesPriorityList) {
+          return;
+        }
+        servicesPriorityList
           .querySelectorAll(".settings-list__item.selected")
           .forEach((node) => node.classList.remove("selected"));
       };
@@ -4389,10 +4544,10 @@
         });
       };
 
-      if (serviceTestButton) {
-        serviceTestButton.addEventListener("click", () => {
+      if (priorityTestButton) {
+        priorityTestButton.addEventListener("click", () => {
           serviceForceAll = !serviceForceAll;
-          renderServiceList();
+          renderPriorityList();
         });
       }
 
@@ -4449,12 +4604,68 @@
           }
         });
       }
+      if (servicesPriorityList) {
+        servicesPriorityList.addEventListener("dragover", (event) => {
+          event.preventDefault();
+          event.dataTransfer.dropEffect = "move";
+          const dragging = servicesPriorityList.querySelector(
+            ".settings-list__item.dragging",
+          );
+          if (!dragging) {
+            return;
+          }
+          servicesPriorityList
+            .querySelectorAll(".settings-list__item.selected")
+            .forEach((node) => {
+              if (node !== dragging) {
+                node.classList.remove("selected");
+              }
+            });
+          const target = event.target.closest(".settings-list__item");
+          if (!target || target === dragging) {
+            return;
+          }
+          const targetRect = target.getBoundingClientRect();
+          const shouldInsertAfter =
+            event.clientY - targetRect.top > targetRect.height / 2;
+          if (shouldInsertAfter) {
+            if (target.nextSibling === dragging) {
+              return;
+            }
+            animateServiceReorder(servicesPriorityList, () => {
+              target.after(dragging);
+            });
+          } else {
+            if (target.previousSibling === dragging) {
+              return;
+            }
+            animateServiceReorder(servicesPriorityList, () => {
+              target.before(dragging);
+            });
+          }
+        });
+        servicesPriorityList.addEventListener("drop", (event) => {
+          event.preventDefault();
+          const orderedIds = Array.from(
+            servicesPriorityList.querySelectorAll(".settings-list__item"),
+          )
+            .map((node) => node.dataset.serviceId)
+            .filter(Boolean);
+          setServicePriorityOrder(orderedIds);
+        });
+        servicesPriorityList.addEventListener("click", (event) => {
+          if (event.target === servicesPriorityList) {
+            clearPrioritySelection();
+          }
+        });
+      }
       if (settingsModalPanel) {
         settingsModalPanel.addEventListener("click", (event) => {
           if (event.target.closest(".settings-list__item")) {
             return;
           }
           clearServiceSelection();
+          clearPrioritySelection();
         });
       }
 
@@ -4517,33 +4728,38 @@
         }
       };
 
-      if (serviceMenuOptions.length) {
-        serviceMenuOptions.forEach((option) => {
+      if (priorityMenuOptions.length) {
+        priorityMenuOptions.forEach((option) => {
           option.addEventListener("click", async (event) => {
             event.stopPropagation();
-            const id = option.dataset.serviceOption;
+            const id = option.dataset.servicePriorityOption;
             if (!id) {
               return;
             }
-            if (serviceMenu) {
-              serviceMenu.classList.remove("open");
+            if (priorityMenu) {
+              priorityMenu.classList.remove("open");
             }
             const entry = serviceCatalog.find((item) => item.id === id);
             if (entry?.modal) {
               openServiceModal(id);
               return;
             }
-            const ok = await saveService(id, {}, id);
-            if (ok) {
-              clearServiceSelection();
+            const order = getServicePriorityOrder();
+            if (!order.includes(id)) {
+              order.push(id);
+              setServicePriorityOrder(order);
+              renderPriorityList(id);
+              clearPrioritySelection();
             }
           });
         });
       }
 
-      if (serviceRemoveButton && servicesList) {
-        serviceRemoveButton.addEventListener("click", async () => {
-          const selected = servicesList.querySelector(".settings-list__item.selected");
+      if (priorityRemoveButton && servicesPriorityList) {
+        priorityRemoveButton.addEventListener("click", () => {
+          const selected = servicesPriorityList.querySelector(
+            ".settings-list__item.selected",
+          );
           if (!selected) {
             return;
           }
@@ -4551,65 +4767,11 @@
           if (!id) {
             return;
           }
-          if (isLocalPreview) {
-            setServiceEnabled(id, false);
-            renderServiceList();
-            return;
-          }
-          try {
-            const response = await fetch("/config/service-disable", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ provider: id }),
-            });
-            const data = await response.json().catch(() => ({}));
-            if (!response.ok || !data.ok) {
-              suppressHover();
-              openInfo(
-                data.error ? `Error: ${data.error}` : `Error (${response.status})`,
-              );
-              return;
-            }
-            if (id === "fanart" && fanartKeyInput) {
-              fanartKeyInput.value = "";
-            }
-            if (id === "tadb" && tadbKeyInput) {
-              tadbKeyInput.value = "";
-            }
-            if (id === "discogs" && discogsKeyInput) {
-              discogsKeyInput.value = "";
-            }
-            if (id === "lastfm") {
-              if (lastfmKeyInput) {
-                lastfmKeyInput.value = "";
-              }
-              if (lastfmSecretInput) {
-                lastfmSecretInput.value = "";
-              }
-            }
-            if (id === "tidal") {
-              if (tidalClientIdInput) tidalClientIdInput.value = "";
-              if (tidalClientSecretInput) tidalClientSecretInput.value = "";
-              if (tidalCountryCodeInput) tidalCountryCodeInput.value = "";
-              if (tidalUserInput) tidalUserInput.value = "";
-              if (tidalUserPasswordInput) tidalUserPasswordInput.value = "";
-            }
-            if (id === "apple") {
-              if (appleMusicMaxInput) appleMusicMaxInput.value = "";
-              if (appleMusicUpscaleInput) appleMusicUpscaleInput.checked = false;
-            }
-            if (id === "coverart") {
-              setCoverartSize("original");
-              if (servicesList) {
-                servicesList.dataset.serviceCoverartSize = "";
-              }
-            }
-            setServiceEnabled(id, false);
-            renderServiceList();
-          } catch (error) {
-            suppressHover();
-            openInfo(`Request failed: ${error}`);
-          }
+          const order = getServicePriorityOrder().filter(
+            (entry) => entry !== id,
+          );
+          setServicePriorityOrder(order);
+          renderPriorityList();
         });
       }
 
