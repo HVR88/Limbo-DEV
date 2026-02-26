@@ -1135,7 +1135,7 @@ body[data-theme="dark"] .corner-button__inner {
   padding: 12px;
   font-size: 14px;
   font-family: "IBM Plex Sans", "Source Sans 3", sans-serif;
-  line-height: 1.4;
+  line-height: 1.6;
   color: var(--muted);
   resize: vertical;
   box-shadow: var(--soft-shadow);
