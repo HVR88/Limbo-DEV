@@ -1347,6 +1347,7 @@
         /[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}|\b[0-9]{2,12}\b/g;
       const refreshTokenState = new Map();
       const refreshTokenKind = new Map();
+      const refreshTokenNames = new Map();
       let refreshValidateTimer = null;
       let refreshValidateController = null;
       let refreshInputGuard = false;
@@ -1658,11 +1659,18 @@
         const span = document.createElement("span");
         span.className = `token ${statusClassForToken(token)}`;
         const normalizedToken = token;
+        const tokenKey = getTokenKey(normalizedToken);
         span.dataset.token = normalizedToken;
-        span.dataset.tokenKey = getTokenKey(normalizedToken);
+        span.dataset.tokenKey = tokenKey;
         const text = document.createElement("span");
         text.className = "token-text";
-        text.textContent = normalizedToken;
+        const displayName = refreshTokenNames.get(tokenKey);
+        text.textContent = displayName || normalizedToken;
+        if (displayName) {
+          span.title = normalizedToken;
+        } else {
+          span.removeAttribute("title");
+        }
         span.appendChild(text);
         span.contentEditable = "false";
         return span;
@@ -1702,6 +1710,51 @@
             duplicate ? " token-duplicate" : ""
           }`;
         });
+      };
+
+      const applyResolvedNames = (items) => {
+        if (!refreshEditor || !Array.isArray(items)) {
+          return;
+        }
+        items.forEach((item) => {
+          const mbid = String(item.mbid || "").toLowerCase();
+          const name = String(item.name || "").trim();
+          if (!mbid || !name) {
+            return;
+          }
+          const key = `mbid:${mbid}`;
+          refreshTokenNames.set(key, name);
+          refreshEditor.querySelectorAll(".token").forEach((tokenEl) => {
+            if (tokenEl.dataset.tokenKey !== key) {
+              return;
+            }
+            const textEl = tokenEl.querySelector(".token-text");
+            if (textEl) {
+              textEl.textContent = name;
+            }
+            tokenEl.title = mbid;
+          });
+        });
+      };
+
+      const runRefreshNameResolve = async (mbids) => {
+        if (!refreshValidationActive || !mbids.size) {
+          return;
+        }
+        try {
+          const response = await fetch("/config/resolve-names", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ mbids: Array.from(mbids) }),
+          });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok || !data.ok) {
+            return;
+          }
+          applyResolvedNames(data.names || []);
+        } catch (error) {
+          // best-effort only
+        }
       };
 
       const normalizeWhitespaceBetweenTokens = () => {
@@ -1976,11 +2029,13 @@
           if (!liveKeys.has(key)) {
             refreshTokenState.delete(key);
             refreshTokenKind.delete(key);
+            refreshTokenNames.delete(key);
           }
         });
         updateTokenClasses();
         updateRefreshStatus();
         scheduleRefreshValidation(mbids, lidarrIds);
+        runRefreshNameResolve(mbids);
       };
 
       const handleRefreshPaste = (event) => {

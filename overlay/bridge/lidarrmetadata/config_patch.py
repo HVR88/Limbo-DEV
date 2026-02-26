@@ -1,5 +1,4 @@
 import asyncio
-import asyncio
 import json
 import os
 import socket
@@ -15,6 +14,8 @@ from lidarrmetadata import app as upstream_app
 from lidarrmetadata import release_filters
 from lidarrmetadata import root_patch
 from lidarrmetadata import provider_capabilities
+from lidarrmetadata import util
+from lidarrmetadata import provider
 
 _STATE_DIR = Path(os.environ.get("LIMBO_INIT_STATE_DIR", "/metadata/init-state"))
 _STATE_FILE = Path(
@@ -353,6 +354,55 @@ def register_config_routes() -> None:
                     "providers": provider_capabilities.list_provider_capabilities(),
                 }
             )
+
+    if "/config/resolve-names" not in existing_rules:
+        @upstream_app.app.route("/config/resolve-names", methods=["POST"])
+        async def _limbo_resolve_names():
+            payload = await request.get_json(silent=True) or {}
+            mbids = _parse_mbid_list(payload.get("mbids") or payload.get("mbid") or [])
+            if not mbids:
+                return jsonify({"ok": True, "names": []})
+
+            now = provider.utcnow()
+
+            async def get_artist_name(mbid: str) -> Optional[str]:
+                try:
+                    cached, expiry = await util.ARTIST_CACHE.get(mbid)
+                except Exception:
+                    return None
+                if not cached or expiry <= now:
+                    return None
+                if isinstance(cached, dict):
+                    return str(cached.get("ArtistName") or "").strip() or None
+                return None
+
+            async def get_album_title(mbid: str) -> Optional[str]:
+                try:
+                    cached, expiry = await util.ALBUM_CACHE.get(mbid)
+                except Exception:
+                    return None
+                if not cached or expiry <= now:
+                    return None
+                if isinstance(cached, dict):
+                    return str(cached.get("Title") or "").strip() or None
+                return None
+
+            tasks = []
+            for mbid in mbids:
+                tasks.append(get_artist_name(mbid))
+                tasks.append(get_album_title(mbid))
+            results = await asyncio.gather(*tasks)
+
+            names = []
+            for index, mbid in enumerate(mbids):
+                artist_name = results[index * 2]
+                album_title = results[index * 2 + 1]
+                if artist_name:
+                    names.append({"mbid": mbid, "kind": "artist", "name": artist_name})
+                    continue
+                if album_title:
+                    names.append({"mbid": mbid, "kind": "release", "name": album_title})
+            return jsonify({"ok": True, "names": names})
 
     if "/config/refresh-releases" not in existing_rules:
         async def _limbo_refresh_releases():
