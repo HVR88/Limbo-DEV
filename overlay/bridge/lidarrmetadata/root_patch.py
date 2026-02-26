@@ -1920,14 +1920,15 @@ def register_root_route() -> None:
             lm_pill_tag_open = '<button type="button" class="{}" disabled>'.format(
                 lm_pill_class
             )
-        lm_version_value, lm_has_update = _format_version_value(
-            safe["version"], lm_update
+        lm_version_value = "{} ({})".format(
+            html.escape(safe["mbms_plus_version"]),
+            html.escape(safe["version"]),
         )
-        lm_value_class = "value has-update" if lm_has_update else "value"
+        lm_value_class = "value"
         lm_pill_html = "\n".join(
             [
                 f"          {lm_pill_tag_open}",
-                '            <div class="label">Limbo Bridge/webUI</div>',
+                '            <div class="label">LIMBO (BRIDGE/WEBUI)</div>',
                 f'            <div class="{lm_value_class}">{lm_version_value}</div>',
                 f'            <span class="pill-arrow" aria-hidden="true">{tall_arrow_svg}</span>',
                 "          </button>",
