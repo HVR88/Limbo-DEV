@@ -1629,6 +1629,21 @@
         }
       };
 
+      const runRefreshWarmup = async () => {
+        if (!refreshValidationActive) {
+          return;
+        }
+        try {
+          await fetch("/config/validate-ids", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ mbids: [], lidarr_ids: [] }),
+          });
+        } catch (error) {
+          // warmup is best-effort only
+        }
+      };
+
       const statusClassForToken = (token) => {
         const key = getTokenKey(token);
         const status = refreshTokenState.get(key) || "pending";
@@ -4524,6 +4539,7 @@
             }
             refreshValidationActive = true;
             updateRefreshState();
+            runRefreshWarmup();
           }
           if (
             modal?.classList.contains("service-modal") ||
