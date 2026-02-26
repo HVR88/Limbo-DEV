@@ -501,12 +501,27 @@
               CLOSE
             </button>
             <button
+              class="modal-link modal-link-text refresh-modal__debug-toggle"
+              type="button"
+              data-refresh-debug-toggle
+            >
+              DEBUG
+            </button>
+            <button
               class="modal-link modal-link-text"
               type="button"
               data-refresh-button
             >
               SUBMIT
             </button>
+          </div>
+          <div class="refresh-debug" data-refresh-debug-panel hidden>
+            <div class="refresh-debug__title">Debug</div>
+            <textarea
+              class="refresh-debug__body refresh-debug__textarea"
+              data-refresh-debug-body
+              readonly
+            ></textarea>
           </div>
         </div>
       </div>
@@ -1194,6 +1209,15 @@
 
       const refreshEditor = document.querySelector("[data-refresh-editor]");
       const refreshButton = document.querySelector("[data-refresh-button]");
+      const refreshDebugToggle = document.querySelector(
+        "[data-refresh-debug-toggle]",
+      );
+      const refreshDebugPanel = document.querySelector(
+        "[data-refresh-debug-panel]",
+      );
+      const refreshDebugBody = document.querySelector(
+        "[data-refresh-debug-body]",
+      );
       const refreshModal = document.querySelector(
         '[data-modal="refresh-modal"]',
       );
@@ -1325,6 +1349,15 @@
       let refreshValidateTimer = null;
       let refreshValidateController = null;
       let refreshInputGuard = false;
+      let refreshDebugEnabled = false;
+
+      const setRefreshDebug = (lines) => {
+        if (!refreshDebugBody) {
+          return;
+        }
+        const text = Array.isArray(lines) ? lines.filter(Boolean).join("\n") : "";
+        refreshDebugBody.textContent = text;
+      };
 
       const sanitizeApiKey = (value = "") =>
         value.replace(/[^a-z0-9]/gi, "").toLowerCase().slice(0, 255);
@@ -1805,10 +1838,20 @@
           refreshValidateController.abort();
         }
         refreshValidateController = new AbortController();
+        if (refreshDebugEnabled) {
+          setRefreshDebug([
+            "validate-ids request:",
+            `mbids=${Array.from(mbids).join(", ") || "(none)"}`,
+            `lidarr_ids=${Array.from(lidarrIds).join(", ") || "(none)"}`,
+          ]);
+        }
         const payload = {
           mbids: Array.from(mbids),
           lidarr_ids: Array.from(lidarrIds).map((value) => Number(value)),
         };
+        if (refreshDebugEnabled) {
+          payload.debug = true;
+        }
         try {
           const response = await fetch("/config/validate-ids", {
             method: "POST",
@@ -1818,7 +1861,25 @@
           });
           const data = await response.json().catch(() => ({}));
           if (!response.ok || !data.ok) {
+            if (refreshDebugEnabled) {
+              const statusLine = `status=${response.status}`;
+              const debugLines = [statusLine];
+              if (data && data.error) {
+                debugLines.push(`error=${data.error}`);
+              }
+              if (Array.isArray(data.debug)) {
+                debugLines.push(...data.debug);
+              }
+              setRefreshDebug(debugLines);
+            }
             return;
+          }
+          if (refreshDebugEnabled) {
+            const debugLines = [];
+            if (Array.isArray(data.debug)) {
+              debugLines.push(...data.debug);
+            }
+            setRefreshDebug(debugLines);
           }
           (data.mbid_valid || []).forEach((mbid) => {
             refreshTokenState.set(
@@ -1842,6 +1903,9 @@
         } catch (error) {
           if (error && error.name === "AbortError") {
             return;
+          }
+          if (refreshDebugEnabled) {
+            setRefreshDebug([`request failed: ${error}`]);
           }
         }
       };
@@ -2133,6 +2197,18 @@
             );
           } else {
             runRefreshRequest(mbids, lidarrIds);
+          }
+        });
+      }
+      if (refreshDebugToggle && refreshDebugPanel) {
+        refreshDebugToggle.addEventListener("click", () => {
+          refreshDebugEnabled = !refreshDebugEnabled;
+          refreshDebugPanel.hidden = !refreshDebugEnabled;
+          refreshDebugToggle.textContent = refreshDebugEnabled
+            ? "HIDE DEBUG"
+            : "DEBUG";
+          if (!refreshDebugEnabled) {
+            setRefreshDebug([]);
           }
         });
       }

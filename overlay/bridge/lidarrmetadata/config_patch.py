@@ -596,6 +596,12 @@ async def _update_lidarr_metadata_source(
             payload = await request.get_json(silent=True) or {}
             lidarr_ids = _parse_int_list(payload.get("lidarr_ids") or payload.get("lidarrIds"))
             mbids = _parse_mbid_list(payload.get("mbids") or payload.get("mbid") or payload.get("foreignAlbumIds"))
+            debug_enabled = _is_truthy(payload.get("debug"))
+            debug_lines: List[str] = []
+
+            def add_debug(line: str) -> None:
+                if debug_enabled:
+                    debug_lines.append(line)
 
             base_url = root_patch.get_lidarr_base_url()
             api_key = root_patch.get_lidarr_api_key()
@@ -612,16 +618,20 @@ async def _update_lidarr_metadata_source(
 
             async with aiohttp.ClientSession(timeout=timeout) as session:
                 for mbid in mbids:
+                    add_debug(f"mbid={mbid}")
                     album_id_url = base_url.rstrip("/") + f"/api/v1/album/{mbid}"
                     try:
                         async with session.get(album_id_url, headers=headers) as resp:
+                            add_debug(f"  album/id status={resp.status}")
                             if resp.status == 200:
                                 mbid_valid.append(mbid)
+                                add_debug("  -> valid (album/id)")
                                 continue
                             if resp.status not in {404, 400}:
                                 errors.append(f"MBID {mbid}: status {resp.status}")
                     except Exception as exc:
                         errors.append(f"MBID {mbid}: {exc}")
+                        add_debug(f"  album/id error={exc}")
                     url = base_url.rstrip("/") + "/api/v1/album"
                     album_data = None
                     album_error = None
@@ -632,35 +642,47 @@ async def _update_lidarr_metadata_source(
                     ):
                         try:
                             async with session.get(url, headers=headers, params=params) as resp:
+                                add_debug(
+                                    f"  album/search {params} status={resp.status}"
+                                )
                                 if resp.status != 200:
                                     album_error = f"MBID {mbid}: status {resp.status}"
                                     continue
                                 data = await resp.json()
                         except Exception as exc:
                             album_error = f"MBID {mbid}: {exc}"
+                            add_debug(f"  album/search error={exc}")
                             continue
                         if data:
+                            add_debug(
+                                f"  album/search hit count={len(data) if hasattr(data, '__len__') else 'n/a'}"
+                            )
                             album_data = data
                             break
                     if album_data:
                         mbid_valid.append(mbid)
+                        add_debug("  -> valid (album/search)")
                         continue
                     if album_error:
                         errors.append(album_error)
                     artist_url = base_url.rstrip("/") + "/api/v1/artist"
                     try:
                         async with session.get(artist_url, headers=headers, params={"mbId": mbid}) as resp:
+                            add_debug(f"  artist/search status={resp.status}")
                             if resp.status != 200:
                                 errors.append(f"Artist MBID {mbid}: status {resp.status}")
                                 continue
                             artist_data = await resp.json()
                     except Exception as exc:
                         errors.append(f"Artist MBID {mbid}: {exc}")
+                        add_debug(f"  artist/search error={exc}")
                         continue
                     if artist_data:
                         mbid_valid.append(mbid)
+                        add_debug("  -> valid (artist/search)")
                     else:
                         mbid_invalid.append(mbid)
+                        add_debug("  -> invalid")
 
                 for lidarr_id in lidarr_ids:
                     try:
@@ -685,6 +707,7 @@ async def _update_lidarr_metadata_source(
                     "lidarr_valid": sorted(set(lidarr_valid)),
                     "lidarr_invalid": sorted(set(lidarr_invalid)),
                     "errors": errors,
+                    **({"debug": debug_lines} if debug_enabled else {}),
                 }
             )
 
