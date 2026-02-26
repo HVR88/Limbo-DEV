@@ -104,7 +104,7 @@ def _read_inline_svg(name: str) -> str:
         content = svg_path.read_text(encoding="utf-8")
     except Exception:
         return ""
-    content = re.sub(r"<\\?xml[^>]*\\?>", "", content, flags=re.IGNORECASE).strip()
+    content = re.sub(r"<\?xml[^>]*\?>", "", content, flags=re.IGNORECASE).strip()
     content = re.sub(r"<!--.*?-->", "", content, flags=re.DOTALL).strip()
     return content
 
