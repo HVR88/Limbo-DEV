@@ -22,6 +22,11 @@ from lidarrmetadata import provider
 from lidarrmetadata.app import no_cache
 from lidarrmetadata.version_patch import _read_version
 
+def _is_truthy(value: object) -> bool:
+    if isinstance(value, str):
+        return value.strip().lower() in {"1", "true", "yes", "on"}
+    return bool(value)
+
 _START_TIME = time.time()
 _STATE_DIR = Path(os.environ.get("LIMBO_INIT_STATE_DIR", "/metadata/init-state"))
 _LIDARR_VERSION_FILE = Path(
