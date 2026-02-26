@@ -1182,7 +1182,7 @@ body[data-theme="dark"] .corner-button__inner {
   display: inline-block;
 }
 .refresh-editor .token-text {
-  padding: 0 6px;
+  padding: 0 6px 3px;
   border-radius: 4px;
   display: inline-block;
 }
