@@ -1351,6 +1351,7 @@
       let refreshValidateController = null;
       let refreshInputGuard = false;
       let refreshValidationActive = false;
+      let refreshValidationSeq = 0;
 
       const sanitizeApiKey = (value = "") =>
         value.replace(/[^a-z0-9]/gi, "").toLowerCase().slice(0, 255);
@@ -1884,6 +1885,7 @@
           refreshValidateController.abort();
         }
         refreshValidateController = new AbortController();
+        const validationSeq = ++refreshValidationSeq;
             const payload = {
               mbids: Array.from(mbids),
               lidarr_ids: Array.from(lidarrIds).map((value) => Number(value)),
@@ -1895,10 +1897,13 @@
                 body: JSON.stringify(payload),
                 signal: refreshValidateController.signal,
               });
-              const data = await response.json().catch(() => ({}));
-              if (!response.ok || !data.ok) {
-                return;
-              }
+          const data = await response.json().catch(() => ({}));
+          if (validationSeq !== refreshValidationSeq) {
+            return;
+          }
+          if (!response.ok || !data.ok) {
+            return;
+          }
               (data.mbid_valid || []).forEach((mbid) => {
                 refreshTokenState.set(
                   `mbid:${String(mbid).toLowerCase()}`,
