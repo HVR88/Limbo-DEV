@@ -1352,6 +1352,7 @@
       let refreshInputGuard = false;
       let refreshValidationActive = false;
       let refreshValidationSeq = 0;
+      let refreshValidationKey = "";
 
       const sanitizeApiKey = (value = "") =>
         value.replace(/[^a-z0-9]/gi, "").toLowerCase().slice(0, 255);
@@ -1886,11 +1887,13 @@
         }
         refreshValidateController = new AbortController();
         const validationSeq = ++refreshValidationSeq;
-            const payload = {
-              mbids: Array.from(mbids),
-              lidarr_ids: Array.from(lidarrIds).map((value) => Number(value)),
-            };
-            try {
+        const validationKey = getValidationKey(mbids, lidarrIds);
+        refreshValidationKey = validationKey;
+        const payload = {
+          mbids: Array.from(mbids),
+          lidarr_ids: Array.from(lidarrIds).map((value) => Number(value)),
+        };
+        try {
               const response = await fetch("/config/validate-ids", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -1899,6 +1902,17 @@
               });
           const data = await response.json().catch(() => ({}));
           if (validationSeq !== refreshValidationSeq) {
+            return;
+          }
+          if (validationKey !== refreshValidationKey) {
+            return;
+          }
+          const currentSets = getTokenSets();
+          const currentKey = getValidationKey(
+            currentSets.mbids,
+            currentSets.lidarrIds,
+          );
+          if (validationKey !== currentKey) {
             return;
           }
           if (!response.ok || !data.ok) {
@@ -4578,3 +4592,8 @@
     </script>
   </body>
 </html>
+      const getValidationKey = (mbids, lidarrIds) => {
+        const mbidList = Array.from(mbids || []).map(String).sort();
+        const lidarrList = Array.from(lidarrIds || []).map(String).sort();
+        return `${mbidList.join(",")}|${lidarrList.join(",")}`;
+      };
