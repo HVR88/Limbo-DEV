@@ -1743,10 +1743,22 @@
         }
         return "token-pending";
       };
+      const kindClassForToken = (token) => {
+        const key = getTokenKey(token);
+        const kind = refreshTokenKind.get(key);
+        if (kind === "artist") {
+          return "token-artist";
+        }
+        if (kind === "release") {
+          return "token-release";
+        }
+        return "";
+      };
 
       const createTokenElement = (token) => {
         const span = document.createElement("span");
-        span.className = `token ${statusClassForToken(token)}`;
+        const kindClass = kindClassForToken(token);
+        span.className = `token ${statusClassForToken(token)}${kindClass ? ` ${kindClass}` : ""}`;
         const normalizedToken = token;
         const tokenKey = getTokenKey(normalizedToken);
         span.dataset.token = normalizedToken;
@@ -1795,7 +1807,8 @@
         refreshEditor.querySelectorAll(".token").forEach((node) => {
           const token = node.dataset.token || "";
           const duplicate = node.classList.contains("token-duplicate");
-          node.className = `token ${statusClassForToken(token)}${
+          const kindClass = kindClassForToken(token);
+          node.className = `token ${statusClassForToken(token)}${kindClass ? ` ${kindClass}` : ""}${
             duplicate ? " token-duplicate" : ""
           }`;
         });

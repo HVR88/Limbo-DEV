@@ -1178,6 +1178,9 @@ body[data-theme="dark"] .corner-button__inner {
 .refresh-editor .token-valid {
   color: #2c5d00;
 }
+.refresh-editor .token-valid.token-release {
+  color: #0b4fae;
+}
 .refresh-editor .token-invalid {
   color: #7b230e;
   text-decoration: line-through;
@@ -1187,6 +1190,9 @@ body[data-theme="dark"] .corner-button__inner {
 }
 .refresh-editor .token-valid .token-text {
   background: rgba(109, 208, 0, 0.36);
+}
+.refresh-editor .token-valid.token-release .token-text {
+  background: rgba(0, 126, 255, 0.28);
 }
 .refresh-editor .token-invalid .token-text {
   background: rgba(211, 72, 30, 0.38);
@@ -1210,6 +1216,12 @@ body[data-theme="dark"] .refresh-editor .token-pending {
 }
 body[data-theme="dark"] .refresh-editor .token-valid {
   color: #c9ff9b;
+}
+body[data-theme="dark"] .refresh-editor .token-valid.token-release {
+  color: #9fd1ff;
+}
+body[data-theme="dark"] .refresh-editor .token-valid.token-release .token-text {
+  background: rgba(64, 145, 255, 0.35);
 }
 body[data-theme="dark"] .refresh-editor .token-invalid {
   color: #ffb7a1;
