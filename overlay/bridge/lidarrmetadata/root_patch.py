@@ -60,6 +60,7 @@ _LASTFM_ENABLED: Optional[bool] = None
 _TIDAL_ENABLED: Optional[bool] = None
 _DISCOGS_ENABLED: Optional[bool] = None
 _APPLE_MUSIC_ENABLED: Optional[bool] = None
+_PLEX_ENABLED: Optional[bool] = None
 _APPLE_MUSIC_MAX_IMAGE_SIZE: Optional[str] = None
 _APPLE_MUSIC_ALLOW_UPSCALE: Optional[bool] = None
 _COVERART_ENABLED: Optional[bool] = None
@@ -230,7 +231,7 @@ def _load_lidarr_settings() -> None:
     global _TIDAL_CLIENT_ID, _TIDAL_CLIENT_SECRET, _TIDAL_COUNTRY_CODE
     global _TIDAL_USER, _TIDAL_USER_PASSWORD, _DISCOGS_KEY
     global _FANART_ENABLED, _TADB_ENABLED, _LASTFM_ENABLED
-    global _TIDAL_ENABLED, _DISCOGS_ENABLED, _APPLE_MUSIC_ENABLED
+    global _TIDAL_ENABLED, _DISCOGS_ENABLED, _APPLE_MUSIC_ENABLED, _PLEX_ENABLED
     global _APPLE_MUSIC_MAX_IMAGE_SIZE, _APPLE_MUSIC_ALLOW_UPSCALE
     global _COVERART_ENABLED, _COVERART_SIZE, _MUSICBRAINZ_ENABLED
     global _REFRESH_RESOLVE_NAMES
@@ -257,6 +258,7 @@ def _load_lidarr_settings() -> None:
         _TIDAL_ENABLED = True
         _DISCOGS_ENABLED = True
         _APPLE_MUSIC_ENABLED = False
+        _PLEX_ENABLED = False
         _APPLE_MUSIC_MAX_IMAGE_SIZE = "2500"
         _APPLE_MUSIC_ALLOW_UPSCALE = False
         _COVERART_ENABLED = True
@@ -322,6 +324,7 @@ def _load_lidarr_settings() -> None:
         data.get("discogs_enabled"), bool(discogs_env)
     )
     _APPLE_MUSIC_ENABLED = _read_enabled_flag(data.get("apple_music_enabled"), False)
+    _PLEX_ENABLED = _read_enabled_flag(data.get("plex_enabled"), False)
     _COVERART_ENABLED = _read_enabled_flag(data.get("coverart_enabled"), True)
     _MUSICBRAINZ_ENABLED = _read_enabled_flag(data.get("musicbrainz_enabled"), True)
     if _APPLE_MUSIC_ENABLED and not _APPLE_MUSIC_MAX_IMAGE_SIZE:
@@ -379,6 +382,7 @@ def _persist_lidarr_settings() -> None:
             "tidal_enabled": bool(_TIDAL_ENABLED),
             "discogs_enabled": bool(_DISCOGS_ENABLED),
             "apple_music_enabled": bool(_APPLE_MUSIC_ENABLED),
+            "plex_enabled": bool(_PLEX_ENABLED),
             "apple_music_max_image_size": _APPLE_MUSIC_MAX_IMAGE_SIZE or "",
             "apple_music_allow_upscale": bool(_APPLE_MUSIC_ALLOW_UPSCALE),
         }
@@ -847,6 +851,21 @@ def _set_musicbrainz_enabled(value: bool, *, persist: bool) -> None:
 
 def get_musicbrainz_enabled() -> bool:
     return bool(_MUSICBRAINZ_ENABLED)
+
+
+def set_plex_enabled(value: bool) -> None:
+    _set_plex_enabled(value, persist=True)
+
+
+def _set_plex_enabled(value: bool, *, persist: bool) -> None:
+    global _PLEX_ENABLED
+    _PLEX_ENABLED = bool(value)
+    if persist:
+        _persist_lidarr_settings()
+
+
+def get_plex_enabled() -> bool:
+    return bool(_PLEX_ENABLED)
 
 
 def _is_localhost_url(value: str) -> bool:
@@ -1590,7 +1609,8 @@ def register_root_route() -> None:
         index_schedule_html = _format_schedule_html(info["mbms_index_schedule"])
         theme_value = _read_theme()
         try:
-            from lidarrmetadata import release_filters
+from lidarrmetadata import release_filters
+from lidarrmetadata.provider_capabilities import list_provider_capabilities
 
             exclude = release_filters.get_runtime_media_exclude() or []
             include = release_filters.get_runtime_media_include() or []
@@ -1763,6 +1783,9 @@ def register_root_route() -> None:
 
         replacements = {
             "__ICON_URL__": html.escape(icon_url),
+            "__DEBUG_UI_CLASS__": "debug-ui"
+            if _is_truthy(os.getenv("LIMBO_DEBUG_UI") or os.getenv("DEBUG"))
+            else "",
             "__LM_VERSION__": safe["version"],
             "__LM_PLUGIN_VERSION__": safe["plugin_version"],
             "__MBMS_PLUS_VERSION__": safe["mbms_plus_version"],
@@ -1785,12 +1808,16 @@ def register_root_route() -> None:
             "__TIDAL_USER__": html.escape(get_tidal_user()),
             "__TIDAL_USER_PASSWORD__": html.escape(get_tidal_user_password()),
             "__DISCOGS_KEY__": html.escape(get_discogs_key()),
+            "__APPLE_MUSIC_MAX_IMAGE_SIZE__": html.escape(
+                get_apple_music_max_image_size()
+            ),
             "__FANART_ENABLED__": "true" if get_fanart_enabled() else "false",
             "__TADB_ENABLED__": "true" if get_tadb_enabled() else "false",
             "__LASTFM_ENABLED__": "true" if get_lastfm_enabled() else "false",
             "__TIDAL_ENABLED__": "true" if get_tidal_enabled() else "false",
             "__DISCOGS_ENABLED__": "true" if get_discogs_enabled() else "false",
             "__APPLE_MUSIC_ENABLED__": "true" if get_apple_music_enabled() else "false",
+            "__PLEX_ENABLED__": "true" if get_plex_enabled() else "false",
             "__COVERART_ENABLED__": "true" if get_coverart_enabled() else "false",
             "__COVERART_SIZE__": html.escape(get_coverart_size()),
             "__MUSICBRAINZ_ENABLED__": "true" if get_musicbrainz_enabled() else "false",
@@ -1821,6 +1848,7 @@ def register_root_route() -> None:
             "__THICK_ARROW_RT_ICON__": json.dumps(thick_arrow_rt_svg),
             "__CONFIG_MENU_ICON__": config_menu_svg,
             "__CONFIG_HTML__": config_html,
+            "__PROVIDER_CAPABILITIES__": json.dumps(list_provider_capabilities()),
         }
         lidarr_ui_url = get_lidarr_base_url()
         if "last seen" in lidarr_version_label.lower():
@@ -1889,6 +1917,10 @@ def register_root_route() -> None:
         mbms_value_class = "value has-update" if mbms_has_update else "value"
         mbms_pills = "\n".join(
             [
+                '          <button type="button" class="pill" disabled>',
+                '            <div class="label">&nbsp;</div>',
+                '            <div class="value">&nbsp;</div>',
+                "          </button>",
                 '          <button type="button" class="pill" data-pill-href="" data-modal-open="schedule-indexer">',
                 '            <div class="label">DB Indexing Schedule</div>',
                 f'            <div class="value">{index_schedule_html}</div>',

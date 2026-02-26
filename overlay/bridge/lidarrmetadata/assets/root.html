@@ -10,7 +10,7 @@
     />
     <link rel="stylesheet" href="/assets/root.css" />
   </head>
-  <body>
+  <body class="__DEBUG_UI_CLASS__">
     <main class="wrap">
       <section class="card">
         <button
@@ -157,7 +157,8 @@
           <div class="fold-line" aria-hidden="true"></div>
           <div class="fold-content" data-fold-content>
             <div class="grid">
-              __MBMS_PILLS__
+              __LIDARR_PILL_HTML__ __LM_PILL_HTML__ __MBMS_PILLS__
+              __REPLICATION_PILL_HTML__
             </div>
           </div>
         </div>
@@ -206,7 +207,7 @@
                 Service Providers
               </button>
               <button class="settings-tab" type="button" data-tab="priorities">
-                Service Priorities
+                Services
               </button>
             </div>
             <div class="settings-tab-panel active" data-tab-panel="connections">
@@ -299,6 +300,7 @@
                 data-service-tadb="__TADB_ENABLED__"
                 data-service-lastfm="__LASTFM_ENABLED__"
                 data-service-discogs="__DISCOGS_ENABLED__"
+                data-service-plex="__PLEX_ENABLED__"
                 data-service-tidal="__TIDAL_ENABLED__"
                 data-service-apple="__APPLE_MUSIC_ENABLED__"
                 data-service-tidal-user="__TIDAL_USER__"
@@ -307,6 +309,7 @@
               data-service-lastfm-key="__LASTFM_KEY__"
               data-service-lastfm-secret="__LASTFM_SECRET__"
               data-service-discogs-key="__DISCOGS_KEY__"
+              data-service-plex="__PLEX_ENABLED__"
               data-service-apple-max="__APPLE_MUSIC_MAX_IMAGE_SIZE__"
               data-service-apple-upscale="__APPLE_MUSIC_ALLOW_UPSCALE__"
               data-service-coverart="__COVERART_ENABLED__"
@@ -315,13 +318,36 @@
             ></div>
             </div>
             <div class="settings-tab-panel" data-tab-panel="priorities">
+              <div class="settings-field settings-field--row settings-priority-selector">
+                <label class="settings-field__label">Search Priority</label>
+                <div class="settings-field__control settings-priority-selector__control">
+                  <span class="settings-field__value" data-priority-type-label>Data Services</span>
+                  <button
+                    class="config-action settings-field__menu-toggle"
+                    type="button"
+                    aria-label="Service setup menu"
+                    data-priority-type-toggle
+                  >
+                    <span class="config-action__inner" aria-hidden="true">
+                      __CONFIG_MENU_ICON__
+                    </span>
+                  </button>
+                  <div class="config-menu settings-field__menu" data-priority-type-menu>
+                    <button type="button" data-priority-type="data">DATA SERVICES</button>
+                    <button type="button" data-priority-type="artist_bio">ARTIST BIO PHOTOS</button>
+                    <button type="button" data-priority-type="artist_extras">ARTIST EXTRAS</button>
+                    <button type="button" data-priority-type="album_artwork">ALBUM ARTWORK</button>
+                  </div>
+                </div>
+              </div>
               <div
-                class="settings-list"
+                class="settings-list settings-list--draggable settings-list--priorities"
                 data-services-priority
                 data-service-fanart="__FANART_ENABLED__"
                 data-service-tadb="__TADB_ENABLED__"
                 data-service-lastfm="__LASTFM_ENABLED__"
                 data-service-discogs="__DISCOGS_ENABLED__"
+                data-service-plex="__PLEX_ENABLED__"
                 data-service-tidal="__TIDAL_ENABLED__"
                 data-service-apple="__APPLE_MUSIC_ENABLED__"
                 data-service-tidal-user="__TIDAL_USER__"
@@ -330,6 +356,7 @@
               data-service-lastfm-key="__LASTFM_KEY__"
               data-service-lastfm-secret="__LASTFM_SECRET__"
               data-service-discogs-key="__DISCOGS_KEY__"
+              data-service-plex="__PLEX_ENABLED__"
               data-service-apple-max="__APPLE_MUSIC_MAX_IMAGE_SIZE__"
               data-service-apple-upscale="__APPLE_MUSIC_ALLOW_UPSCALE__"
               data-service-coverart="__COVERART_ENABLED__"
@@ -373,7 +400,10 @@
                       APPLE MUSIC
                     </button>
                     <button type="button" data-service-priority-option="discogs">
-                      DISCOGS
+                      DISCOGS (COMING SOON)
+                    </button>
+                    <button type="button" data-service-priority-option="plex">
+                      PLEX
                     </button>
                     <button type="button" data-service-priority-option="fanart">
                       FANART.TV
@@ -834,24 +864,21 @@
         </div>
       </div>
     </div>
-    <div class="modal settings-modal service-modal" data-modal="coverart-settings" aria-hidden="true">
+    <div class="modal settings-modal service-modal coverart-modal" data-modal="coverart-settings" aria-hidden="true">
       <div class="modal__backdrop" data-modal-backdrop></div>
       <div class="modal__panel settings-modal__panel" role="dialog" aria-modal="true" aria-label="Cover Art Archive Settings">
         <button class="modal__esc-hint" type="button" data-modal-close>esc</button>
         <div class="settings-modal__content">
           <h2 class="settings-modal__title">Cover Art Archive Settings</h2>
           <div class="settings-field">
-            <label class="settings-field__label" for="coverart-size">Maximum image size</label>
+            <label class="settings-field__label" for="coverart-size">Maximum image size (in pixels)</label>
             <div class="settings-field__control settings-field__control--framed" data-coverart-control>
-              <input
+              <div
                 id="coverart-size"
-                class="settings-field__input settings-field__input--framed"
-                type="text"
-                spellcheck="false"
-                autocomplete="off"
-                value="__COVERART_SIZE__"
-                readonly
-              />
+                class="settings-field__display settings-field__input--framed"
+                aria-live="polite"
+              >__COVERART_SIZE__</div>
+              <span class="settings-field__unit" data-coverart-units>pixels</span>
               <button
                 class="config-action settings-field__menu-toggle"
                 type="button"
@@ -895,6 +922,23 @@
           </div>
           <div class="refresh-modal__actions">
             <button class="modal-link modal-link-text modal-link-cancel" type="button" data-modal-close>CANCEL</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal settings-modal service-modal" data-modal="plex-settings" aria-hidden="true">
+      <div class="modal__backdrop" data-modal-backdrop></div>
+      <div class="modal__panel settings-modal__panel" role="dialog" aria-modal="true" aria-label="Plex Settings">
+        <button class="modal__esc-hint" type="button" data-modal-close>esc</button>
+        <div class="settings-modal__content">
+          <h2 class="settings-modal__title">Plex</h2>
+          <div class="settings-field">
+            <label class="settings-field__label">Status</label>
+            <div class="settings-field__value">Configuration coming soon.</div>
+          </div>
+          <div class="refresh-modal__actions">
+            <button class="modal-link modal-link-text modal-link-cancel" type="button" data-modal-close>CANCEL</button>
+            <button class="modal-link modal-link-text" type="button" data-plex-save>SAVE</button>
           </div>
         </div>
       </div>
@@ -1343,6 +1387,14 @@
       const refreshResolveToggle = document.querySelector(
         "[data-refresh-resolve-toggle]",
       );
+      const providerCapabilities = (() => {
+        try {
+          const raw = __PROVIDER_CAPABILITIES__;
+          return Array.isArray(raw) ? raw : [];
+        } catch (error) {
+          return [];
+        }
+      })();
       const refreshModal = document.querySelector(
         '[data-modal="refresh-modal"]',
       );
@@ -1366,6 +1418,7 @@
       const appleMusicMaxInput = document.querySelector("#apple-music-max-image");
       const appleMusicUpscaleInput = document.querySelector("#apple-music-upscale");
       const coverartSizeInput = document.querySelector("#coverart-size");
+      const coverartUnitsLabel = document.querySelector("[data-coverart-units]");
       const coverartMenuToggle = document.querySelector("[data-coverart-menu-toggle]");
       const coverartMenu = document.querySelector("[data-coverart-menu]");
       const coverartMenuOptions = Array.from(
@@ -1377,6 +1430,7 @@
       const lastfmSaveButton = document.querySelector("[data-lastfm-save]");
       const appleMusicSaveButton = document.querySelector("[data-apple-music-save]");
       const coverartSaveButton = document.querySelector("[data-coverart-save]");
+      const plexSaveButton = document.querySelector("[data-plex-save]");
       const servicesList = document.querySelector("[data-services]");
       const servicesPriorityList = document.querySelector("[data-services-priority]");
       const priorityAddButton = document.querySelector(
@@ -1384,6 +1438,18 @@
       );
       const priorityMenu = document.querySelector(
         "[data-service-priority-menu]",
+      );
+      const priorityTypeToggle = document.querySelector(
+        "[data-priority-type-toggle]",
+      );
+      const priorityTypeMenu = document.querySelector(
+        "[data-priority-type-menu]",
+      );
+      const priorityTypeLabel = document.querySelector(
+        "[data-priority-type-label]",
+      );
+      const priorityTypeOptions = Array.from(
+        document.querySelectorAll("[data-priority-type]"),
       );
       const priorityRemoveButton = document.querySelector(
         "[data-service-priority-remove]",
@@ -1472,7 +1538,17 @@
       const setCoverartSize = (value, { updateDataset = true } = {}) => {
         const normalized = normalizeCoverartSize(value);
         if (coverartSizeInput) {
-          coverartSizeInput.value = formatCoverartLabel(normalized);
+          const label = formatCoverartLabel(normalized);
+          if ("value" in coverartSizeInput) {
+            coverartSizeInput.value = label;
+          } else {
+            coverartSizeInput.textContent = label;
+          }
+          if (coverartUnitsLabel) {
+            coverartUnitsLabel.textContent =
+              normalized === "original" ? "" : "pixels";
+            coverartUnitsLabel.hidden = normalized === "original";
+          }
         }
         if (servicesList && updateDataset) {
           servicesList.dataset.serviceCoverartSize = normalized;
@@ -3016,7 +3092,9 @@
           return span;
         };
         state.valueText.innerHTML = "";
-        const tokens = parts.map((part) => buildToken(part));
+        const tokens = parts.map((part) =>
+          buildToken(part, "config-menu-check selected-exclude")
+        );
         tokens.forEach((token) => state.valueText.appendChild(token));
         const needsEllipsis =
           state.valueText.scrollWidth > state.valueText.clientWidth;
@@ -3963,6 +4041,12 @@
       const foldLabel = document.querySelector("[data-fold-label]");
       if (foldToggle && foldContent) {
         const foldRoot = foldToggle.closest(".fold");
+        const syncFoldHeight = () => {
+          if (!foldRoot || !foldRoot.classList.contains("open")) {
+            return;
+          }
+          foldContent.style.maxHeight = `${foldContent.scrollHeight}px`;
+        };
         const setFoldLabel = (open) => {
           if (!foldLabel) {
             return;
@@ -3976,11 +4060,23 @@
         }
         foldToggle.setAttribute("aria-expanded", shouldOpen ? "true" : "false");
         if (shouldOpen) {
-          foldContent.style.maxHeight = `${foldContent.scrollHeight}px`;
+          syncFoldHeight();
         } else {
           foldContent.style.maxHeight = "0px";
         }
         setFoldLabel(shouldOpen);
+        if (typeof ResizeObserver !== "undefined") {
+          const foldObserver = new ResizeObserver(() => {
+            syncFoldHeight();
+          });
+          foldObserver.observe(foldContent);
+        }
+        window.addEventListener("resize", () => {
+          syncFoldHeight();
+        });
+        requestAnimationFrame(() => {
+          syncFoldHeight();
+        });
         foldToggle.addEventListener("click", () => {
           if (!foldRoot) {
             return;
@@ -4071,6 +4167,34 @@
         });
         priorityMenu.addEventListener("click", (event) => {
           event.stopPropagation();
+          event.preventDefault();
+        });
+        priorityMenu.addEventListener("mousedown", (event) => {
+          event.stopPropagation();
+        });
+      }
+      if (priorityTypeToggle && priorityTypeMenu) {
+        priorityTypeToggle.addEventListener("click", (event) => {
+          event.stopPropagation();
+          priorityTypeMenu.classList.toggle("open");
+          if (priorityTypeMenu.classList.contains("open")) {
+            requestAnimationFrame(() => adjustMenuPosition(priorityTypeMenu));
+          }
+        });
+        priorityTypeMenu.addEventListener("mousedown", (event) => {
+          event.stopPropagation();
+        });
+        priorityTypeMenu.addEventListener("click", (event) => {
+          event.stopPropagation();
+          event.preventDefault();
+          const option = event.target.closest("[data-priority-type]");
+          if (!option) {
+            return;
+          }
+          setPriorityType(option.dataset.priorityType || "data");
+          priorityTypeMenu.classList.remove("open");
+          priorityTypeMenu.style.removeProperty("--menu-shift-x");
+          priorityTypeMenu.style.removeProperty("--menu-shift-y");
         });
       }
 
@@ -4092,6 +4216,7 @@
         { id: "lastfm", label: "LAST.FM", modal: "lastfm-settings" },
         { id: "musicbrainz", label: "MUSICBRAINZ", modal: "musicbrainz-settings" },
         { id: "tadb", label: "THE AUDIODB", modal: "tadb-settings" },
+        { id: "plex", label: "PLEX", modal: "plex-settings" },
         { id: "tidal", label: "TIDAL", modal: "tidal-settings" },
       ];
       const serviceOrderKey = "limbo-services-order";
@@ -4268,6 +4393,9 @@
         if (id === "musicbrainz") {
           return true;
         }
+        if (id === "plex") {
+          return true;
+        }
         return false;
       };
       const renderServiceList = (selectedId = null) => {
@@ -4293,41 +4421,43 @@
             return;
           }
           const row = document.createElement("div");
-          row.className = "settings-list__item";
-          if (item.id === selectedId) {
-            row.classList.add("selected");
-          }
+          row.className = "settings-list__item config-menu-check";
           row.dataset.serviceId = item.id;
           row.textContent = "";
           const label = document.createElement("span");
           label.className = "settings-list__label";
           label.textContent = item.label;
+          const isEnabled = getServiceEnabled(item.id);
+          row.classList.toggle("selected", isEnabled);
+          const toggleEnabled = () => {
+            const nextEnabled = !getServiceEnabled(item.id);
+            setServiceEnabled(item.id, nextEnabled);
+            row.classList.toggle("selected", nextEnabled);
+            if (!nextEnabled && !isLocalPreview) {
+              fetch("/config/service-disable", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ provider: item.id }),
+              }).catch(() => {});
+            }
+          };
           row.appendChild(label);
           const handle = document.createElement("span");
           handle.className = "settings-list__handle settings-list__handle--icon";
           handle.setAttribute("aria-hidden", "true");
           handle.innerHTML = __THICK_ARROW_RT_ICON__;
           row.appendChild(handle);
-          row.addEventListener("mousedown", (event) => {
-            if (event.button !== 0) {
-              return;
-            }
-            servicesList
-              .querySelectorAll(".settings-list__item")
-              .forEach((node) => node.classList.remove("selected"));
-            row.classList.add("selected");
-          });
-          row.addEventListener("click", () => {
+          row.addEventListener("click", (event) => {
             if (dragSuppressClick) {
               dragSuppressClick = false;
               return;
             }
-            servicesList
-              .querySelectorAll(".settings-list__item")
-              .forEach((node) => node.classList.remove("selected"));
-            row.classList.add("selected");
-          });
-          row.addEventListener("dblclick", () => {
+            const rect = row.getBoundingClientRect();
+            const checkboxZone = 8 + 16 + 8;
+            if (event.clientX - rect.left <= checkboxZone) {
+              toggleEnabled();
+              return;
+            }
             openServiceModal(item.id);
           });
           servicesList.appendChild(row);
@@ -4335,10 +4465,37 @@
       };
       renderServiceList();
 
-      const servicePriorityOrderKey = "limbo-service-priority-artist";
+      const priorityTypeStorageKey = "limbo-service-priority-type";
+      const priorityTypeLabels = {
+        data: "Data Services",
+        artist_bio: "Artist Bio Photos",
+        artist_extras: "Artist Extras",
+        album_artwork: "Album Artwork",
+      };
+      const priorityTypeCapabilityMap = {
+        data: [
+          "artist_metadata",
+          "album_metadata",
+          "artist_links",
+          "discography",
+          "series",
+          "id_redirects",
+          "spotify_mapping",
+          "charts",
+        ],
+        artist_bio: ["artist_images"],
+        artist_extras: ["artist_images", "album_art"],
+        album_artwork: ["album_art"],
+      };
+      const priorityTypeAllowList = {
+        data: ["discogs"],
+      };
+      let priorityType = "data";
+      const getPriorityStorageKey = () =>
+        `limbo-service-priority-${priorityType}`;
       const getServicePriorityOrder = () => {
         try {
-          const raw = localStorage.getItem(servicePriorityOrderKey);
+          const raw = localStorage.getItem(getPriorityStorageKey());
           if (!raw) {
             return [];
           }
@@ -4350,11 +4507,50 @@
       };
       const setServicePriorityOrder = (order) => {
         try {
-          localStorage.setItem(servicePriorityOrderKey, JSON.stringify(order));
+          localStorage.setItem(getPriorityStorageKey(), JSON.stringify(order));
         } catch (error) {
           // ignore
         }
       };
+      const setPriorityType = (value) => {
+        const next = priorityTypeLabels[value] ? value : "data";
+        priorityType = next;
+        if (priorityTypeLabel) {
+          priorityTypeLabel.textContent =
+            priorityTypeLabels[next] || "Data Services";
+        }
+        priorityTypeOptions.forEach((option) => {
+          option.classList.toggle(
+            "selected",
+            option.dataset.priorityType === next,
+          );
+        });
+        try {
+          localStorage.setItem(priorityTypeStorageKey, next);
+        } catch (error) {
+          // ignore
+        }
+        renderPriorityList();
+        filterPriorityMenuOptions();
+      };
+      try {
+        const storedType = localStorage.getItem(priorityTypeStorageKey);
+        if (storedType && priorityTypeLabels[storedType]) {
+          priorityType = storedType;
+        }
+      } catch (error) {
+        // ignore
+      }
+      if (priorityTypeLabel) {
+        priorityTypeLabel.textContent =
+          priorityTypeLabels[priorityType] || "Data Services";
+      }
+      priorityTypeOptions.forEach((option) => {
+        option.classList.toggle(
+          "selected",
+          option.dataset.priorityType === priorityType,
+        );
+      });
       const renderPriorityList = (selectedId = null) => {
         if (!servicesPriorityList) {
           return;
@@ -4410,6 +4606,7 @@
               .querySelectorAll(".settings-list__item")
               .forEach((node) => node.classList.remove("selected"));
             row.classList.add("selected");
+            openServiceModal(item.id);
           });
           row.addEventListener("dragstart", (event) => {
             dragSuppressClick = true;
@@ -4466,11 +4663,34 @@
         setServicePriorityOrder(orderedIds);
         priorityMenuOptions.forEach((option) => {
           const id = option.dataset.servicePriorityOption;
-          option.style.display =
-            isServiceConfigured(id) && !orderedIds.includes(id) ? "" : "none";
+          option.style.display = !orderedIds.includes(id) ? "" : "none";
         });
       };
       renderPriorityList();
+      const filterPriorityMenuOptions = () => {
+        const requiredCaps = priorityTypeCapabilityMap[priorityType] || [];
+        const allowIds = priorityTypeAllowList[priorityType] || [];
+        const capabilityIdMap = {
+          coverart: "cover_art_archive",
+          apple: "apple_music",
+          tadb: "theaudiodb",
+        };
+        priorityMenuOptions.forEach((option) => {
+          const id = option.dataset.servicePriorityOption;
+          const lookupId = capabilityIdMap[id] || id;
+          const provider =
+            providerCapabilities.find((entry) => entry.id === lookupId) ||
+            providerCapabilities.find((entry) => entry.id === id);
+          const caps = provider?.capabilities || [];
+          const supportsType = allowIds.includes(id)
+            ? true
+            : requiredCaps.length
+              ? requiredCaps.some((cap) => caps.includes(cap))
+              : true;
+          option.style.display = supportsType ? "" : "none";
+        });
+      };
+      filterPriorityMenuOptions();
 
       const clearServiceSelection = () => {
         if (!servicesList) {
@@ -4838,6 +5058,15 @@
           if (ok) {
             disableModalRestore("coverart-settings");
             closeModal(getModalById("coverart-settings"));
+          }
+        });
+      }
+      if (plexSaveButton) {
+        plexSaveButton.addEventListener("click", async () => {
+          const ok = await saveService("plex", {}, "plex");
+          if (ok) {
+            disableModalRestore("plex-settings");
+            closeModal(getModalById("plex-settings"));
           }
         });
       }

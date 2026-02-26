@@ -128,6 +128,18 @@ PROVIDER_CAPABILITIES: Dict[str, Dict[str, Any]] = {
         "pricing": "free",
         "notes": "Top artists/albums only.",
     },
+    "plex": {
+        "display_name": "Plex",
+        "capabilities": ["artist_metadata", "album_metadata", "artist_images", "album_art"],
+        "auth": {"type": "token", "fields": ["PLEX_URL", "PLEX_TOKEN"]},
+        "endpoints": {"base_url": "https://plex.tv", "docs_url": "https://support.plex.tv/articles/201638786-plex-media-server-url-commands/"},
+        "moreinfo_url": "https://www.plex.tv/",
+        "rate_limit": {"requests_per_second": None, "requests_per_minute": None, "notes": "Best effort"},
+        "image_sizing": {"supports": False, "method": "", "original": "", "notes": ""},
+        "supports_cache": True,
+        "pricing": "free_optional",
+        "notes": "Plex metadata and artwork via Plex API; configuration coming soon.",
+    },
 }
 
 

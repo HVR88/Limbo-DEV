@@ -4,6 +4,8 @@ from __future__ import annotations
 import argparse
 import subprocess
 import sys
+import json
+import re
 from pathlib import Path
 
 
@@ -23,9 +25,11 @@ def build_preview_html() -> str:
             content = (svg_dir / name).read_text(encoding="utf-8")
         except Exception:
             return ""
-        return content.replace(
+        content = content.replace(
             '<?xml version="1.0" encoding="UTF-8" standalone="no"?>', ""
-        ).strip()
+        )
+        content = re.sub(r"<!--.*?-->", "", content, flags=re.DOTALL)
+        return content.strip()
 
     menu_icon = read_svg("limbo-arrows-updn.svg")
     config_html = "\n".join(
@@ -40,11 +44,9 @@ def build_preview_html() -> str:
 
     mbms_pills = "\n".join(
         [
-            '          <button type="button" class="pill has-action" data-pill-href="https://github.com/HVR88/MBMS_PLUS">',
-            '            <div class="label">Limbo</div>',
-            '            <div class="value has-update"><span class="version-current">1.2.3</span><span class="version-update">&rarr; NEW 1.2.4</span></div>',
-            "",
-            f"            <span class=\"pill-arrow\" aria-hidden=\"true\">{read_svg('limbo-tall-arrow.svg')}</span>",
+            '          <button type="button" class="pill" disabled>',
+            '            <div class="label">&nbsp;</div>',
+            '            <div class="value">&nbsp;</div>',
             "          </button>",
             '          <button type="button" class="pill" data-pill-href="" data-modal-open="schedule-indexer">',
             '            <div class="label">DB Indexing Schedule</div>',
@@ -61,13 +63,14 @@ def build_preview_html() -> str:
 
     replacements = {
         "__ICON_URL__": "limbo-icon.png",
+        "__DEBUG_UI_CLASS__": "",
         "__LM_VERSION__": "1.9.7.10",
         "__LM_PLUGIN_VERSION__": "1.9.7.10",
         "__LM_PLUGIN_LABEL__": "Limbo Plugin Version",
         "__LM_PILL_HTML__": "\n".join(
             [
                 '          <button type="button" class="pill has-action" data-pill-href="https://github.com/HVR88/Limbo_Bridge">',
-                '            <div class="label">Limbo Bridge/webUI</div>',
+                '            <div class="label">LIMBO (BRIDGE/WEBUI)</div>',
                 '            <div class="value has-update"><span class="version-current">1.9.7.10</span><span class="version-update">&rarr; NEW 1.9.7.12</span></div>',
                 f"            <span class=\"pill-arrow\" aria-hidden=\"true\">{read_svg('limbo-tall-arrow.svg')}</span>",
                 "          </button>",
@@ -128,6 +131,7 @@ def build_preview_html() -> str:
         "__LASTFM_ENABLED__": "false",
         "__TIDAL_ENABLED__": "false",
         "__DISCOGS_ENABLED__": "false",
+        "__PLEX_ENABLED__": "false",
         "__APPLE_MUSIC_ENABLED__": "false",
         "__APPLE_MUSIC_MAX_IMAGE_SIZE__": "2500",
         "__APPLE_MUSIC_ALLOW_UPSCALE__": "false",
@@ -139,6 +143,32 @@ def build_preview_html() -> str:
         "__THEME_ICON_AUTO__": read_svg("limbo-auto.svg"),
         "__TALL_ARROW_ICON__": read_svg("limbo-tall-arrow.svg"),
         "__CONFIG_MENU_ICON__": read_svg("limbo-arrows-updn.svg"),
+        "__THICK_ARROW_RT_ICON__": json.dumps(read_svg("limbo-arrow-thick-rt.svg")),
+        "__PROVIDER_CAPABILITIES__": json.dumps(
+            [
+                {
+                    "id": "musicbrainz",
+                    "capabilities": [
+                        "artist_metadata",
+                        "album_metadata",
+                        "artist_links",
+                        "discography",
+                        "series",
+                        "id_redirects",
+                        "spotify_mapping",
+                        "charts",
+                    ],
+                },
+                {"id": "coverart", "capabilities": ["album_art"]},
+                {"id": "fanart", "capabilities": ["artist_images"]},
+                {"id": "tadb", "capabilities": ["artist_images"]},
+                {"id": "discogs", "capabilities": ["artist_images"]},
+                {"id": "plex", "capabilities": ["artist_metadata", "album_metadata", "artist_images", "album_art"]},
+                {"id": "tidal", "capabilities": ["artist_images"]},
+                {"id": "apple", "capabilities": ["artist_images"]},
+                {"id": "lastfm", "capabilities": ["charts"]},
+            ]
+        ),
         "__MBMS_URL__": "https://github.com/HVR88/MBMS_PLUS",
         "__CONFIG_HTML__": config_html,
         "__MBMS_PILLS__": mbms_pills,
