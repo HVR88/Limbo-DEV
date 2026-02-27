@@ -207,6 +207,7 @@ jobs:
           file: Dockerfile
           build-args: |
             APP_VERSION=${{ steps.bump.outputs.new_version }}
+            LIMBO_CHANNEL=${{ inputs.channel }}
           platforms: ${{ inputs.platforms }}
           push: true
           tags: |

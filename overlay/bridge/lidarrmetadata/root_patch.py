@@ -27,6 +27,12 @@ def _is_truthy(value: object) -> bool:
         return value.strip().lower() in {"1", "true", "yes", "on"}
     return bool(value)
 
+def _limbo_channel_class() -> str:
+    channel = str(os.getenv("LIMBO_CHANNEL") or "").strip().lower()
+    if channel == "test":
+        return "limbo-channel-test"
+    return "limbo-channel-stable"
+
 _START_TIME = time.time()
 _STATE_DIR = Path(os.environ.get("LIMBO_INIT_STATE_DIR", "/metadata/init-state"))
 _LIDARR_VERSION_FILE = Path(
@@ -1929,6 +1935,7 @@ def register_root_route() -> None:
             "__DEBUG_UI_CLASS__": "debug-ui"
             if _is_truthy(os.getenv("LIMBO_DEBUG_UI") or os.getenv("DEBUG"))
             else "",
+            "__CHANNEL_CLASS__": _limbo_channel_class(),
             "__LM_VERSION__": safe["version"],
             "__LM_PLUGIN_VERSION__": safe["plugin_version"],
             "__MBMS_PLUS_VERSION__": safe["mbms_plus_version"],

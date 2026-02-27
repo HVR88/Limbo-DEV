@@ -172,6 +172,24 @@ body.menu-modal-open .modal.open * {
   margin: -12px 0 18px;
   text-align: left;
 }
+.hero-title-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+.channel-badge {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: linear-gradient(120deg, rgba(255, 126, 59, 0.18), rgba(255, 201, 120, 0.08));
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  line-height: 1;
+  box-shadow: 0 8px 20px rgba(255, 138, 61, 0.15);
+}
 .hero-logo {
   width: 180px;
   height: 80px;
@@ -980,6 +998,9 @@ body[data-theme="dark"] .settings-list__item.inactive {
   letter-spacing: 0.16em;
   opacity: 0;
   pointer-events: none;
+}
+body.limbo-channel-stable [data-test-only] {
+  display: none !important;
 }
 body.debug-ui .settings-list__test-toggle {
   opacity: 1;

@@ -10,7 +10,7 @@
     />
     <link rel="stylesheet" href="/assets/root.css" />
   </head>
-  <body class="__DEBUG_UI_CLASS__">
+  <body class="__DEBUG_UI_CLASS__ __CHANNEL_CLASS__">
     <main class="wrap">
       <section class="card">
         <button
@@ -61,7 +61,10 @@
           >
           </span>
           <div class="hero-text">
-            <h1 class="hero-title">Limbo</h1>
+            <div class="hero-title-row">
+              <h1 class="hero-title">Limbo</h1>
+              <span class="channel-badge" data-test-only>TEST</span>
+            </div>
             <span class="hero-sub"><em>FAST • Local • Private</em></span>
           </div>
         </div>
@@ -71,11 +74,15 @@
             <button class="tab-button active" data-tab="filter-details">
               Media Filters
             </button>
-            <button class="tab-button" data-tab="releasesplitting">
+            <button class="tab-button" data-tab="releasesplitting" data-test-only>
               Release Splitting
             </button>
-            <button class="tab-button" data-tab="stats">Stats</button>
-            <button class="tab-button" data-tab="tools">Tools</button>
+            <button class="tab-button" data-tab="stats" data-test-only>
+              Stats
+            </button>
+            <button class="tab-button" data-tab="tools" data-test-only>
+              Tools
+            </button>
           </div>
           <div class="tab-panel active" data-tab-panel="filter-details">
             <div class="tab_inside-box">
@@ -100,7 +107,7 @@
               </div>
             </div>
           </div>
-          <div class="tab-panel" data-tab-panel="releasesplitting">
+          <div class="tab-panel" data-tab-panel="releasesplitting" data-test-only>
             <div class="tab_inside-box">
               <div class="actions_box">
                 <div class="tabs-footnote">
@@ -109,7 +116,7 @@
               </div>
             </div>
           </div>
-          <div class="tab-panel" data-tab-panel="stats">
+          <div class="tab-panel" data-tab-panel="stats" data-test-only>
             <div class="filters_box">
               <div class="links">
                 <div class="links-left"></div>
@@ -117,7 +124,7 @@
               </div>
             </div>
           </div>
-          <div class="tab-panel" data-tab-panel="tools">
+          <div class="tab-panel" data-tab-panel="tools" data-test-only>
             <div class="filters_box">
               <div class="links">
                 <div class="links-left"></div>
@@ -203,10 +210,20 @@
               <button class="settings-tab active" type="button" data-tab="connections">
                 Connections
               </button>
-              <button class="settings-tab" type="button" data-tab="providers">
+              <button
+                class="settings-tab"
+                type="button"
+                data-tab="providers"
+                data-test-only
+              >
                 Providers
               </button>
-              <button class="settings-tab" type="button" data-tab="priorities">
+              <button
+                class="settings-tab"
+                type="button"
+                data-tab="priorities"
+                data-test-only
+              >
                 Services
               </button>
             </div>
@@ -293,7 +310,11 @@
                 </div>
               </div>
             </div>
-            <div class="settings-tab-panel" data-tab-panel="providers">
+              <div
+                class="settings-tab-panel"
+                data-tab-panel="providers"
+                data-test-only
+              >
               <div
                 class="settings-list"
                 data-providers
@@ -329,7 +350,11 @@
                 data-provider-wikipedia-error="__WIKIPEDIA_ERROR__"
             ></div>
             </div>
-              <div class="settings-tab-panel" data-tab-panel="priorities">
+              <div
+                class="settings-tab-panel"
+                data-tab-panel="priorities"
+                data-test-only
+              >
               <div class="settings-field settings-field--row settings-priority-selector">
                 <label class="settings-field__label">Search Priority</label>
                 <div class="settings-field__control settings-priority-selector__control">

@@ -5,8 +5,10 @@ FROM python:3.9-bullseye
 WORKDIR /metadata
 
 ARG APP_VERSION=dev
+ARG LIMBO_CHANNEL=stable
 LABEL org.opencontainers.image.version=$APP_VERSION
 ENV LIMBO_VERSION=$APP_VERSION
+ENV LIMBO_CHANNEL=$LIMBO_CHANNEL
 
 # Runtime hygiene
 ENV PYTHONUNBUFFERED=1 \

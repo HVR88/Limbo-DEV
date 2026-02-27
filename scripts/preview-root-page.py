@@ -64,6 +64,7 @@ def build_preview_html() -> str:
     replacements = {
         "__ICON_URL__": "limbo-icon.png",
         "__DEBUG_UI_CLASS__": "",
+        "__CHANNEL_CLASS__": "limbo-channel-test",
         "__LM_VERSION__": "1.9.7.10",
         "__LM_PLUGIN_VERSION__": "1.9.7.10",
         "__LM_PLUGIN_LABEL__": "Limbo Plugin Version",
