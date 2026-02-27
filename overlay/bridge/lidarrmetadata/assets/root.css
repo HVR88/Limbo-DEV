@@ -799,6 +799,26 @@ body[data-theme="dark"] .modal__esc-hint {
 .settings-field__input::placeholder {
   color: rgba(120, 135, 146, 0.65);
 }
+.settings-field__input::-webkit-credentials-auto-fill-button {
+  visibility: hidden;
+  position: absolute;
+  right: 0;
+}
+.settings-field__input::-webkit-contacts-auto-fill-button {
+  visibility: hidden;
+  position: absolute;
+  right: 0;
+}
+.settings-field__input[type="password"]::-webkit-credentials-auto-fill-button {
+  visibility: hidden;
+  position: absolute;
+  right: 0;
+}
+.settings-field__input[type="password"]::-webkit-contacts-auto-fill-button {
+  visibility: hidden;
+  position: absolute;
+  right: 0;
+}
 .settings-field__row {
   display: flex;
   align-items: center;
@@ -1087,11 +1107,16 @@ body.debug-ui .settings-list__test-toggle {
   background: transparent;
   padding: 0 8px 0 0;
 }
+[data-apikey-control] {
+  overflow: hidden;
+}
 .settings-field__input--framed {
   border: 0;
   border-radius: 0;
   padding: 10px 12px;
   width: 100%;
+  position: relative;
+  z-index: 1;
 }
 .settings-field__display {
   color: var(--ink);
@@ -1119,6 +1144,48 @@ body.debug-ui .settings-list__test-toggle {
   font-weight: 600;
   letter-spacing: 0.02em;
   white-space: nowrap;
+}
+.settings-field__mask-chip {
+  position: absolute;
+  left: 8px;
+  right: 42px;
+  top: 50%;
+  z-index: 100;
+  transform: translateY(-50%) translateX(0);
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: rgba(11, 125, 109, 0.2);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-align: center;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 1;
+  --chip-slide-in: 5000ms;
+  --chip-slide-out: 5000ms;
+}
+.settings-field__control.chip-animate .settings-field__mask-chip {
+  transition: transform var(--chip-slide-out) ease;
+}
+.settings-field__control.is-masked .settings-field__mask-chip {
+  transform: translateY(-50%) translateX(0);
+  transition-duration: var(--chip-slide-in);
+}
+.settings-field__control:not(.is-masked) .settings-field__mask-chip {
+  transform: translateY(-50%) translateX(120%);
+  transition-duration: var(--chip-slide-out);
+}
+.settings-field__control.is-masked .settings-field__input--framed {
+  color: transparent;
+  caret-color: var(--ink);
+}
+.settings-field__control:not(.is-masked) .settings-field__input--framed {
+  color: var(--ink);
+}
+body[data-theme="dark"] .settings-field__mask-chip {
+  background: rgba(11, 125, 109, 0.2);
 }
 .settings-field__chip[hidden] {
   display: none;
@@ -1810,20 +1877,6 @@ body[data-theme="dark"] .media-types-value .media-type-token {
   width: 14px;
   height: 14px;
   display: block;
-}
-.config-action__inner.is-loading {
-  border: 2px solid rgba(151, 170, 180, 0.35);
-  border-top-color: var(--accent);
-  background: transparent;
-  animation: config-spinner 0.8s linear infinite;
-}
-.config-action__inner.is-loading svg {
-  display: none;
-}
-@keyframes config-spinner {
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 body[data-theme="dark"] .config-action__inner svg {

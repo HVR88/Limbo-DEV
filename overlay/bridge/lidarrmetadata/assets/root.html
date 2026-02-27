@@ -319,16 +319,52 @@
                   <label class="settings-field__label" for="lidarr-apikey"
                     >Lidarr APIKEY</label
                   >
-                  <input
-                    id="lidarr-apikey"
-                    class="settings-field__input"
-                    type="text"
-                    maxlength="255"
-                    spellcheck="false"
-                    autocomplete="off"
-                    placeholder="lkd9a8s7df0a9s8d7f0a9s8d7f0a9s8d"
-                    value="__LIDARR_API_KEY__"
-                  />
+                  <div
+                    class="settings-field__control settings-field__control--framed"
+                    data-apikey-control
+                  >
+                    <input
+                      id="lidarr-apikey"
+                      class="settings-field__input settings-field__input--framed"
+                      type="text"
+                      maxlength="255"
+                      spellcheck="false"
+                      autocomplete="off"
+                      placeholder="lkd9a8s7df0a9s8d7f0a9s8d7f0a9s8d"
+                      value="__LIDARR_API_KEY__"
+                    />
+                    <span class="settings-field__mask-chip" data-apikey-mask></span>
+                    <button
+                      class="config-action settings-field__menu-toggle"
+                      type="button"
+                      aria-label="Toggle API key visibility"
+                      data-secret-toggle
+                    >
+                      <span class="config-action__inner" aria-hidden="true">
+                        <svg
+                          viewBox="0 0 24 24"
+                          width="14"
+                          height="14"
+                          aria-hidden="true"
+                        >
+                          <path
+                            d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.6"
+                          />
+                          <circle
+                            cx="12"
+                            cy="12"
+                            r="3.5"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.6"
+                          />
+                        </svg>
+                      </span>
+                    </button>
+                  </div>
                 </div>
                 <div class="settings-field">
                   <label class="settings-field__label" for="limbo-url"
@@ -1799,6 +1835,9 @@
       const lidarrTestButton = document.querySelector(
         "[data-lidarr-menu-toggle]",
       );
+      const secretToggle = document.querySelector("[data-secret-toggle]");
+      const apiKeyControl = document.querySelector("[data-apikey-control]");
+      const apiKeyMask = document.querySelector("[data-apikey-mask]");
       const lidarrSaveButton = document.querySelector("[data-lidarr-save]");
       const tidalClientIdInput = document.querySelector("#tidal-client-id");
       const tidalClientSecretInput = document.querySelector(
@@ -1904,13 +1943,19 @@
       const applyInputSanitizers = () => {
         if (lidarrUrlInput) {
           lidarrUrlInput.addEventListener("blur", () => {
-            lidarrUrlInput.value = sanitizeHostPort(lidarrUrlInput.value);
+            const sanitized = sanitizeHostPort(lidarrUrlInput.value);
+            if (sanitized) {
+              lidarrUrlInput.value = sanitized;
+            }
           });
         }
         if (limboUrlInput) {
           limboUrlInput.addEventListener("blur", () => {
             if (limboControl?.dataset.limboMode === "custom") {
-              limboUrlInput.value = sanitizeHostPort(limboUrlInput.value);
+              const sanitized = sanitizeHostPort(limboUrlInput.value);
+              if (sanitized) {
+                limboUrlInput.value = sanitized;
+              }
             }
           });
         }
@@ -2147,16 +2192,46 @@
         return `${prefix}${host}${port ? `:${port}` : ""}`;
       };
 
+      const updateApiKeyMask = () => {
+        if (!apiKeyMask || !lidarrApiKeyInput) {
+          return;
+        }
+        apiKeyMask.textContent = "API KEY";
+      };
+      const setApiKeyMasked = (masked) => {
+        if (!apiKeyControl || !lidarrApiKeyInput) {
+          return;
+        }
+        apiKeyControl.classList.toggle("is-masked", masked);
+      };
+      if (lidarrApiKeyInput) {
+        updateApiKeyMask();
+        lidarrApiKeyInput.addEventListener("input", () => {
+          updateApiKeyMask();
+        });
+        lidarrApiKeyInput.addEventListener("focus", () => {
+          setApiKeyMasked(false);
+        });
+        lidarrApiKeyInput.addEventListener("blur", () => {
+          setApiKeyMasked(true);
+        });
+        setApiKeyMasked(true);
+        if (apiKeyControl) {
+          requestAnimationFrame(() => {
+            apiKeyControl.classList.add("chip-animate");
+          });
+        }
+      }
+      if (secretToggle && lidarrApiKeyInput) {
+        secretToggle.addEventListener("mousedown", (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          lidarrApiKeyInput.focus();
+          lidarrApiKeyInput.setSelectionRange(0, 0);
+        });
+      }
+
       const testLidarrConnection = async () => {
-        const lidarrSpinner = lidarrTestButton?.querySelector(
-          ".config-action__inner",
-        );
-        if (lidarrTestButton) {
-          lidarrTestButton.disabled = true;
-        }
-        if (lidarrSpinner) {
-          lidarrSpinner.classList.add("is-loading");
-        }
         const baseUrl = sanitizeHostPort(lidarrUrlInput?.value || "");
         if (lidarrUrlInput) {
           lidarrUrlInput.value = baseUrl;
@@ -2191,13 +2266,6 @@
         } catch (error) {
           suppressHover();
           openInfo("Unable to connect.");
-        } finally {
-          if (lidarrSpinner) {
-            lidarrSpinner.classList.remove("is-loading");
-          }
-          if (lidarrTestButton) {
-            lidarrTestButton.disabled = false;
-          }
         }
       };
 
@@ -3112,9 +3180,12 @@
         });
       }
 
-      const saveLidarrSettings = async ({ silent = false } = {}) => {
+      const saveLidarrSettings = async ({
+        silent = false,
+        sanitizeUrl = false,
+      } = {}) => {
         const baseUrl = sanitizeHostPort(lidarrUrlInput?.value || "");
-        if (lidarrUrlInput) {
+        if (sanitizeUrl && lidarrUrlInput && baseUrl) {
           lidarrUrlInput.value = baseUrl;
         }
         const apiKey = sanitizeApiKey(lidarrApiKeyInput?.value || "");
@@ -3127,7 +3198,7 @@
         let limboUrl = getLimboUrlForSave();
         if (limboMode === "custom") {
           limboUrl = sanitizeHostPort(limboUrl);
-          if (limboUrlInput) {
+          if (limboUrlInput && limboUrl) {
             limboUrlInput.value = limboUrl;
           }
         }
@@ -3235,28 +3306,32 @@
       };
       if (lidarrSaveButton) {
         lidarrSaveButton.addEventListener("click", async () => {
-          await saveLidarrSettings({ silent: false });
+          await saveLidarrSettings({ silent: false, sanitizeUrl: true });
         });
       }
       let lidarrSaveTimer = null;
-      const scheduleLidarrSave = () => {
+      const scheduleLidarrSave = (options = {}) => {
         if (lidarrSaveTimer) {
           clearTimeout(lidarrSaveTimer);
         }
         lidarrSaveTimer = setTimeout(() => {
-          saveLidarrSettings({ silent: true });
+          saveLidarrSettings({ silent: true, ...options });
         }, 450);
       };
       if (lidarrUrlInput) {
-        lidarrUrlInput.addEventListener("blur", scheduleLidarrSave);
+        lidarrUrlInput.addEventListener("blur", () =>
+          scheduleLidarrSave({ sanitizeUrl: true }),
+        );
       }
       if (lidarrApiKeyInput) {
-        lidarrApiKeyInput.addEventListener("blur", scheduleLidarrSave);
+        lidarrApiKeyInput.addEventListener("blur", () =>
+          scheduleLidarrSave({ sanitizeUrl: false }),
+        );
       }
       if (limboUrlInput) {
         limboUrlInput.addEventListener("blur", () => {
           if (!limboUrlInput.readOnly) {
-            scheduleLidarrSave();
+            scheduleLidarrSave({ sanitizeUrl: true });
           }
         });
       }
