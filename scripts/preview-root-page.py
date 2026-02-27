@@ -16,7 +16,7 @@ def build_preview_html() -> str:
     )
     template = template_path.read_text(encoding="utf-8")
     template = template.replace(
-        'href="/assets/root.css"', 'href="assets/root.css?v=preview-abc12"'
+        'href="/assets/root.css"', 'href="assets/root.css?v=preview-nocache"'
     )
     svg_dir = template_path.parent
 
@@ -140,6 +140,7 @@ def build_preview_html() -> str:
         "__COVERART_SIZE__": "original",
         "__APPLE_MUSIC_MAX_IMAGE_SIZE__": "2500",
         "__APPLE_MUSIC_ALLOW_UPSCALE__": "false",
+        "__REFRESH_RESOLVE_NAMES__": "checked",
         "__LIDARR_BASE_URL__": "http://lidarr-ip:port",
         "__LIDARR_API_KEY__": "lkd9a8s7df0a9s8d7f0a9s8d7f0a9s8d",
         "__MUSICBRAINZ_UI_URL__": "https://musicbrainz.org/",

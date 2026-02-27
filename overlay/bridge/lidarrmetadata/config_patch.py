@@ -29,7 +29,7 @@ _LIDARR_CONFIG_PATH = "/api/v1/config/metadataprovider"
 _LIDARR_WARMUP_MID = "88f69eab-8f07-343b-847c-b944ad33dfcf"
 _LIDARR_WARMED = False
 _LIDARR_WARM_LOCK = asyncio.Lock()
-_PROVIDER_TEST_MBID = "83d91898-7763-47d7-b03b-b92132375c47"
+_PROVIDER_TEST_MBID = "88f69eab-8f07-343b-847c-b944ad33dfcf"
 
 
 def _as_bool(value: object) -> bool:

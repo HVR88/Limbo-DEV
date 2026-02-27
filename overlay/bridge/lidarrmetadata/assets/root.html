@@ -74,7 +74,11 @@
             <button class="tab-button active" data-tab="filter-details">
               Media Filters
             </button>
-            <button class="tab-button" data-tab="releasesplitting" data-test-only>
+            <button
+              class="tab-button"
+              data-tab="releasesplitting"
+              data-test-only
+            >
               Release Splitting
             </button>
             <button class="tab-button" data-tab="stats" data-test-only>
@@ -107,7 +111,11 @@
               </div>
             </div>
           </div>
-          <div class="tab-panel" data-tab-panel="releasesplitting" data-test-only>
+          <div
+            class="tab-panel"
+            data-tab-panel="releasesplitting"
+            data-test-only
+          >
             <div class="tab_inside-box">
               <div class="actions_box">
                 <div class="tabs-footnote">
@@ -202,294 +210,234 @@
         aria-modal="true"
         aria-label="Limbo Settings"
       >
-        <button class="modal__esc-hint" type="button" data-modal-close>esc</button>
+        <button class="modal__esc-hint" type="button" data-modal-close>
+          esc
+        </button>
         <div class="settings-modal__content">
           <h2 class="settings-modal__title">Settings</h2>
-          <div class="settings-tabs" data-settings-tabs>
-            <div class="settings-tabs__buttons">
-              <button class="settings-tab active" type="button" data-tab="connections">
-                Connections
+          <div class="settings-layout">
+            <div class="settings-nav" data-settings-nav>
+              <button
+                class="settings-nav__item is-active"
+                type="button"
+                data-settings-target="connections"
+              >
+                CONNECTIONS
               </button>
               <button
-                class="settings-tab"
+                class="settings-nav__item"
                 type="button"
-                data-tab="providers"
+                data-settings-target="providers"
                 data-test-only
               >
-                Providers
+                PROVIDERS
               </button>
               <button
-                class="settings-tab"
+                class="settings-nav__item"
                 type="button"
-                data-tab="priorities"
+                data-settings-target="services"
+                data-priority-type="data"
                 data-test-only
               >
-                Services
+                METADATA
+              </button>
+              <button
+                class="settings-nav__item"
+                type="button"
+                data-settings-target="services"
+                data-priority-type="artist_bio"
+                data-test-only
+              >
+                ARTIST ART
+              </button>
+              <button
+                class="settings-nav__item"
+                type="button"
+                data-settings-target="services"
+                data-priority-type="album_artwork"
+                data-test-only
+              >
+                ALBUM ART
+              </button>
+              <button
+                class="settings-nav__item"
+                type="button"
+                data-settings-target="services"
+                data-priority-type="artist_extras"
+                data-test-only
+              >
+                FAN ART
               </button>
             </div>
-            <div class="settings-tab-panels" data-settings-panels>
-              <div class="settings-tab-panel active" data-tab-panel="connections">
-              <div class="settings-field">
-                <label class="settings-field__label" for="lidarr-url"
-                  >Lidarr URL</label
-                >
-                <input
-                  id="lidarr-url"
-                  class="settings-field__input"
-                  type="text"
-                  maxlength="2048"
-                  spellcheck="false"
-                  autocomplete="off"
-                  placeholder="http://lidarr-ip:port"
-                  value="__LIDARR_BASE_URL__"
-                />
-              </div>
-              <div class="settings-field">
-                <label class="settings-field__label" for="lidarr-apikey"
-                  >Lidarr APIKEY</label
-                >
-                <input
-                  id="lidarr-apikey"
-                  class="settings-field__input"
-                  type="text"
-                  maxlength="255"
-                  spellcheck="false"
-                  autocomplete="off"
-                  placeholder="lkd9a8s7df0a9s8d7f0a9s8d7f0a9s8d"
-                  value="__LIDARR_API_KEY__"
-                />
-              </div>
-              <div class="settings-field">
-                <label class="settings-field__label" for="limbo-url"
-                  >Limbo URL</label
-                >
-                <div
-                  class="settings-field__control settings-field__control--framed"
-                  data-limbo-control
-                >
+            <div class="settings-panels" data-settings-panels>
+              <div
+                class="settings-panel is-active"
+                data-settings-panel="connections"
+              >
+                <div class="settings-field">
+                  <label class="settings-field__label" for="lidarr-url"
+                    >Lidarr URL</label
+                  >
                   <input
-                    id="limbo-url"
-                    class="settings-field__input settings-field__input--framed"
+                    id="lidarr-url"
+                    class="settings-field__input"
                     type="text"
                     maxlength="2048"
                     spellcheck="false"
                     autocomplete="off"
-                    placeholder="http://limbo-url:port"
-                    value="__LIMBO_URL__"
-                    data-limbo-referrer="__LIMBO_URL_REFERRER__"
-                    data-limbo-host="__LIMBO_URL_HOST__"
-                    data-limbo-mode="__LIMBO_URL_MODE__"
-                    data-limbo-custom="__LIMBO_URL_CUSTOM__"
-                    readonly
+                    placeholder="http://lidarr-ip:port"
+                    value="__LIDARR_BASE_URL__"
                   />
-                  <span class="settings-field__chip" data-limbo-chip></span>
-                  <button
-                    class="config-action settings-field__menu-toggle"
-                    type="button"
-                    aria-label="Limbo URL menu"
-                    data-limbo-menu-toggle
+                </div>
+                <div class="settings-field">
+                  <label class="settings-field__label" for="lidarr-apikey"
+                    >Lidarr APIKEY</label
                   >
-                    <span class="config-action__inner" aria-hidden="true">
-                      __CONFIG_MENU_ICON__
-                    </span>
-                  </button>
+                  <input
+                    id="lidarr-apikey"
+                    class="settings-field__input"
+                    type="text"
+                    maxlength="255"
+                    spellcheck="false"
+                    autocomplete="off"
+                    placeholder="lkd9a8s7df0a9s8d7f0a9s8d7f0a9s8d"
+                    value="__LIDARR_API_KEY__"
+                  />
+                </div>
+                <div class="settings-field">
+                  <label class="settings-field__label" for="limbo-url"
+                    >Limbo URL</label
+                  >
                   <div
-                    class="config-menu config-menu-compact settings-field__menu"
-                    data-limbo-menu
+                    class="settings-field__control settings-field__control--framed"
+                    data-limbo-control
                   >
-                    <button type="button" data-limbo-menu-action="auto-referrer">
-                      AUTO-DETECT (REFERRER)
+                    <input
+                      id="limbo-url"
+                      class="settings-field__input settings-field__input--framed"
+                      type="text"
+                      maxlength="2048"
+                      spellcheck="false"
+                      autocomplete="off"
+                      placeholder="http://limbo-url:port"
+                      value="__LIMBO_URL__"
+                      data-limbo-referrer="__LIMBO_URL_REFERRER__"
+                      data-limbo-host="__LIMBO_URL_HOST__"
+                      data-limbo-mode="__LIMBO_URL_MODE__"
+                      data-limbo-custom="__LIMBO_URL_CUSTOM__"
+                      readonly
+                    />
+                    <span class="settings-field__chip" data-limbo-chip></span>
+                    <button
+                      class="config-action settings-field__menu-toggle"
+                      type="button"
+                      aria-label="Limbo URL menu"
+                      data-limbo-menu-toggle
+                    >
+                      <span class="config-action__inner" aria-hidden="true">
+                        __CONFIG_MENU_ICON__
+                      </span>
                     </button>
-                    <button type="button" data-limbo-menu-action="auto-host">
-                      AUTO-DETECT (HOST IP)
-                    </button>
-                    <button type="button" data-limbo-menu-action="custom">
-                      CUSTOM URL:PORT
-                    </button>
+                    <div
+                      class="config-menu config-menu-compact settings-field__menu"
+                      data-limbo-menu
+                    >
+                      <button
+                        type="button"
+                        data-limbo-menu-action="auto-referrer"
+                      >
+                        AUTO-DETECT (REFERRER)
+                      </button>
+                      <button type="button" data-limbo-menu-action="auto-host">
+                        AUTO-DETECT (HOST IP)
+                      </button>
+                      <button type="button" data-limbo-menu-action="custom">
+                        CUSTOM URL:PORT
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
               <div
-                class="settings-tab-panel"
-                data-tab-panel="providers"
+                class="settings-panel"
+                data-settings-panel="providers"
                 data-test-only
               >
+                <div
+                  class="settings-list"
+                  data-providers
+                  data-provider-fanart="__FANART_ENABLED__"
+                  data-provider-tadb="__TADB_ENABLED__"
+                  data-provider-lastfm="__LASTFM_ENABLED__"
+                  data-provider-discogs="__DISCOGS_ENABLED__"
+                  data-provider-plex="__PLEX_ENABLED__"
+                  data-provider-tidal="__TIDAL_ENABLED__"
+                  data-provider-apple="__APPLE_MUSIC_ENABLED__"
+                  data-provider-fanart-error="__FANART_ERROR__"
+                  data-provider-tadb-error="__TADB_ERROR__"
+                  data-provider-lastfm-error="__LASTFM_ERROR__"
+                  data-provider-discogs-error="__DISCOGS_ERROR__"
+                  data-provider-plex-error="__PLEX_ERROR__"
+                  data-provider-tidal-error="__TIDAL_ERROR__"
+                  data-provider-apple-error="__APPLE_MUSIC_ERROR__"
+                  data-provider-tidal-user="__TIDAL_USER__"
+                  data-provider-fanart-key="__FANART_KEY__"
+                  data-provider-tadb-key="__TADB_KEY__"
+                  data-provider-lastfm-key="__LASTFM_KEY__"
+                  data-provider-lastfm-secret="__LASTFM_SECRET__"
+                  data-provider-discogs-key="__DISCOGS_KEY__"
+                  data-provider-plex="__PLEX_ENABLED__"
+                  data-provider-apple-max="__APPLE_MUSIC_MAX_IMAGE_SIZE__"
+                  data-provider-apple-upscale="__APPLE_MUSIC_ALLOW_UPSCALE__"
+                  data-provider-coverart="__COVERART_ENABLED__"
+                  data-provider-coverart-size="__COVERART_SIZE__"
+                  data-provider-musicbrainz="__MUSICBRAINZ_ENABLED__"
+                  data-provider-wikipedia="__WIKIPEDIA_ENABLED__"
+                  data-provider-coverart-error="__COVERART_ERROR__"
+                  data-provider-musicbrainz-error="__MUSICBRAINZ_ERROR__"
+                  data-provider-wikipedia-error="__WIKIPEDIA_ERROR__"
+                ></div>
+              </div>
               <div
-                class="settings-list"
-                data-providers
-                data-provider-fanart="__FANART_ENABLED__"
-                data-provider-tadb="__TADB_ENABLED__"
-                data-provider-lastfm="__LASTFM_ENABLED__"
-                data-provider-discogs="__DISCOGS_ENABLED__"
-                data-provider-plex="__PLEX_ENABLED__"
-                data-provider-tidal="__TIDAL_ENABLED__"
-                data-provider-apple="__APPLE_MUSIC_ENABLED__"
-                data-provider-fanart-error="__FANART_ERROR__"
-                data-provider-tadb-error="__TADB_ERROR__"
-                data-provider-lastfm-error="__LASTFM_ERROR__"
-                data-provider-discogs-error="__DISCOGS_ERROR__"
-                data-provider-plex-error="__PLEX_ERROR__"
-                data-provider-tidal-error="__TIDAL_ERROR__"
-                data-provider-apple-error="__APPLE_MUSIC_ERROR__"
-                data-provider-tidal-user="__TIDAL_USER__"
-                data-provider-fanart-key="__FANART_KEY__"
-                data-provider-tadb-key="__TADB_KEY__"
-              data-provider-lastfm-key="__LASTFM_KEY__"
-              data-provider-lastfm-secret="__LASTFM_SECRET__"
-              data-provider-discogs-key="__DISCOGS_KEY__"
-              data-provider-plex="__PLEX_ENABLED__"
-              data-provider-apple-max="__APPLE_MUSIC_MAX_IMAGE_SIZE__"
-              data-provider-apple-upscale="__APPLE_MUSIC_ALLOW_UPSCALE__"
-                data-provider-coverart="__COVERART_ENABLED__"
-                data-provider-coverart-size="__COVERART_SIZE__"
-                data-provider-musicbrainz="__MUSICBRAINZ_ENABLED__"
-                data-provider-wikipedia="__WIKIPEDIA_ENABLED__"
-                data-provider-coverart-error="__COVERART_ERROR__"
-                data-provider-musicbrainz-error="__MUSICBRAINZ_ERROR__"
-                data-provider-wikipedia-error="__WIKIPEDIA_ERROR__"
-            ></div>
-            </div>
-              <div
-                class="settings-tab-panel"
-                data-tab-panel="priorities"
+                class="settings-panel"
+                data-settings-panel="services"
                 data-test-only
               >
-              <div class="settings-field settings-field--row settings-priority-selector">
-                <label class="settings-field__label">Search Priority</label>
-                <div class="settings-field__control settings-priority-selector__control">
-                  <span class="settings-field__value" data-priority-type-label>Data Services</span>
-                  <button
-                    class="config-action settings-field__menu-toggle"
-                    type="button"
-                    aria-label="Service setup menu"
-                    data-priority-type-toggle
-                  >
-                    <span class="config-action__inner" aria-hidden="true">
-                      __CONFIG_MENU_ICON__
-                    </span>
-                  </button>
-                  <div class="config-menu settings-field__menu" data-priority-type-menu>
-                    <button type="button" data-priority-type="data">DATA SERVICES</button>
-                    <button type="button" data-priority-type="artist_bio">ARTIST BIO PHOTOS</button>
-                    <button type="button" data-priority-type="artist_extras">ARTIST EXTRAS</button>
-                    <button type="button" data-priority-type="album_artwork">ALBUM ARTWORK</button>
-                  </div>
-                </div>
-              </div>
-              <div
-                class="settings-list settings-list--draggable settings-list--priorities"
-                data-services-priority
-                data-provider-fanart="__FANART_ENABLED__"
-                data-provider-tadb="__TADB_ENABLED__"
-                data-provider-lastfm="__LASTFM_ENABLED__"
-                data-provider-discogs="__DISCOGS_ENABLED__"
-                data-provider-plex="__PLEX_ENABLED__"
-                data-provider-tidal="__TIDAL_ENABLED__"
-                data-provider-apple="__APPLE_MUSIC_ENABLED__"
-                data-provider-fanart-error="__FANART_ERROR__"
-                data-provider-tadb-error="__TADB_ERROR__"
-                data-provider-lastfm-error="__LASTFM_ERROR__"
-                data-provider-discogs-error="__DISCOGS_ERROR__"
-                data-provider-plex-error="__PLEX_ERROR__"
-                data-provider-tidal-error="__TIDAL_ERROR__"
-                data-provider-apple-error="__APPLE_MUSIC_ERROR__"
-                data-provider-tidal-user="__TIDAL_USER__"
-                data-provider-fanart-key="__FANART_KEY__"
-                data-provider-tadb-key="__TADB_KEY__"
-              data-provider-lastfm-key="__LASTFM_KEY__"
-              data-provider-lastfm-secret="__LASTFM_SECRET__"
-              data-provider-discogs-key="__DISCOGS_KEY__"
-              data-provider-plex="__PLEX_ENABLED__"
-              data-provider-apple-max="__APPLE_MUSIC_MAX_IMAGE_SIZE__"
-              data-provider-apple-upscale="__APPLE_MUSIC_ALLOW_UPSCALE__"
-                data-provider-coverart="__COVERART_ENABLED__"
-                data-provider-coverart-size="__COVERART_SIZE__"
-                data-provider-musicbrainz="__MUSICBRAINZ_ENABLED__"
-                data-provider-coverart-error="__COVERART_ERROR__"
-                data-provider-musicbrainz-error="__MUSICBRAINZ_ERROR__"
-                data-provider-wikipedia-error="__WIKIPEDIA_ERROR__"
-            ></div>
-              <div class="settings-list__actions">
-                <button
-                  class="modal-link modal-link-text"
-                  type="button"
-                  data-service-priority-remove
-                >
-                  <span class="settings-list__symbol settings-list__symbol--minus">-</span>
-                </button>
-                <div class="settings-list__menu-wrap">
-                  <button
-                    class="modal-link modal-link-text"
-                    type="button"
-                    data-service-priority-add
-                  >
-                    <span class="settings-list__symbol">+</span>
-                  </button>
-                  <div
-                    class="config-menu settings-list__menu"
-                    data-service-priority-menu
-                  >
-                    <button type="button" data-service-priority-option="coverart">
-                      COVER ART ARCHIVE
-                    </button>
-                    <button type="button" data-service-priority-option="musicbrainz">
-                      MUSICBRAINZ
-                    </button>
-                    <button type="button" data-service-priority-option="wikipedia">
-                      WIKIPEDIA
-                    </button>
-                    <button type="button" data-service-priority-option="apple">
-                      APPLE MUSIC
-                    </button>
-                    <button type="button" data-service-priority-option="discogs">
-                      DISCOGS (COMING SOON)
-                    </button>
-                    <button type="button" data-service-priority-option="plex">
-                      PLEX
-                    </button>
-                    <button type="button" data-service-priority-option="fanart">
-                      FANART.TV
-                    </button>
-                    <button type="button" data-service-priority-option="lastfm">
-                      LAST.FM
-                    </button>
-                    <button type="button" data-service-priority-option="tadb">
-                      THE AUDIODB
-                    </button>
-                    <button type="button" data-service-priority-option="tidal">
-                      TIDAL
-                    </button>
-                  </div>
-                </div>
-              </div>
+                <div
+                  class="settings-list settings-list--draggable settings-list--priorities"
+                  data-services-priority
+                  data-provider-fanart="__FANART_ENABLED__"
+                  data-provider-tadb="__TADB_ENABLED__"
+                  data-provider-lastfm="__LASTFM_ENABLED__"
+                  data-provider-discogs="__DISCOGS_ENABLED__"
+                  data-provider-plex="__PLEX_ENABLED__"
+                  data-provider-tidal="__TIDAL_ENABLED__"
+                  data-provider-apple="__APPLE_MUSIC_ENABLED__"
+                  data-provider-fanart-error="__FANART_ERROR__"
+                  data-provider-tadb-error="__TADB_ERROR__"
+                  data-provider-lastfm-error="__LASTFM_ERROR__"
+                  data-provider-discogs-error="__DISCOGS_ERROR__"
+                  data-provider-plex-error="__PLEX_ERROR__"
+                  data-provider-tidal-error="__TIDAL_ERROR__"
+                  data-provider-apple-error="__APPLE_MUSIC_ERROR__"
+                  data-provider-tidal-user="__TIDAL_USER__"
+                  data-provider-fanart-key="__FANART_KEY__"
+                  data-provider-tadb-key="__TADB_KEY__"
+                  data-provider-lastfm-key="__LASTFM_KEY__"
+                  data-provider-lastfm-secret="__LASTFM_SECRET__"
+                  data-provider-discogs-key="__DISCOGS_KEY__"
+                  data-provider-plex="__PLEX_ENABLED__"
+                  data-provider-apple-max="__APPLE_MUSIC_MAX_IMAGE_SIZE__"
+                  data-provider-apple-upscale="__APPLE_MUSIC_ALLOW_UPSCALE__"
+                  data-provider-coverart="__COVERART_ENABLED__"
+                  data-provider-coverart-size="__COVERART_SIZE__"
+                  data-provider-musicbrainz="__MUSICBRAINZ_ENABLED__"
+                  data-provider-coverart-error="__COVERART_ERROR__"
+                  data-provider-musicbrainz-error="__MUSICBRAINZ_ERROR__"
+                  data-provider-wikipedia-error="__WIKIPEDIA_ERROR__"
+                ></div>
               </div>
             </div>
-          </div>
-          <div class="refresh-modal__actions">
-            <button
-              class="modal-link modal-link-text settings-providers-test"
-              type="button"
-              data-provider-test-all
-              hidden
-            >
-              TEST
-            </button>
-            <button
-              class="modal-link modal-link-text modal-link-cancel"
-              type="button"
-              data-modal-close
-              data-refresh-cancel
-            >
-              CANCEL
-            </button>
-            <button
-              class="modal-link modal-link-text"
-              type="button"
-              data-lidarr-save
-            >
-              SAVE
-            </button>
           </div>
         </div>
       </div>
@@ -506,7 +454,9 @@
         aria-modal="true"
         aria-label="Indexing Schedule"
       >
-        <button class="modal__esc-hint" type="button" data-modal-close>esc</button>
+        <button class="modal__esc-hint" type="button" data-modal-close>
+          esc
+        </button>
         <div class="schedule-modal__content">
           <h2 class="settings-modal__title">Indexing Schedule</h2>
           <p class="settings-modal__subtitle">
@@ -527,7 +477,9 @@
         aria-modal="true"
         aria-label="Replication Schedule"
       >
-        <button class="modal__esc-hint" type="button" data-modal-close>esc</button>
+        <button class="modal__esc-hint" type="button" data-modal-close>
+          esc
+        </button>
         <div class="schedule-modal__content">
           <h2 class="settings-modal__title">Replication Schedule</h2>
           <p class="settings-modal__subtitle">
@@ -548,7 +500,9 @@
         aria-modal="true"
         aria-label="Confirm action"
       >
-        <button class="modal__esc-hint" type="button" data-modal-close>esc</button>
+        <button class="modal__esc-hint" type="button" data-modal-close>
+          esc
+        </button>
         <div class="confirm-modal__content">
           <h2 class="settings-modal__title">Confirm</h2>
           <p class="settings-modal__subtitle" data-confirm-message></p>
@@ -569,7 +523,9 @@
         aria-modal="true"
         aria-label="Information"
       >
-        <button class="modal__esc-hint" type="button" data-modal-close>esc</button>
+        <button class="modal__esc-hint" type="button" data-modal-close>
+          esc
+        </button>
         <div class="info-modal__content">
           <h2 class="settings-modal__title">Info</h2>
           <p class="settings-modal__subtitle" data-info-message></p>
@@ -594,51 +550,71 @@
         aria-modal="true"
         aria-label="Bulk Refresh"
       >
-        <button class="modal__esc-hint" type="button" data-modal-close>esc</button>
+        <button class="modal__esc-hint" type="button" data-modal-close>
+          esc
+        </button>
         <div class="refresh-modal__content">
           <h2 class="settings-modal__title">Bulk Refresh</h2>
           <p class="settings-modal__subtitle">
-            Paste any number of Artist or Album IDs, MBIDs, Lidarr URLs or
-            MusicBrainz URLs.
+            Paste Artist or Album MBIDs, Lidarr or MusicBrainz URLs.
           </p>
           <div class="refresh-input-wrap">
+            <div class="refresh-resolve-floating">
+              <div class="refresh-resolve-toggle">
+                <span class="refresh-resolve-toggle__label">Resolve Names</span>
+                <label class="config-toggle">
+                  <input
+                    type="checkbox"
+                    data-refresh-resolve-toggle
+                    __REFRESH_RESOLVE_NAMES__
+                  />
+                  <span class="config-toggle__track" aria-hidden="true">
+                    <span class="config-toggle__thumb"></span>
+                  </span>
+                </label>
+              </div>
+            </div>
             <div
               class="refresh-editor"
               contenteditable="true"
               role="textbox"
               aria-multiline="true"
               data-refresh-editor
-              data-placeholder="Paste artist or release IDs, MBIDs, Lidarr or MusicBrainz URLs here..."
+              data-placeholder="8434409e-baa9-4e12-b4aa-566a91c7d7cf"
             ></div>
+            <div class="refresh-side">
+              <div class="refresh-status" data-refresh-status>
+                <span class="refresh-status__item">
+                  <span class="refresh-status__label">Artists:</span>
+                  <span class="refresh-status__count" data-refresh-count-artist
+                    >0</span
+                  >
+                </span>
+                <span class="refresh-status__item">
+                  <span class="refresh-status__label">Releases:</span>
+                  <span class="refresh-status__count" data-refresh-count-release
+                    >0</span
+                  >
+                </span>
+                <span class="refresh-status__item">
+                  <span class="refresh-status__label">Invalid:</span>
+                  <span class="refresh-status__count" data-refresh-count-invalid
+                    >0</span
+                  >
+                </span>
+              </div>
+              <button
+                class="action-button refresh-submit-inline"
+                type="button"
+                data-refresh-button
+              >
+                <span class="action-button__inner">
+                  <span class="action-button__label">REFRESH</span>
+                </span>
+              </button>
+            </div>
           </div>
           <div class="refresh-modal__actions">
-            <div class="refresh-status" data-refresh-status>
-              <span class="refresh-status__item">
-                Artists:
-                <span class="refresh-status__count" data-refresh-count-artist>0</span>
-              </span>
-              <span class="refresh-status__item">
-                Releases:
-                <span class="refresh-status__count" data-refresh-count-release>0</span>
-              </span>
-              <span class="refresh-status__item">
-                Invalid:
-                <span class="refresh-status__count" data-refresh-count-invalid>0</span>
-              </span>
-            </div>
-            <div class="refresh-resolve-toggle">
-              <span class="refresh-status__item refresh-resolve-toggle__label">Resolve Names/Titles</span>
-              <label class="config-toggle">
-                <input
-                  type="checkbox"
-                  data-refresh-resolve-toggle
-                  __REFRESH_RESOLVE_NAMES__
-                />
-                <span class="config-toggle__track" aria-hidden="true">
-                  <span class="config-toggle__thumb"></span>
-                </span>
-              </label>
-            </div>
             <button
               class="modal-link modal-link-text modal-link-cancel"
               type="button"
@@ -646,21 +622,25 @@
             >
               CLOSE
             </button>
-            <button
-              class="modal-link modal-link-text"
-              type="button"
-              data-refresh-button
-            >
-              SUBMIT
-            </button>
           </div>
         </div>
       </div>
     </div>
-    <div class="modal settings-modal tidal-modal" data-modal="tidal-settings" aria-hidden="true">
+    <div
+      class="modal settings-modal tidal-modal"
+      data-modal="tidal-settings"
+      aria-hidden="true"
+    >
       <div class="modal__backdrop" data-modal-backdrop></div>
-      <div class="modal__panel settings-modal__panel" role="dialog" aria-modal="true" aria-label="Tidal Settings">
-        <button class="modal__esc-hint" type="button" data-modal-close>esc</button>
+      <div
+        class="modal__panel settings-modal__panel"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Tidal Settings"
+      >
+        <button class="modal__esc-hint" type="button" data-modal-close>
+          esc
+        </button>
         <div class="settings-modal__content">
           <h2 class="settings-modal__title">Tidal Settings</h2>
           <div class="settings-field">
@@ -757,14 +737,27 @@
         </div>
       </div>
     </div>
-    <div class="modal settings-modal provider-modal" data-modal="fanart-settings" aria-hidden="true">
+    <div
+      class="modal settings-modal provider-modal"
+      data-modal="fanart-settings"
+      aria-hidden="true"
+    >
       <div class="modal__backdrop" data-modal-backdrop></div>
-      <div class="modal__panel settings-modal__panel" role="dialog" aria-modal="true" aria-label="Fanart Settings">
-        <button class="modal__esc-hint" type="button" data-modal-close>esc</button>
+      <div
+        class="modal__panel settings-modal__panel"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Fanart Settings"
+      >
+        <button class="modal__esc-hint" type="button" data-modal-close>
+          esc
+        </button>
         <div class="settings-modal__content">
           <h2 class="settings-modal__title">Fanart.tv Settings</h2>
           <div class="settings-field">
-            <label class="settings-field__label" for="fanart-key">FANART.TV API KEY</label>
+            <label class="settings-field__label" for="fanart-key"
+              >FANART.TV API KEY</label
+            >
             <input
               id="fanart-key"
               class="settings-field__input"
@@ -777,20 +770,45 @@
             />
           </div>
           <div class="refresh-modal__actions">
-            <button class="modal-link modal-link-text modal-link-cancel" type="button" data-modal-close>CANCEL</button>
-            <button class="modal-link modal-link-text" type="button" data-fanart-save>SAVE</button>
+            <button
+              class="modal-link modal-link-text modal-link-cancel"
+              type="button"
+              data-modal-close
+            >
+              CANCEL
+            </button>
+            <button
+              class="modal-link modal-link-text"
+              type="button"
+              data-fanart-save
+            >
+              SAVE
+            </button>
           </div>
         </div>
       </div>
     </div>
-    <div class="modal settings-modal provider-modal" data-modal="tadb-settings" aria-hidden="true">
+    <div
+      class="modal settings-modal provider-modal"
+      data-modal="tadb-settings"
+      aria-hidden="true"
+    >
       <div class="modal__backdrop" data-modal-backdrop></div>
-      <div class="modal__panel settings-modal__panel" role="dialog" aria-modal="true" aria-label="TheAudioDB Settings">
-        <button class="modal__esc-hint" type="button" data-modal-close>esc</button>
+      <div
+        class="modal__panel settings-modal__panel"
+        role="dialog"
+        aria-modal="true"
+        aria-label="TheAudioDB Settings"
+      >
+        <button class="modal__esc-hint" type="button" data-modal-close>
+          esc
+        </button>
         <div class="settings-modal__content">
           <h2 class="settings-modal__title">The AudioDB Settings</h2>
           <div class="settings-field">
-            <label class="settings-field__label" for="tadb-key">THE AUDIODB API KEY</label>
+            <label class="settings-field__label" for="tadb-key"
+              >THE AUDIODB API KEY</label
+            >
             <input
               id="tadb-key"
               class="settings-field__input"
@@ -803,20 +821,45 @@
             />
           </div>
           <div class="refresh-modal__actions">
-            <button class="modal-link modal-link-text modal-link-cancel" type="button" data-modal-close>CANCEL</button>
-            <button class="modal-link modal-link-text" type="button" data-tadb-save>SAVE</button>
+            <button
+              class="modal-link modal-link-text modal-link-cancel"
+              type="button"
+              data-modal-close
+            >
+              CANCEL
+            </button>
+            <button
+              class="modal-link modal-link-text"
+              type="button"
+              data-tadb-save
+            >
+              SAVE
+            </button>
           </div>
         </div>
       </div>
     </div>
-    <div class="modal settings-modal provider-modal" data-modal="discogs-settings" aria-hidden="true">
+    <div
+      class="modal settings-modal provider-modal"
+      data-modal="discogs-settings"
+      aria-hidden="true"
+    >
       <div class="modal__backdrop" data-modal-backdrop></div>
-      <div class="modal__panel settings-modal__panel" role="dialog" aria-modal="true" aria-label="Discogs Settings">
-        <button class="modal__esc-hint" type="button" data-modal-close>esc</button>
+      <div
+        class="modal__panel settings-modal__panel"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Discogs Settings"
+      >
+        <button class="modal__esc-hint" type="button" data-modal-close>
+          esc
+        </button>
         <div class="settings-modal__content">
           <h2 class="settings-modal__title">Discogs Settings</h2>
           <div class="settings-field">
-            <label class="settings-field__label" for="discogs-key">DISCOGS API KEY</label>
+            <label class="settings-field__label" for="discogs-key"
+              >DISCOGS API KEY</label
+            >
             <input
               id="discogs-key"
               class="settings-field__input"
@@ -829,20 +872,45 @@
             />
           </div>
           <div class="refresh-modal__actions">
-            <button class="modal-link modal-link-text modal-link-cancel" type="button" data-modal-close>CANCEL</button>
-            <button class="modal-link modal-link-text" type="button" data-discogs-save>SAVE</button>
+            <button
+              class="modal-link modal-link-text modal-link-cancel"
+              type="button"
+              data-modal-close
+            >
+              CANCEL
+            </button>
+            <button
+              class="modal-link modal-link-text"
+              type="button"
+              data-discogs-save
+            >
+              SAVE
+            </button>
           </div>
         </div>
       </div>
     </div>
-    <div class="modal settings-modal provider-modal" data-modal="lastfm-settings" aria-hidden="true">
+    <div
+      class="modal settings-modal provider-modal"
+      data-modal="lastfm-settings"
+      aria-hidden="true"
+    >
       <div class="modal__backdrop" data-modal-backdrop></div>
-      <div class="modal__panel settings-modal__panel" role="dialog" aria-modal="true" aria-label="Last.fm Settings">
-        <button class="modal__esc-hint" type="button" data-modal-close>esc</button>
+      <div
+        class="modal__panel settings-modal__panel"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Last.fm Settings"
+      >
+        <button class="modal__esc-hint" type="button" data-modal-close>
+          esc
+        </button>
         <div class="settings-modal__content">
           <h2 class="settings-modal__title">Last.fm Settings</h2>
           <div class="settings-field">
-            <label class="settings-field__label" for="lastfm-key">LAST.FM API KEY</label>
+            <label class="settings-field__label" for="lastfm-key"
+              >LAST.FM API KEY</label
+            >
             <input
               id="lastfm-key"
               class="settings-field__input"
@@ -855,7 +923,9 @@
             />
           </div>
           <div class="settings-field">
-            <label class="settings-field__label" for="lastfm-secret">LAST.FM SECRET</label>
+            <label class="settings-field__label" for="lastfm-secret"
+              >LAST.FM SECRET</label
+            >
             <input
               id="lastfm-secret"
               class="settings-field__input"
@@ -868,20 +938,45 @@
             />
           </div>
           <div class="refresh-modal__actions">
-            <button class="modal-link modal-link-text modal-link-cancel" type="button" data-modal-close>CANCEL</button>
-            <button class="modal-link modal-link-text" type="button" data-lastfm-save>SAVE</button>
+            <button
+              class="modal-link modal-link-text modal-link-cancel"
+              type="button"
+              data-modal-close
+            >
+              CANCEL
+            </button>
+            <button
+              class="modal-link modal-link-text"
+              type="button"
+              data-lastfm-save
+            >
+              SAVE
+            </button>
           </div>
         </div>
       </div>
     </div>
-    <div class="modal settings-modal provider-modal" data-modal="apple-music-settings" aria-hidden="true">
+    <div
+      class="modal settings-modal provider-modal"
+      data-modal="apple-music-settings"
+      aria-hidden="true"
+    >
       <div class="modal__backdrop" data-modal-backdrop></div>
-      <div class="modal__panel settings-modal__panel" role="dialog" aria-modal="true" aria-label="Apple Music Settings">
-        <button class="modal__esc-hint" type="button" data-modal-close>esc</button>
+      <div
+        class="modal__panel settings-modal__panel"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Apple Music Settings"
+      >
+        <button class="modal__esc-hint" type="button" data-modal-close>
+          esc
+        </button>
         <div class="settings-modal__content">
           <h2 class="settings-modal__title">Apple Music Settings</h2>
           <div class="settings-field">
-            <label class="settings-field__label" for="apple-music-max-image">Maximum image size (width in pixels)</label>
+            <label class="settings-field__label" for="apple-music-max-image"
+              >Maximum image size (width in pixels)</label
+            >
             <input
               id="apple-music-max-image"
               class="settings-field__input"
@@ -894,7 +989,9 @@
             />
           </div>
           <div class="settings-field">
-            <label class="settings-field__label" for="apple-music-upscale">Allow up-scaling</label>
+            <label class="settings-field__label" for="apple-music-upscale"
+              >Allow up-scaling</label
+            >
             <label class="config-toggle">
               <input type="checkbox" id="apple-music-upscale" />
               <span class="config-toggle__track" aria-hidden="true">
@@ -903,27 +1000,59 @@
             </label>
           </div>
           <div class="refresh-modal__actions">
-            <button class="modal-link modal-link-text modal-link-cancel" type="button" data-modal-close>CANCEL</button>
-            <button class="modal-link modal-link-text" type="button" data-apple-music-save>SAVE</button>
+            <button
+              class="modal-link modal-link-text modal-link-cancel"
+              type="button"
+              data-modal-close
+            >
+              CANCEL
+            </button>
+            <button
+              class="modal-link modal-link-text"
+              type="button"
+              data-apple-music-save
+            >
+              SAVE
+            </button>
           </div>
         </div>
       </div>
     </div>
-    <div class="modal settings-modal provider-modal coverart-modal" data-modal="coverart-settings" aria-hidden="true">
+    <div
+      class="modal settings-modal provider-modal coverart-modal"
+      data-modal="coverart-settings"
+      aria-hidden="true"
+    >
       <div class="modal__backdrop" data-modal-backdrop></div>
-      <div class="modal__panel settings-modal__panel" role="dialog" aria-modal="true" aria-label="Cover Art Archive Settings">
-        <button class="modal__esc-hint" type="button" data-modal-close>esc</button>
+      <div
+        class="modal__panel settings-modal__panel"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Cover Art Archive Settings"
+      >
+        <button class="modal__esc-hint" type="button" data-modal-close>
+          esc
+        </button>
         <div class="settings-modal__content">
           <h2 class="settings-modal__title">Cover Art Archive Settings</h2>
           <div class="settings-field">
-            <label class="settings-field__label" for="coverart-size">Maximum image size (in pixels)</label>
-            <div class="settings-field__control settings-field__control--framed" data-coverart-control>
+            <label class="settings-field__label" for="coverart-size"
+              >Maximum image size (in pixels)</label
+            >
+            <div
+              class="settings-field__control settings-field__control--framed"
+              data-coverart-control
+            >
               <div
                 id="coverart-size"
                 class="settings-field__display settings-field__input--framed"
                 aria-live="polite"
-              >__COVERART_SIZE__</div>
-              <span class="settings-field__unit" data-coverart-units>pixels</span>
+              >
+                __COVERART_SIZE__
+              </div>
+              <span class="settings-field__unit" data-coverart-units
+                >pixels</span
+              >
               <button
                 class="config-action settings-field__menu-toggle"
                 type="button"
@@ -935,7 +1064,9 @@
                 </span>
               </button>
               <div class="config-menu settings-field__menu" data-coverart-menu>
-                <button type="button" data-coverart-option="original">ORIGINAL</button>
+                <button type="button" data-coverart-option="original">
+                  ORIGINAL
+                </button>
                 <button type="button" data-coverart-option="1200">1200</button>
                 <button type="button" data-coverart-option="500">500</button>
                 <button type="button" data-coverart-option="250">250</button>
@@ -943,62 +1074,147 @@
             </div>
           </div>
           <div class="refresh-modal__actions">
-            <button class="modal-link modal-link-text modal-link-cancel" type="button" data-modal-close>CANCEL</button>
-            <button class="modal-link modal-link-text" type="button" data-coverart-save>SAVE</button>
+            <button
+              class="modal-link modal-link-text modal-link-cancel"
+              type="button"
+              data-modal-close
+            >
+              CANCEL
+            </button>
+            <button
+              class="modal-link modal-link-text"
+              type="button"
+              data-coverart-save
+            >
+              SAVE
+            </button>
           </div>
         </div>
       </div>
     </div>
-    <div class="modal settings-modal provider-modal" data-modal="musicbrainz-settings" aria-hidden="true">
+    <div
+      class="modal settings-modal provider-modal"
+      data-modal="musicbrainz-settings"
+      aria-hidden="true"
+    >
       <div class="modal__backdrop" data-modal-backdrop></div>
-      <div class="modal__panel settings-modal__panel" role="dialog" aria-modal="true" aria-label="MusicBrainz Settings">
-        <button class="modal__esc-hint" type="button" data-modal-close>esc</button>
+      <div
+        class="modal__panel settings-modal__panel"
+        role="dialog"
+        aria-modal="true"
+        aria-label="MusicBrainz Settings"
+      >
+        <button class="modal__esc-hint" type="button" data-modal-close>
+          esc
+        </button>
         <div class="settings-modal__content">
           <h2 class="settings-modal__title">MusicBrainz</h2>
           <div class="settings-field">
             <label class="settings-field__label">Data Source</label>
-            <div class="settings-field__value">Primary source for artist and album metadata.</div>
+            <div class="settings-field__value">
+              Primary source for artist and album metadata.
+            </div>
           </div>
           <div class="settings-field">
             <label class="settings-field__label">Web UI</label>
             <div class="settings-field__value">
-              <a class="config-link" href="__MUSICBRAINZ_UI_URL__" target="_blank" rel="noopener">Open MusicBrainz</a>
+              <a
+                class="config-link"
+                href="__MUSICBRAINZ_UI_URL__"
+                target="_blank"
+                rel="noopener"
+                >Open MusicBrainz</a
+              >
             </div>
           </div>
           <div class="refresh-modal__actions">
-            <button class="modal-link modal-link-text modal-link-cancel" type="button" data-modal-close>CANCEL</button>
-            <button class="modal-link modal-link-text" type="button" data-musicbrainz-save>SAVE</button>
+            <button
+              class="modal-link modal-link-text modal-link-cancel"
+              type="button"
+              data-modal-close
+            >
+              CANCEL
+            </button>
+            <button
+              class="modal-link modal-link-text"
+              type="button"
+              data-musicbrainz-save
+            >
+              SAVE
+            </button>
           </div>
         </div>
       </div>
     </div>
-    <div class="modal settings-modal provider-modal" data-modal="wikipedia-settings" aria-hidden="true">
+    <div
+      class="modal settings-modal provider-modal"
+      data-modal="wikipedia-settings"
+      aria-hidden="true"
+    >
       <div class="modal__backdrop" data-modal-backdrop></div>
-      <div class="modal__panel settings-modal__panel" role="dialog" aria-modal="true" aria-label="Wikipedia Settings">
-        <button class="modal__esc-hint" type="button" data-modal-close>esc</button>
+      <div
+        class="modal__panel settings-modal__panel"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Wikipedia Settings"
+      >
+        <button class="modal__esc-hint" type="button" data-modal-close>
+          esc
+        </button>
         <div class="settings-modal__content">
           <h2 class="settings-modal__title">Wikipedia</h2>
           <div class="settings-field">
             <label class="settings-field__label">Artist Overviews</label>
-            <div class="settings-field__value">Summaries are fetched from Wikipedia or Wikidata when available.</div>
+            <div class="settings-field__value">
+              Summaries are fetched from Wikipedia or Wikidata when available.
+            </div>
           </div>
           <div class="settings-field">
             <label class="settings-field__label">Web UI</label>
             <div class="settings-field__value">
-              <a class="config-link" href="__WIKIPEDIA_UI_URL__" target="_blank" rel="noopener">Open Wikipedia</a>
+              <a
+                class="config-link"
+                href="__WIKIPEDIA_UI_URL__"
+                target="_blank"
+                rel="noopener"
+                >Open Wikipedia</a
+              >
             </div>
           </div>
           <div class="refresh-modal__actions">
-            <button class="modal-link modal-link-text modal-link-cancel" type="button" data-modal-close>CANCEL</button>
-            <button class="modal-link modal-link-text" type="button" data-wikipedia-save>SAVE</button>
+            <button
+              class="modal-link modal-link-text modal-link-cancel"
+              type="button"
+              data-modal-close
+            >
+              CANCEL
+            </button>
+            <button
+              class="modal-link modal-link-text"
+              type="button"
+              data-wikipedia-save
+            >
+              SAVE
+            </button>
           </div>
         </div>
       </div>
     </div>
-    <div class="modal settings-modal provider-modal" data-modal="plex-settings" aria-hidden="true">
+    <div
+      class="modal settings-modal provider-modal"
+      data-modal="plex-settings"
+      aria-hidden="true"
+    >
       <div class="modal__backdrop" data-modal-backdrop></div>
-      <div class="modal__panel settings-modal__panel" role="dialog" aria-modal="true" aria-label="Plex Settings">
-        <button class="modal__esc-hint" type="button" data-modal-close>esc</button>
+      <div
+        class="modal__panel settings-modal__panel"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Plex Settings"
+      >
+        <button class="modal__esc-hint" type="button" data-modal-close>
+          esc
+        </button>
         <div class="settings-modal__content">
           <h2 class="settings-modal__title">Plex</h2>
           <div class="settings-field">
@@ -1006,8 +1222,20 @@
             <div class="settings-field__value">Configuration coming soon.</div>
           </div>
           <div class="refresh-modal__actions">
-            <button class="modal-link modal-link-text modal-link-cancel" type="button" data-modal-close>CANCEL</button>
-            <button class="modal-link modal-link-text" type="button" data-plex-save>SAVE</button>
+            <button
+              class="modal-link modal-link-text modal-link-cancel"
+              type="button"
+              data-modal-close
+            >
+              CANCEL
+            </button>
+            <button
+              class="modal-link modal-link-text"
+              type="button"
+              data-plex-save
+            >
+              SAVE
+            </button>
           </div>
         </div>
       </div>
@@ -1072,8 +1300,6 @@
         "[data-replication-value]",
       );
       let replicationPollTimer = null;
-
-
 
       const modalSnapshots = new Map();
       const modalRestoreEnabled = new Map();
@@ -1474,21 +1700,35 @@
       const lidarrApiKeyInput = document.querySelector("#lidarr-apikey");
       const lidarrSaveButton = document.querySelector("[data-lidarr-save]");
       const tidalClientIdInput = document.querySelector("#tidal-client-id");
-      const tidalClientSecretInput = document.querySelector("#tidal-client-secret");
-      const tidalCountryCodeInput = document.querySelector("#tidal-country-code");
+      const tidalClientSecretInput = document.querySelector(
+        "#tidal-client-secret",
+      );
+      const tidalCountryCodeInput = document.querySelector(
+        "#tidal-country-code",
+      );
       const tidalUserInput = document.querySelector("#tidal-user");
-      const tidalUserPasswordInput = document.querySelector("#tidal-user-password");
+      const tidalUserPasswordInput = document.querySelector(
+        "#tidal-user-password",
+      );
       const tidalSaveButton = document.querySelector("[data-tidal-save]");
       const fanartKeyInput = document.querySelector("#fanart-key");
       const tadbKeyInput = document.querySelector("#tadb-key");
       const discogsKeyInput = document.querySelector("#discogs-key");
       const lastfmKeyInput = document.querySelector("#lastfm-key");
       const lastfmSecretInput = document.querySelector("#lastfm-secret");
-      const appleMusicMaxInput = document.querySelector("#apple-music-max-image");
-      const appleMusicUpscaleInput = document.querySelector("#apple-music-upscale");
+      const appleMusicMaxInput = document.querySelector(
+        "#apple-music-max-image",
+      );
+      const appleMusicUpscaleInput = document.querySelector(
+        "#apple-music-upscale",
+      );
       const coverartSizeInput = document.querySelector("#coverart-size");
-      const coverartUnitsLabel = document.querySelector("[data-coverart-units]");
-      const coverartMenuToggle = document.querySelector("[data-coverart-menu-toggle]");
+      const coverartUnitsLabel = document.querySelector(
+        "[data-coverart-units]",
+      );
+      const coverartMenuToggle = document.querySelector(
+        "[data-coverart-menu-toggle]",
+      );
       const coverartMenu = document.querySelector("[data-coverart-menu]");
       const coverartMenuOptions = Array.from(
         document.querySelectorAll("[data-coverart-option]"),
@@ -1497,16 +1737,24 @@
       const tadbSaveButton = document.querySelector("[data-tadb-save]");
       const discogsSaveButton = document.querySelector("[data-discogs-save]");
       const lastfmSaveButton = document.querySelector("[data-lastfm-save]");
-      const appleMusicSaveButton = document.querySelector("[data-apple-music-save]");
+      const appleMusicSaveButton = document.querySelector(
+        "[data-apple-music-save]",
+      );
       const coverartSaveButton = document.querySelector("[data-coverart-save]");
       const plexSaveButton = document.querySelector("[data-plex-save]");
-      const wikipediaSaveButton = document.querySelector("[data-wikipedia-save]");
-      const musicbrainzSaveButton = document.querySelector("[data-musicbrainz-save]");
+      const wikipediaSaveButton = document.querySelector(
+        "[data-wikipedia-save]",
+      );
+      const musicbrainzSaveButton = document.querySelector(
+        "[data-musicbrainz-save]",
+      );
       const providersList = document.querySelector("[data-providers]");
       const providerTestAllButton = document.querySelector(
         "[data-provider-test-all]",
       );
-      const servicesPriorityList = document.querySelector("[data-services-priority]");
+      const servicesPriorityList = document.querySelector(
+        "[data-services-priority]",
+      );
       const priorityAddButton = document.querySelector(
         "[data-service-priority-add]",
       );
@@ -1545,8 +1793,10 @@
         const lookup = resolveProviderId(id);
         return (
           providerCapabilities.find((entry) => entry.id === lookup) ||
-          providerCapabilities.find((entry) => entry.id === id) ||
-          { lock_status: "none", lock_warning: "" }
+          providerCapabilities.find((entry) => entry.id === id) || {
+            lock_status: "none",
+            lock_warning: "",
+          }
         );
       };
 
@@ -1606,7 +1856,9 @@
       };
       applyInputSanitizers();
       const normalizeCoverartSize = (value) => {
-        const normalized = String(value || "").trim().toLowerCase();
+        const normalized = String(value || "")
+          .trim()
+          .toLowerCase();
         if (!normalized) {
           return "original";
         }
@@ -1698,7 +1950,10 @@
       let refreshWarmupOnOpenDone = false;
 
       const sanitizeApiKey = (value = "") =>
-        value.replace(/[^a-z0-9]/gi, "").toLowerCase().slice(0, 255);
+        value
+          .replace(/[^a-z0-9]/gi, "")
+          .toLowerCase()
+          .slice(0, 255);
       const sanitizeEmail = (value = "") =>
         value
           .trim()
@@ -1706,7 +1961,10 @@
           .replace(/[^a-z0-9@._+-]/g, "")
           .slice(0, 254);
       const sanitizeCountryCode = (value = "") =>
-        value.replace(/[^a-z]/gi, "").toUpperCase().slice(0, 2);
+        value
+          .replace(/[^a-z]/gi, "")
+          .toUpperCase()
+          .slice(0, 2);
       const sanitizeNumberRange = (value = "", max = 6000) => {
         const digits = String(value).replace(/[^0-9]/g, "");
         if (!digits) {
@@ -1740,8 +1998,10 @@
           port = parts[1] || "";
         }
         host = host.toLowerCase();
-        const ipv4 = /^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$/;
-        const fqdn = /^(?=.{1,253}$)([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)(\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$/;
+        const ipv4 =
+          /^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$/;
+        const fqdn =
+          /^(?=.{1,253}$)([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)(\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$/;
         if (!ipv4.test(host) && !fqdn.test(host)) {
           return "";
         }
@@ -1807,10 +2067,10 @@
         });
         if (limboChip) {
           if (mode === "auto-host") {
-            limboChip.textContent = "AUTO: HOST IP";
+            limboChip.textContent = "AUTO";
             limboChip.hidden = false;
           } else if (mode === "auto-referrer") {
-            limboChip.textContent = "AUTO: REFERRER";
+            limboChip.textContent = "AUTO";
             limboChip.hidden = false;
           } else {
             limboChip.textContent = "";
@@ -2310,17 +2570,17 @@
         }
         refreshValidateController = new AbortController();
         const validationSeq = ++refreshValidationSeq;
-            const payload = {
-              mbids: Array.from(mbids),
-              lidarr_ids: Array.from(lidarrIds).map((value) => Number(value)),
-            };
-            try {
-              const response = await fetch("/config/validate-ids", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload),
-                signal: refreshValidateController.signal,
-              });
+        const payload = {
+          mbids: Array.from(mbids),
+          lidarr_ids: Array.from(lidarrIds).map((value) => Number(value)),
+        };
+        try {
+          const response = await fetch("/config/validate-ids", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+            signal: refreshValidateController.signal,
+          });
           const data = await response.json().catch(() => ({}));
           if (validationSeq !== refreshValidationSeq) {
             return;
@@ -2328,17 +2588,23 @@
           if (!response.ok || !data.ok) {
             return;
           }
-              (data.mbid_valid || []).forEach((mbid) => {
-                refreshTokenState.set(
-                  `mbid:${String(mbid).toLowerCase()}`,
-                  "valid",
-                );
-              });
+          (data.mbid_valid || []).forEach((mbid) => {
+            refreshTokenState.set(
+              `mbid:${String(mbid).toLowerCase()}`,
+              "valid",
+            );
+          });
           (data.mbid_artist_valid || []).forEach((mbid) => {
-            refreshTokenKind.set(`mbid:${String(mbid).toLowerCase()}`, "artist");
+            refreshTokenKind.set(
+              `mbid:${String(mbid).toLowerCase()}`,
+              "artist",
+            );
           });
           (data.mbid_album_valid || []).forEach((mbid) => {
-            refreshTokenKind.set(`mbid:${String(mbid).toLowerCase()}`, "release");
+            refreshTokenKind.set(
+              `mbid:${String(mbid).toLowerCase()}`,
+              "release",
+            );
           });
           (data.mbid_invalid || []).forEach((mbid) => {
             refreshTokenState.set(
@@ -2355,12 +2621,12 @@
           });
           updateTokenClasses();
           updateRefreshStatus();
-            } catch (error) {
-              if (error && error.name === "AbortError") {
-                return;
-              }
-            }
-          };
+        } catch (error) {
+          if (error && error.name === "AbortError") {
+            return;
+          }
+        }
+      };
 
       const updateRefreshState = () => {
         if (!refreshEditor) {
@@ -2691,76 +2957,84 @@
         });
       }
 
-      if (lidarrSaveButton) {
-        lidarrSaveButton.addEventListener("click", async () => {
-          const baseUrl = sanitizeHostPort(lidarrUrlInput?.value || "");
-          if (lidarrUrlInput) {
-            lidarrUrlInput.value = baseUrl;
+      const saveLidarrSettings = async ({ silent = false } = {}) => {
+        const baseUrl = sanitizeHostPort(lidarrUrlInput?.value || "");
+        if (lidarrUrlInput) {
+          lidarrUrlInput.value = baseUrl;
+        }
+        const apiKey = sanitizeApiKey(lidarrApiKeyInput?.value || "");
+        if (lidarrApiKeyInput) {
+          lidarrApiKeyInput.value = apiKey;
+        }
+        const limboMode = (
+          limboControl?.dataset.limboMode || "auto-referrer"
+        ).trim();
+        let limboUrl = getLimboUrlForSave();
+        if (limboMode === "custom") {
+          limboUrl = sanitizeHostPort(limboUrl);
+          if (limboUrlInput) {
+            limboUrlInput.value = limboUrl;
           }
-          const apiKey = sanitizeApiKey(lidarrApiKeyInput?.value || "");
-          if (lidarrApiKeyInput) {
-            lidarrApiKeyInput.value = apiKey;
-          }
-          const limboMode = (
-            limboControl?.dataset.limboMode || "auto-referrer"
-          ).trim();
-          let limboUrl = getLimboUrlForSave();
-          if (limboMode === "custom") {
-            limboUrl = sanitizeHostPort(limboUrl);
-            if (limboUrlInput) {
-              limboUrlInput.value = limboUrl;
-            }
-          }
-          if (!baseUrl || !apiKey) {
+        }
+        if (!baseUrl || !apiKey) {
+          if (!silent) {
             suppressHover();
             openInfo("Lidarr URL and API key are required.");
-            return;
           }
-          if (limboMode === "custom" && !limboUrl) {
+          return;
+        }
+        if (limboMode === "custom" && !limboUrl) {
+          if (!silent) {
             suppressHover();
             openInfo("Limbo URL is required.");
-            return;
           }
-          if (limboMode === "custom") {
-            let normalizedUrl = limboUrl;
-            if (normalizedUrl && !/^https?:\/\//i.test(normalizedUrl)) {
-              normalizedUrl = `http://${normalizedUrl}`;
-              if (limboUrlInput) {
-                limboUrlInput.value = normalizedUrl;
-              }
+          return;
+        }
+        if (limboMode === "custom") {
+          let normalizedUrl = limboUrl;
+          if (normalizedUrl && !/^https?:\/\//i.test(normalizedUrl)) {
+            normalizedUrl = `http://${normalizedUrl}`;
+            if (limboUrlInput) {
+              limboUrlInput.value = normalizedUrl;
             }
-            const testValue = normalizedUrl.toLowerCase();
-            if (testValue.includes("musicbrainz.org")) {
+          }
+          const testValue = normalizedUrl.toLowerCase();
+          if (testValue.includes("musicbrainz.org")) {
+            if (!silent) {
               suppressHover();
               openInfo("Lidarr can't query the official MusicBrainz site");
-              return;
             }
+            return;
           }
-          try {
-            const response = await fetch("/config/lidarr-settings", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                lidarr_base_url: baseUrl,
-                lidarr_api_key: apiKey,
-                limbo_url_mode: limboMode,
-                limbo_url:
-                  limboMode === "custom"
-                    ? (limboUrlInput?.value || "").trim()
-                    : limboUrl,
-              }),
-            });
-            const payload = await response.json().catch(() => ({}));
-            if (!response.ok || !payload.ok) {
+        }
+        try {
+          const response = await fetch("/config/lidarr-settings", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              lidarr_base_url: baseUrl,
+              lidarr_api_key: apiKey,
+              limbo_url_mode: limboMode,
+              limbo_url:
+                limboMode === "custom"
+                  ? (limboUrlInput?.value || "").trim()
+                  : limboUrl,
+            }),
+          });
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok || !payload.ok) {
+            if (!silent) {
               suppressHover();
               openInfo(
                 payload.error
                   ? `Error: ${payload.error}`
                   : `Error (${response.status})`,
               );
-              return;
             }
-            if (payload.connection_ok === false) {
+            return;
+          }
+          if (payload.connection_ok === false) {
+            if (!silent) {
               suppressHover();
               const baseMessage = "Connection could not be established.";
               const errorText =
@@ -2770,34 +3044,64 @@
                     ? `${baseMessage} ${payload.error}`
                     : baseMessage;
               openInfo(`${errorText} Check the settings.`);
-              return;
             }
-            if (payload.metadata_update_ok === false) {
+            return;
+          }
+          if (payload.metadata_update_ok === false) {
+            if (!silent) {
               suppressHover();
               openInfo(
                 payload.metadata_update_error
                   ? `Lidarr metadata source could not be updated. ${payload.metadata_update_error} Check the settings.`
                   : "Lidarr metadata source could not be updated. Check the settings.",
               );
-              return;
             }
-            const lidarrPillLabel = document.querySelector(
-              "[data-lidarr-pill-label]",
-            );
-            if (lidarrPillLabel && payload.lidarr_version_label) {
-              lidarrPillLabel.textContent = payload.lidarr_version_label;
-            }
-            const lidarrPillValue = document.querySelector(
-              "[data-lidarr-pill-value]",
-            );
-            if (lidarrPillValue && payload.lidarr_version) {
-              lidarrPillValue.textContent = payload.lidarr_version;
-            }
-            settingsRestoreEnabled = false;
-            closeModal(getModalById("settings"));
-          } catch (error) {
+            return;
+          }
+          const lidarrPillLabel = document.querySelector(
+            "[data-lidarr-pill-label]",
+          );
+          if (lidarrPillLabel && payload.lidarr_version_label) {
+            lidarrPillLabel.textContent = payload.lidarr_version_label;
+          }
+          const lidarrPillValue = document.querySelector(
+            "[data-lidarr-pill-value]",
+          );
+          if (lidarrPillValue && payload.lidarr_version) {
+            lidarrPillValue.textContent = payload.lidarr_version;
+          }
+          settingsRestoreEnabled = false;
+        } catch (error) {
+          if (!silent) {
             suppressHover();
             openInfo(`Request failed: ${error}`);
+          }
+        }
+      };
+      if (lidarrSaveButton) {
+        lidarrSaveButton.addEventListener("click", async () => {
+          await saveLidarrSettings({ silent: false });
+        });
+      }
+      let lidarrSaveTimer = null;
+      const scheduleLidarrSave = () => {
+        if (lidarrSaveTimer) {
+          clearTimeout(lidarrSaveTimer);
+        }
+        lidarrSaveTimer = setTimeout(() => {
+          saveLidarrSettings({ silent: true });
+        }, 450);
+      };
+      if (lidarrUrlInput) {
+        lidarrUrlInput.addEventListener("blur", scheduleLidarrSave);
+      }
+      if (lidarrApiKeyInput) {
+        lidarrApiKeyInput.addEventListener("blur", scheduleLidarrSave);
+      }
+      if (limboUrlInput) {
+        limboUrlInput.addEventListener("blur", () => {
+          if (!limboUrlInput.readOnly) {
+            scheduleLidarrSave();
           }
         });
       }
@@ -2965,13 +3269,13 @@
           if (config.footer === "apply") {
             const footer = document.createElement("div");
             footer.className = "config-menu-footer";
-              if (config.clearLabel) {
-                const clear = document.createElement("button");
-                clear.type = "button";
-                clear.textContent = config.clearLabel;
-                clear.className = "config-menu-text config-menu-clear";
-                footer.appendChild(clear);
-              }
+            if (config.clearLabel) {
+              const clear = document.createElement("button");
+              clear.type = "button";
+              clear.textContent = config.clearLabel;
+              clear.className = "config-menu-text config-menu-clear";
+              footer.appendChild(clear);
+            }
             const cancel = document.createElement("span");
             cancel.textContent = "CANCEL";
             cancel.className = "config-menu-text config-menu-cancel";
@@ -3197,7 +3501,7 @@
         };
         state.valueText.innerHTML = "";
         const tokens = parts.map((part) =>
-          buildToken(part, "config-menu-check selected-exclude", part)
+          buildToken(part, "config-menu-check selected-exclude", part),
         );
         tokens.forEach((token) => state.valueText.appendChild(token));
         const needsEllipsis =
@@ -3441,8 +3745,7 @@
             }
             event.preventDefault();
             event.stopPropagation();
-            const rawValue =
-              token.dataset.value || token.textContent || "";
+            const rawValue = token.dataset.value || token.textContent || "";
             const value = rawValue.trim().toLowerCase();
             if (!value) {
               return;
@@ -3482,8 +3785,7 @@
             const firstRects = new Map(
               reflowTargets
                 .map((node) => {
-                  const key =
-                    node.dataset.value || node.textContent || "";
+                  const key = node.dataset.value || node.textContent || "";
                   return key ? [key, node.getBoundingClientRect()] : null;
                 })
                 .filter(Boolean),
@@ -3510,8 +3812,7 @@
                 ),
               );
               nextTargets.forEach((node) => {
-                const key =
-                  node.dataset.value || node.textContent || "";
+                const key = node.dataset.value || node.textContent || "";
                 const first = firstRects.get(key);
                 if (!first) {
                   return;
@@ -3590,7 +3891,10 @@
                 return;
               }
               setMenuBlockState(true);
-              if (menu.contains(event.target) || button.contains(event.target)) {
+              if (
+                menu.contains(event.target) ||
+                button.contains(event.target)
+              ) {
                 return;
               }
               event.preventDefault();
@@ -4255,6 +4559,9 @@
           } else if (kind === "custom") {
             setLimboMode("custom", { focus: true });
           }
+          if (typeof scheduleLidarrSave === "function") {
+            scheduleLidarrSave();
+          }
           if (limboMenu) {
             limboMenu.classList.remove("open");
           }
@@ -4331,62 +4638,58 @@
         });
       }
 
-      const settingsTabsRoot = document.querySelector("[data-settings-tabs]");
-      if (settingsTabsRoot) {
-        const settingsButtons = Array.from(
-          settingsTabsRoot.querySelectorAll("[data-tab]"),
+      const settingsNav = document.querySelector("[data-settings-nav]");
+      if (settingsNav) {
+        const settingsItems = Array.from(
+          settingsNav.querySelectorAll("[data-settings-target]"),
         );
         const settingsPanels = Array.from(
-          settingsTabsRoot.querySelectorAll("[data-tab-panel]"),
+          document.querySelectorAll("[data-settings-panel]"),
         );
-        const syncSettingsTabHeight = () => {
-          if (!settingsPanels.length) {
-            return;
-          }
-          let maxHeight = 0;
-          settingsPanels.forEach((panel) => {
-            const wasHidden = !panel.classList.contains("active");
-            if (wasHidden) {
-              panel.classList.add("active");
-            }
-            const rect = panel.getBoundingClientRect();
-            if (rect.height > maxHeight) {
-              maxHeight = rect.height;
-            }
-            if (wasHidden) {
-              panel.classList.remove("active");
-            }
-          });
-          if (maxHeight > 0) {
-            settingsPanels.forEach((panel) => {
-              panel.style.minHeight = `${Math.ceil(maxHeight)}px`;
-            });
-          }
-        };
-        const setSettingsTab = (name) => {
-          settingsButtons.forEach((button) => {
-            button.classList.toggle("active", button.dataset.tab === name);
+        const setSettingsSection = (target, priorityType) => {
+          settingsItems.forEach((button) => {
+            button.classList.toggle(
+              "is-active",
+              button.dataset.settingsTarget === target &&
+                (button.dataset.priorityType || "") === (priorityType || ""),
+            );
           });
           settingsPanels.forEach((panel) => {
             panel.classList.toggle(
-              "active",
-              panel.dataset.tabPanel === name,
+              "is-active",
+              panel.dataset.settingsPanel === target,
             );
           });
           if (providerTestAllButton) {
-            providerTestAllButton.hidden = name !== "providers";
+            providerTestAllButton.hidden = target !== "providers";
           }
-          requestAnimationFrame(syncSettingsTabHeight);
+          if (priorityType) {
+            setPriorityType(priorityType);
+          }
         };
-        settingsButtons.forEach((button) => {
+        settingsItems.forEach((button) => {
           button.addEventListener("click", () => {
-            setSettingsTab(button.dataset.tab);
+            setSettingsSection(
+              button.dataset.settingsTarget || "",
+              button.dataset.priorityType || "",
+            );
           });
         });
-        requestAnimationFrame(syncSettingsTabHeight);
-        window.addEventListener("resize", () => {
-          requestAnimationFrame(syncSettingsTabHeight);
-        });
+        const activeItem =
+          settingsItems.find((button) => button.classList.contains("is-active")) ||
+          settingsItems[0];
+        if (activeItem) {
+          const target = activeItem.dataset.settingsTarget || "";
+          settingsPanels.forEach((panel) => {
+            panel.classList.toggle(
+              "is-active",
+              panel.dataset.settingsPanel === target,
+            );
+          });
+          if (providerTestAllButton) {
+            providerTestAllButton.hidden = target !== "providers";
+          }
+        }
       }
       if (priorityAddButton && priorityMenu) {
         priorityAddButton.addEventListener("click", (event) => {
@@ -4441,11 +4744,19 @@
       }
       const providerCatalog = [
         { id: "apple", label: "APPLE MUSIC", modal: "apple-music-settings" },
-        { id: "coverart", label: "COVER ART ARCHIVE", modal: "coverart-settings" },
+        {
+          id: "coverart",
+          label: "COVER ART ARCHIVE",
+          modal: "coverart-settings",
+        },
         { id: "discogs", label: "DISCOGS", modal: "discogs-settings" },
         { id: "fanart", label: "FANART.TV", modal: "fanart-settings" },
         { id: "lastfm", label: "LAST.FM", modal: "lastfm-settings" },
-        { id: "musicbrainz", label: "MUSICBRAINZ", modal: "musicbrainz-settings" },
+        {
+          id: "musicbrainz",
+          label: "MUSICBRAINZ",
+          modal: "musicbrainz-settings",
+        },
         { id: "wikipedia", label: "WIKIPEDIA", modal: "wikipedia-settings" },
         { id: "tadb", label: "THE AUDIODB", modal: "tadb-settings" },
         { id: "plex", label: "PLEX", modal: "plex-settings" },
@@ -4507,8 +4818,7 @@
         if (lidarrApiKeyInput)
           lidarrApiKeyInput.value = settingsSnapshot.lidarrApiKey;
         if (limboUrlInput) {
-          limboUrlInput.dataset.limboReferrer =
-            settingsSnapshot.limboReferrer;
+          limboUrlInput.dataset.limboReferrer = settingsSnapshot.limboReferrer;
           limboUrlInput.dataset.limboHost = settingsSnapshot.limboHost;
           limboUrlInput.dataset.limboCustom = settingsSnapshot.limboCustom;
           limboUrlInput.value = settingsSnapshot.limboValue;
@@ -4581,25 +4891,29 @@
           return true;
         }
         if (id === "fanart") {
-          return Boolean((providersList.dataset.providerFanartKey || "").trim());
+          return Boolean(
+            (providersList.dataset.providerFanartKey || "").trim(),
+          );
         }
         if (id === "tadb") {
           return Boolean((providersList.dataset.providerTadbKey || "").trim());
         }
         if (id === "discogs") {
-          return Boolean((providersList.dataset.providerDiscogsKey || "").trim());
+          return Boolean(
+            (providersList.dataset.providerDiscogsKey || "").trim(),
+          );
         }
         if (id === "lastfm") {
           return Boolean(
             (providersList.dataset.providerLastfmKey || "").trim() &&
-              (providersList.dataset.providerLastfmSecret || "").trim(),
+            (providersList.dataset.providerLastfmSecret || "").trim(),
           );
         }
         if (id === "tidal") {
           return Boolean(
             (providersList.dataset.providerTidalClientId || "").trim() &&
-              (providersList.dataset.providerTidalClientSecret || "").trim() &&
-              (providersList.dataset.providerTidalCountry || "").trim(),
+            (providersList.dataset.providerTidalClientSecret || "").trim() &&
+            (providersList.dataset.providerTidalCountry || "").trim(),
           );
         }
         return false;
@@ -4608,9 +4922,8 @@
         if (!providersList) {
           return;
         }
-        providersList.dataset[`provider${id[0].toUpperCase()}${id.slice(1)}`] = enabled
-          ? "true"
-          : "false";
+        providersList.dataset[`provider${id[0].toUpperCase()}${id.slice(1)}`] =
+          enabled ? "true" : "false";
       };
       const isProviderConfigComplete = (id) => {
         if (!providersList) {
@@ -4628,16 +4941,16 @@
         if (id === "lastfm") {
           return Boolean(
             (lastfmKeyInput?.value || "").trim() &&
-              (lastfmSecretInput?.value || "").trim(),
+            (lastfmSecretInput?.value || "").trim(),
           );
         }
         if (id === "tidal") {
           return Boolean(
             (tidalClientIdInput?.value || "").trim() &&
-              (tidalClientSecretInput?.value || "").trim() &&
-              (tidalCountryCodeInput?.value || "").trim() &&
-              (tidalUserInput?.value || "").trim() &&
-              (tidalUserPasswordInput?.value || "").trim(),
+            (tidalClientSecretInput?.value || "").trim() &&
+            (tidalCountryCodeInput?.value || "").trim() &&
+            (tidalUserInput?.value || "").trim() &&
+            (tidalUserPasswordInput?.value || "").trim(),
           );
         }
         if (id === "apple") {
@@ -4693,7 +5006,9 @@
           return lower;
         };
         const orderedIds = [...providerCatalog]
-          .sort((a, b) => stripArticle(a.label).localeCompare(stripArticle(b.label)))
+          .sort((a, b) =>
+            stripArticle(a.label).localeCompare(stripArticle(b.label)),
+          )
           .map((item) => item.id);
         orderedIds.forEach((id) => {
           const item = providerCatalog.find((entry) => entry.id === id);
@@ -4711,7 +5026,10 @@
           const isConfigured = isProviderConfigComplete(item.id);
           const hasError = getProviderError(item.id);
           const showError = isEnabled && isConfigured && hasError;
-          row.classList.toggle("enabled", isEnabled && isConfigured && !showError);
+          row.classList.toggle(
+            "enabled",
+            isEnabled && isConfigured && !showError,
+          );
           row.classList.toggle("connection-error", showError);
           row.classList.toggle("inactive", !isEnabled || !isConfigured);
           const applyToggle = (nextEnabled) => {
@@ -4745,8 +5063,7 @@
               }
               if (lockStatus === "soft") {
                 const warning =
-                  provider.lock_warning ||
-                  `Disable ${item.label}?`;
+                  provider.lock_warning || `Disable ${item.label}?`;
                 openConfirm(warning, () => applyToggle(false));
                 return;
               }
@@ -4755,7 +5072,8 @@
           };
           row.appendChild(label);
           const handle = document.createElement("span");
-          handle.className = "settings-list__handle settings-list__handle--icon";
+          handle.className =
+            "settings-list__handle settings-list__handle--icon";
           handle.setAttribute("aria-hidden", "true");
           handle.innerHTML = __THICK_ARROW_RT_ICON__;
           row.appendChild(handle);
@@ -4929,8 +5247,7 @@
         }
         servicesPriorityList.innerHTML = "";
         let dragSuppressClick = false;
-        const configuredIds = providerCatalog
-          .filter((item) => isProviderConfigured(item.id))
+        const supportedIds = providerCatalog
           .map((item) => item.id)
           .filter((id) => {
             const requiredCaps = priorityTypeCapabilityMap[priorityType] || [];
@@ -4948,8 +5265,8 @@
             return supportsType;
           });
         const order = getServicePriorityOrder();
-        const orderedIds = order.filter((id) => configuredIds.includes(id));
-        configuredIds.forEach((id) => {
+        const orderedIds = order.filter((id) => supportedIds.includes(id));
+        supportedIds.forEach((id) => {
           if (!orderedIds.includes(id)) {
             orderedIds.push(id);
           }
@@ -5021,7 +5338,11 @@
               serviceDragGhost = wrapper;
               const offsetX = Math.max(0, event.clientX - rowRect.left);
               const offsetY = Math.max(0, event.clientY - rowRect.top);
-              event.dataTransfer.setDragImage(wrapper, offsetX + 3, offsetY + 3);
+              event.dataTransfer.setDragImage(
+                wrapper,
+                offsetX + 3,
+                offsetY + 3,
+              );
             }
             event.dataTransfer.setData("text/plain", item.id);
             requestAnimationFrame(() => {
@@ -5231,11 +5552,7 @@
             const firstInput = modal.querySelector(
               'input[type="text"], input:not([type]), textarea',
             );
-            if (
-              firstInput &&
-              !firstInput.disabled &&
-              !firstInput.readOnly
-            ) {
+            if (firstInput && !firstInput.disabled && !firstInput.readOnly) {
               firstInput.focus();
             }
           });
@@ -5260,7 +5577,9 @@
           if (!response.ok || !data.ok) {
             suppressHover();
             openInfo(
-              data.error ? `Error: ${data.error}` : `Error (${response.status})`,
+              data.error
+                ? `Error: ${data.error}`
+                : `Error (${response.status})`,
             );
             return false;
           }
@@ -5429,10 +5748,14 @@
           if (!maxSize) {
             return;
           }
-          const ok = await saveProvider("apple", {
-            apple_music_max_image_size: maxSize,
-            apple_music_allow_upscale: allowUpscale,
-          }, "apple-music");
+          const ok = await saveProvider(
+            "apple",
+            {
+              apple_music_max_image_size: maxSize,
+              apple_music_allow_upscale: allowUpscale,
+            },
+            "apple-music",
+          );
           if (ok) {
             disableModalRestore("apple-music-settings");
             closeModal(getModalById("apple-music-settings"));

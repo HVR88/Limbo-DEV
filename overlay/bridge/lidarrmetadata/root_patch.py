@@ -306,6 +306,7 @@ def _load_lidarr_settings() -> None:
         _MUSICBRAINZ_ENABLED = True
         _WIKIPEDIA_ENABLED = True
         _REFRESH_RESOLVE_NAMES = True
+        _persist_lidarr_settings()
         return
     _LIDARR_BASE_URL = str(data.get("lidarr_base_url") or "").strip()
     _LIDARR_API_KEY = str(data.get("lidarr_api_key") or "").strip()
@@ -331,6 +332,7 @@ def _load_lidarr_settings() -> None:
     _APPLE_MUSIC_ALLOW_UPSCALE = _read_enabled_flag(
         data.get("apple_music_allow_upscale"), False
     )
+    refresh_present = "refresh_resolve_names" in data
     _REFRESH_RESOLVE_NAMES = _read_enabled_flag(
         data.get("refresh_resolve_names"), True
     )
@@ -369,6 +371,8 @@ def _load_lidarr_settings() -> None:
     _COVERART_ENABLED = _read_enabled_flag(data.get("coverart_enabled"), True)
     _MUSICBRAINZ_ENABLED = _read_enabled_flag(data.get("musicbrainz_enabled"), True)
     _WIKIPEDIA_ENABLED = _read_enabled_flag(data.get("wikipedia_enabled"), True)
+    if not refresh_present:
+        _persist_lidarr_settings()
     if _APPLE_MUSIC_ENABLED and not _APPLE_MUSIC_MAX_IMAGE_SIZE:
         _APPLE_MUSIC_MAX_IMAGE_SIZE = "2500"
     if _COVERART_ENABLED and not _COVERART_SIZE:
