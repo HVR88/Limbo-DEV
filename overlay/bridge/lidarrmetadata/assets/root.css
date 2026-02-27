@@ -1811,6 +1811,20 @@ body[data-theme="dark"] .media-types-value .media-type-token {
   height: 14px;
   display: block;
 }
+.config-action__inner.is-loading {
+  border: 2px solid rgba(151, 170, 180, 0.35);
+  border-top-color: var(--accent);
+  background: transparent;
+  animation: config-spinner 0.8s linear infinite;
+}
+.config-action__inner.is-loading svg {
+  display: none;
+}
+@keyframes config-spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 body[data-theme="dark"] .config-action__inner svg {
   color: var(--action-button-font-color);

@@ -216,6 +216,37 @@ def register_config_routes() -> None:
 
     _load_persisted_config()
 
+    if "/config/lidarr-test" not in existing_rules:
+        @upstream_app.app.route("/config/lidarr-test", methods=["POST"])
+        async def _limbo_lidarr_test():
+            payload = await request.get_json(silent=True) or {}
+            if not isinstance(payload, dict):
+                payload = {}
+            base_url = str(payload.get("lidarr_base_url") or "").strip()
+            api_key = str(payload.get("lidarr_api_key") or "").strip()
+            if not base_url or not api_key:
+                return jsonify({"ok": False, "error": "Lidarr URL or API key is missing."})
+            url = base_url.rstrip("/") + "/api/v1/system/status"
+            headers = {"X-Api-Key": api_key}
+            try:
+                timeout = aiohttp.ClientTimeout(total=3)
+                async with aiohttp.ClientSession(timeout=timeout) as session:
+                    async with session.get(url, headers=headers) as resp:
+                        if resp.status in {401, 403}:
+                            return jsonify({"ok": False, "error": "API key is invalid."})
+                        if resp.status != 200:
+                            return jsonify({"ok": False, "error": f"Unexpected status {resp.status}."})
+                        data = await resp.json()
+            except Exception:
+                return jsonify({"ok": False, "error": "Unable to connect."})
+            version = None
+            for key in ("version", "appVersion", "packageVersion", "buildVersion"):
+                value = data.get(key)
+                if value:
+                    version = str(value).strip()
+                    break
+            return jsonify({"ok": True, "version": version or ""})
+
     if "/config/lidarr-settings" not in existing_rules:
         @upstream_app.app.route("/config/lidarr-settings", methods=["GET", "POST"])
         async def _limbo_lidarr_settings():

@@ -278,16 +278,42 @@
                   <label class="settings-field__label" for="lidarr-url"
                     >Lidarr URL</label
                   >
-                  <input
-                    id="lidarr-url"
-                    class="settings-field__input"
-                    type="text"
-                    maxlength="2048"
-                    spellcheck="false"
-                    autocomplete="off"
-                    placeholder="http://lidarr-ip:port"
-                    value="__LIDARR_BASE_URL__"
-                  />
+                  <div class="settings-field__control settings-field__control--framed">
+                    <input
+                      id="lidarr-url"
+                      class="settings-field__input settings-field__input--framed"
+                      type="text"
+                      maxlength="2048"
+                      spellcheck="false"
+                      autocomplete="off"
+                      placeholder="http://lidarr-ip:port"
+                      value="__LIDARR_BASE_URL__"
+                    />
+                    <button
+                      class="config-action settings-field__menu-toggle"
+                      type="button"
+                      aria-label="Lidarr URL menu"
+                      data-lidarr-menu-toggle
+                    >
+                      <span class="config-action__inner" aria-hidden="true">
+                        <svg
+                          viewBox="0 0 16 12"
+                          width="14"
+                          height="10"
+                          aria-hidden="true"
+                        >
+                          <path
+                            d="M1.5 6.5l3.5 3.5L14.5 1.5"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                        </svg>
+                      </span>
+                    </button>
+                  </div>
                 </div>
                 <div class="settings-field">
                   <label class="settings-field__label" for="lidarr-apikey"
@@ -1770,6 +1796,9 @@
       const limboChip = document.querySelector("[data-limbo-chip]");
       const lidarrUrlInput = document.querySelector("#lidarr-url");
       const lidarrApiKeyInput = document.querySelector("#lidarr-apikey");
+      const lidarrTestButton = document.querySelector(
+        "[data-lidarr-menu-toggle]",
+      );
       const lidarrSaveButton = document.querySelector("[data-lidarr-save]");
       const tidalClientIdInput = document.querySelector("#tidal-client-id");
       const tidalClientSecretInput = document.querySelector(
@@ -2116,6 +2145,60 @@
         }
         const prefix = scheme ? `${scheme}://` : "http://";
         return `${prefix}${host}${port ? `:${port}` : ""}`;
+      };
+
+      const testLidarrConnection = async () => {
+        const lidarrSpinner = lidarrTestButton?.querySelector(
+          ".config-action__inner",
+        );
+        if (lidarrTestButton) {
+          lidarrTestButton.disabled = true;
+        }
+        if (lidarrSpinner) {
+          lidarrSpinner.classList.add("is-loading");
+        }
+        const baseUrl = sanitizeHostPort(lidarrUrlInput?.value || "");
+        if (lidarrUrlInput) {
+          lidarrUrlInput.value = baseUrl;
+        }
+        const apiKey = sanitizeApiKey(lidarrApiKeyInput?.value || "");
+        if (lidarrApiKeyInput) {
+          lidarrApiKeyInput.value = apiKey;
+        }
+        if (!baseUrl || !apiKey) {
+          suppressHover();
+          openInfo("Lidarr URL and API key are required.");
+          return;
+        }
+        try {
+          const response = await fetch("/config/lidarr-test", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              lidarr_base_url: baseUrl,
+              lidarr_api_key: apiKey,
+            }),
+          });
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok || !payload.ok) {
+            suppressHover();
+            openInfo(payload.error || `Error (${response.status})`);
+            return;
+          }
+          const version = payload.version ? ` (v${payload.version})` : "";
+          suppressHover();
+          openInfo(`Lidarr connection OK${version}.`);
+        } catch (error) {
+          suppressHover();
+          openInfo("Unable to connect.");
+        } finally {
+          if (lidarrSpinner) {
+            lidarrSpinner.classList.remove("is-loading");
+          }
+          if (lidarrTestButton) {
+            lidarrTestButton.disabled = false;
+          }
+        }
       };
 
       const setLimboMode = (mode, options = {}) => {
@@ -4571,6 +4654,13 @@
             });
             requestAnimationFrame(() => adjustMenuPosition(limboMenu));
           }
+        });
+      }
+      if (lidarrTestButton) {
+        lidarrTestButton.addEventListener("click", (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          testLidarrConnection();
         });
       }
       if (limboMenu) {
