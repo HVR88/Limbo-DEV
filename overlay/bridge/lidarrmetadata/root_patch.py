@@ -66,12 +66,22 @@ _TIDAL_ENABLED: Optional[bool] = None
 _DISCOGS_ENABLED: Optional[bool] = None
 _APPLE_MUSIC_ENABLED: Optional[bool] = None
 _PLEX_ENABLED: Optional[bool] = None
+_FANART_ERROR: Optional[bool] = None
+_TADB_ERROR: Optional[bool] = None
+_LASTFM_ERROR: Optional[bool] = None
+_TIDAL_ERROR: Optional[bool] = None
+_DISCOGS_ERROR: Optional[bool] = None
+_APPLE_MUSIC_ERROR: Optional[bool] = None
+_PLEX_ERROR: Optional[bool] = None
 _APPLE_MUSIC_MAX_IMAGE_SIZE: Optional[str] = None
 _APPLE_MUSIC_ALLOW_UPSCALE: Optional[bool] = None
 _COVERART_ENABLED: Optional[bool] = None
 _COVERART_SIZE: Optional[str] = None
 _MUSICBRAINZ_ENABLED: Optional[bool] = None
 _WIKIPEDIA_ENABLED: Optional[bool] = None
+_COVERART_ERROR: Optional[bool] = None
+_MUSICBRAINZ_ERROR: Optional[bool] = None
+_WIKIPEDIA_ERROR: Optional[bool] = None
 _REFRESH_RESOLVE_NAMES: Optional[bool] = None
 _GITHUB_RELEASE_CACHE: Dict[str, Tuple[float, Optional[str]]] = {}
 _GITHUB_RELEASE_CACHE_TTL = 300.0
@@ -715,6 +725,15 @@ def get_fanart_enabled() -> bool:
     return bool(_FANART_ENABLED)
 
 
+def get_fanart_error() -> bool:
+    return bool(_FANART_ERROR)
+
+
+def set_fanart_error(value: bool) -> None:
+    global _FANART_ERROR
+    _FANART_ERROR = bool(value)
+
+
 def set_tadb_enabled(value: bool) -> None:
     _set_tadb_enabled(value, persist=True)
 
@@ -728,6 +747,15 @@ def _set_tadb_enabled(value: bool, *, persist: bool) -> None:
 
 def get_tadb_enabled() -> bool:
     return bool(_TADB_ENABLED)
+
+
+def get_tadb_error() -> bool:
+    return bool(_TADB_ERROR)
+
+
+def set_tadb_error(value: bool) -> None:
+    global _TADB_ERROR
+    _TADB_ERROR = bool(value)
 
 
 def set_lastfm_enabled(value: bool) -> None:
@@ -745,6 +773,15 @@ def get_lastfm_enabled() -> bool:
     return bool(_LASTFM_ENABLED)
 
 
+def get_lastfm_error() -> bool:
+    return bool(_LASTFM_ERROR)
+
+
+def set_lastfm_error(value: bool) -> None:
+    global _LASTFM_ERROR
+    _LASTFM_ERROR = bool(value)
+
+
 def set_tidal_enabled(value: bool) -> None:
     _set_tidal_enabled(value, persist=True)
 
@@ -758,6 +795,15 @@ def _set_tidal_enabled(value: bool, *, persist: bool) -> None:
 
 def get_tidal_enabled() -> bool:
     return bool(_TIDAL_ENABLED)
+
+
+def get_tidal_error() -> bool:
+    return bool(_TIDAL_ERROR)
+
+
+def set_tidal_error(value: bool) -> None:
+    global _TIDAL_ERROR
+    _TIDAL_ERROR = bool(value)
 
 
 def set_discogs_enabled(value: bool) -> None:
@@ -775,6 +821,15 @@ def get_discogs_enabled() -> bool:
     return bool(_DISCOGS_ENABLED)
 
 
+def get_discogs_error() -> bool:
+    return bool(_DISCOGS_ERROR)
+
+
+def set_discogs_error(value: bool) -> None:
+    global _DISCOGS_ERROR
+    _DISCOGS_ERROR = bool(value)
+
+
 def set_apple_music_enabled(value: bool) -> None:
     _set_apple_music_enabled(value, persist=True)
 
@@ -788,6 +843,15 @@ def _set_apple_music_enabled(value: bool, *, persist: bool) -> None:
 
 def get_apple_music_enabled() -> bool:
     return bool(_APPLE_MUSIC_ENABLED)
+
+
+def get_apple_music_error() -> bool:
+    return bool(_APPLE_MUSIC_ERROR)
+
+
+def set_apple_music_error(value: bool) -> None:
+    global _APPLE_MUSIC_ERROR
+    _APPLE_MUSIC_ERROR = bool(value)
 
 
 def set_apple_music_max_image_size(value: str) -> None:
@@ -835,6 +899,15 @@ def get_coverart_enabled() -> bool:
     return bool(_COVERART_ENABLED)
 
 
+def get_coverart_error() -> bool:
+    return bool(_COVERART_ERROR)
+
+
+def set_coverart_error(value: bool) -> None:
+    global _COVERART_ERROR
+    _COVERART_ERROR = bool(value)
+
+
 def set_coverart_size(value: str) -> None:
     _set_coverart_size(value, persist=True)
 
@@ -880,6 +953,15 @@ def get_musicbrainz_enabled() -> bool:
     return bool(_MUSICBRAINZ_ENABLED)
 
 
+def get_musicbrainz_error() -> bool:
+    return bool(_MUSICBRAINZ_ERROR)
+
+
+def set_musicbrainz_error(value: bool) -> None:
+    global _MUSICBRAINZ_ERROR
+    _MUSICBRAINZ_ERROR = bool(value)
+
+
 def set_wikipedia_enabled(value: bool) -> None:
     _set_wikipedia_enabled(value, persist=True)
 
@@ -895,6 +977,15 @@ def get_wikipedia_enabled() -> bool:
     return bool(_WIKIPEDIA_ENABLED)
 
 
+def get_wikipedia_error() -> bool:
+    return bool(_WIKIPEDIA_ERROR)
+
+
+def set_wikipedia_error(value: bool) -> None:
+    global _WIKIPEDIA_ERROR
+    _WIKIPEDIA_ERROR = bool(value)
+
+
 def set_plex_enabled(value: bool) -> None:
     _set_plex_enabled(value, persist=True)
 
@@ -908,6 +999,15 @@ def _set_plex_enabled(value: bool, *, persist: bool) -> None:
 
 def get_plex_enabled() -> bool:
     return bool(_PLEX_ENABLED)
+
+
+def get_plex_error() -> bool:
+    return bool(_PLEX_ERROR)
+
+
+def set_plex_error(value: bool) -> None:
+    global _PLEX_ERROR
+    _PLEX_ERROR = bool(value)
 
 
 def _is_localhost_url(value: str) -> bool:
@@ -1865,6 +1965,16 @@ def register_root_route() -> None:
             "__COVERART_SIZE__": html.escape(get_coverart_size()),
             "__MUSICBRAINZ_ENABLED__": "true" if get_musicbrainz_enabled() else "false",
             "__WIKIPEDIA_ENABLED__": "true" if get_wikipedia_enabled() else "false",
+            "__FANART_ERROR__": "true" if get_fanart_error() else "false",
+            "__TADB_ERROR__": "true" if get_tadb_error() else "false",
+            "__LASTFM_ERROR__": "true" if get_lastfm_error() else "false",
+            "__TIDAL_ERROR__": "true" if get_tidal_error() else "false",
+            "__DISCOGS_ERROR__": "true" if get_discogs_error() else "false",
+            "__APPLE_MUSIC_ERROR__": "true" if get_apple_music_error() else "false",
+            "__PLEX_ERROR__": "true" if get_plex_error() else "false",
+            "__COVERART_ERROR__": "true" if get_coverart_error() else "false",
+            "__MUSICBRAINZ_ERROR__": "true" if get_musicbrainz_error() else "false",
+            "__WIKIPEDIA_ERROR__": "true" if get_wikipedia_error() else "false",
             "__MBMS_REPLICATION_SCHEDULE__": safe["mbms_replication_schedule"],
             "__MBMS_INDEX_SCHEDULE__": safe["mbms_index_schedule"],
             "__METADATA_VERSION__": safe["metadata_version"],

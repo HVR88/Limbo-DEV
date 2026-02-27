@@ -203,14 +203,15 @@
               <button class="settings-tab active" type="button" data-tab="connections">
                 Connections
               </button>
-              <button class="settings-tab" type="button" data-tab="services">
-                Service Providers
+              <button class="settings-tab" type="button" data-tab="providers">
+                Providers
               </button>
               <button class="settings-tab" type="button" data-tab="priorities">
                 Services
               </button>
             </div>
-            <div class="settings-tab-panel active" data-tab-panel="connections">
+            <div class="settings-tab-panels" data-settings-panels>
+              <div class="settings-tab-panel active" data-tab-panel="connections">
               <div class="settings-field">
                 <label class="settings-field__label" for="lidarr-url"
                   >Lidarr URL</label
@@ -292,33 +293,43 @@
                 </div>
               </div>
             </div>
-            <div class="settings-tab-panel" data-tab-panel="services">
+            <div class="settings-tab-panel" data-tab-panel="providers">
               <div
                 class="settings-list"
-                data-services
-                data-service-fanart="__FANART_ENABLED__"
-                data-service-tadb="__TADB_ENABLED__"
-                data-service-lastfm="__LASTFM_ENABLED__"
-                data-service-discogs="__DISCOGS_ENABLED__"
-                data-service-plex="__PLEX_ENABLED__"
-                data-service-tidal="__TIDAL_ENABLED__"
-                data-service-apple="__APPLE_MUSIC_ENABLED__"
-                data-service-tidal-user="__TIDAL_USER__"
-                data-service-fanart-key="__FANART_KEY__"
-                data-service-tadb-key="__TADB_KEY__"
-              data-service-lastfm-key="__LASTFM_KEY__"
-              data-service-lastfm-secret="__LASTFM_SECRET__"
-              data-service-discogs-key="__DISCOGS_KEY__"
-              data-service-plex="__PLEX_ENABLED__"
-              data-service-apple-max="__APPLE_MUSIC_MAX_IMAGE_SIZE__"
-              data-service-apple-upscale="__APPLE_MUSIC_ALLOW_UPSCALE__"
-                data-service-coverart="__COVERART_ENABLED__"
-                data-service-coverart-size="__COVERART_SIZE__"
-                data-service-musicbrainz="__MUSICBRAINZ_ENABLED__"
-                data-service-wikipedia="__WIKIPEDIA_ENABLED__"
+                data-providers
+                data-provider-fanart="__FANART_ENABLED__"
+                data-provider-tadb="__TADB_ENABLED__"
+                data-provider-lastfm="__LASTFM_ENABLED__"
+                data-provider-discogs="__DISCOGS_ENABLED__"
+                data-provider-plex="__PLEX_ENABLED__"
+                data-provider-tidal="__TIDAL_ENABLED__"
+                data-provider-apple="__APPLE_MUSIC_ENABLED__"
+                data-provider-fanart-error="__FANART_ERROR__"
+                data-provider-tadb-error="__TADB_ERROR__"
+                data-provider-lastfm-error="__LASTFM_ERROR__"
+                data-provider-discogs-error="__DISCOGS_ERROR__"
+                data-provider-plex-error="__PLEX_ERROR__"
+                data-provider-tidal-error="__TIDAL_ERROR__"
+                data-provider-apple-error="__APPLE_MUSIC_ERROR__"
+                data-provider-tidal-user="__TIDAL_USER__"
+                data-provider-fanart-key="__FANART_KEY__"
+                data-provider-tadb-key="__TADB_KEY__"
+              data-provider-lastfm-key="__LASTFM_KEY__"
+              data-provider-lastfm-secret="__LASTFM_SECRET__"
+              data-provider-discogs-key="__DISCOGS_KEY__"
+              data-provider-plex="__PLEX_ENABLED__"
+              data-provider-apple-max="__APPLE_MUSIC_MAX_IMAGE_SIZE__"
+              data-provider-apple-upscale="__APPLE_MUSIC_ALLOW_UPSCALE__"
+                data-provider-coverart="__COVERART_ENABLED__"
+                data-provider-coverart-size="__COVERART_SIZE__"
+                data-provider-musicbrainz="__MUSICBRAINZ_ENABLED__"
+                data-provider-wikipedia="__WIKIPEDIA_ENABLED__"
+                data-provider-coverart-error="__COVERART_ERROR__"
+                data-provider-musicbrainz-error="__MUSICBRAINZ_ERROR__"
+                data-provider-wikipedia-error="__WIKIPEDIA_ERROR__"
             ></div>
             </div>
-            <div class="settings-tab-panel" data-tab-panel="priorities">
+              <div class="settings-tab-panel" data-tab-panel="priorities">
               <div class="settings-field settings-field--row settings-priority-selector">
                 <label class="settings-field__label">Search Priority</label>
                 <div class="settings-field__control settings-priority-selector__control">
@@ -344,25 +355,35 @@
               <div
                 class="settings-list settings-list--draggable settings-list--priorities"
                 data-services-priority
-                data-service-fanart="__FANART_ENABLED__"
-                data-service-tadb="__TADB_ENABLED__"
-                data-service-lastfm="__LASTFM_ENABLED__"
-                data-service-discogs="__DISCOGS_ENABLED__"
-                data-service-plex="__PLEX_ENABLED__"
-                data-service-tidal="__TIDAL_ENABLED__"
-                data-service-apple="__APPLE_MUSIC_ENABLED__"
-                data-service-tidal-user="__TIDAL_USER__"
-                data-service-fanart-key="__FANART_KEY__"
-                data-service-tadb-key="__TADB_KEY__"
-              data-service-lastfm-key="__LASTFM_KEY__"
-              data-service-lastfm-secret="__LASTFM_SECRET__"
-              data-service-discogs-key="__DISCOGS_KEY__"
-              data-service-plex="__PLEX_ENABLED__"
-              data-service-apple-max="__APPLE_MUSIC_MAX_IMAGE_SIZE__"
-              data-service-apple-upscale="__APPLE_MUSIC_ALLOW_UPSCALE__"
-              data-service-coverart="__COVERART_ENABLED__"
-              data-service-coverart-size="__COVERART_SIZE__"
-              data-service-musicbrainz="__MUSICBRAINZ_ENABLED__"
+                data-provider-fanart="__FANART_ENABLED__"
+                data-provider-tadb="__TADB_ENABLED__"
+                data-provider-lastfm="__LASTFM_ENABLED__"
+                data-provider-discogs="__DISCOGS_ENABLED__"
+                data-provider-plex="__PLEX_ENABLED__"
+                data-provider-tidal="__TIDAL_ENABLED__"
+                data-provider-apple="__APPLE_MUSIC_ENABLED__"
+                data-provider-fanart-error="__FANART_ERROR__"
+                data-provider-tadb-error="__TADB_ERROR__"
+                data-provider-lastfm-error="__LASTFM_ERROR__"
+                data-provider-discogs-error="__DISCOGS_ERROR__"
+                data-provider-plex-error="__PLEX_ERROR__"
+                data-provider-tidal-error="__TIDAL_ERROR__"
+                data-provider-apple-error="__APPLE_MUSIC_ERROR__"
+                data-provider-tidal-user="__TIDAL_USER__"
+                data-provider-fanart-key="__FANART_KEY__"
+                data-provider-tadb-key="__TADB_KEY__"
+              data-provider-lastfm-key="__LASTFM_KEY__"
+              data-provider-lastfm-secret="__LASTFM_SECRET__"
+              data-provider-discogs-key="__DISCOGS_KEY__"
+              data-provider-plex="__PLEX_ENABLED__"
+              data-provider-apple-max="__APPLE_MUSIC_MAX_IMAGE_SIZE__"
+              data-provider-apple-upscale="__APPLE_MUSIC_ALLOW_UPSCALE__"
+                data-provider-coverart="__COVERART_ENABLED__"
+                data-provider-coverart-size="__COVERART_SIZE__"
+                data-provider-musicbrainz="__MUSICBRAINZ_ENABLED__"
+                data-provider-coverart-error="__COVERART_ERROR__"
+                data-provider-musicbrainz-error="__MUSICBRAINZ_ERROR__"
+                data-provider-wikipedia-error="__WIKIPEDIA_ERROR__"
             ></div>
               <div class="settings-list__actions">
                 <button
@@ -371,13 +392,6 @@
                   data-service-priority-remove
                 >
                   <span class="settings-list__symbol settings-list__symbol--minus">-</span>
-                </button>
-                <button
-                  class="modal-link modal-link-text"
-                  type="button"
-                  data-service-priority-edit
-                >
-                  EDIT
                 </button>
                 <div class="settings-list__menu-wrap">
                   <button
@@ -423,17 +437,19 @@
                     </button>
                   </div>
                 </div>
-                <button
-                  class="modal-link modal-link-text settings-list__test-toggle"
-                  type="button"
-                  data-service-priority-test
-                >
-                  TEST
-                </button>
+              </div>
               </div>
             </div>
           </div>
           <div class="refresh-modal__actions">
+            <button
+              class="modal-link modal-link-text settings-providers-test"
+              type="button"
+              data-provider-test-all
+              hidden
+            >
+              TEST
+            </button>
             <button
               class="modal-link modal-link-text modal-link-cancel"
               type="button"
@@ -716,7 +732,7 @@
         </div>
       </div>
     </div>
-    <div class="modal settings-modal service-modal" data-modal="fanart-settings" aria-hidden="true">
+    <div class="modal settings-modal provider-modal" data-modal="fanart-settings" aria-hidden="true">
       <div class="modal__backdrop" data-modal-backdrop></div>
       <div class="modal__panel settings-modal__panel" role="dialog" aria-modal="true" aria-label="Fanart Settings">
         <button class="modal__esc-hint" type="button" data-modal-close>esc</button>
@@ -742,7 +758,7 @@
         </div>
       </div>
     </div>
-    <div class="modal settings-modal service-modal" data-modal="tadb-settings" aria-hidden="true">
+    <div class="modal settings-modal provider-modal" data-modal="tadb-settings" aria-hidden="true">
       <div class="modal__backdrop" data-modal-backdrop></div>
       <div class="modal__panel settings-modal__panel" role="dialog" aria-modal="true" aria-label="TheAudioDB Settings">
         <button class="modal__esc-hint" type="button" data-modal-close>esc</button>
@@ -768,7 +784,7 @@
         </div>
       </div>
     </div>
-    <div class="modal settings-modal service-modal" data-modal="discogs-settings" aria-hidden="true">
+    <div class="modal settings-modal provider-modal" data-modal="discogs-settings" aria-hidden="true">
       <div class="modal__backdrop" data-modal-backdrop></div>
       <div class="modal__panel settings-modal__panel" role="dialog" aria-modal="true" aria-label="Discogs Settings">
         <button class="modal__esc-hint" type="button" data-modal-close>esc</button>
@@ -794,7 +810,7 @@
         </div>
       </div>
     </div>
-    <div class="modal settings-modal service-modal" data-modal="lastfm-settings" aria-hidden="true">
+    <div class="modal settings-modal provider-modal" data-modal="lastfm-settings" aria-hidden="true">
       <div class="modal__backdrop" data-modal-backdrop></div>
       <div class="modal__panel settings-modal__panel" role="dialog" aria-modal="true" aria-label="Last.fm Settings">
         <button class="modal__esc-hint" type="button" data-modal-close>esc</button>
@@ -833,7 +849,7 @@
         </div>
       </div>
     </div>
-    <div class="modal settings-modal service-modal" data-modal="apple-music-settings" aria-hidden="true">
+    <div class="modal settings-modal provider-modal" data-modal="apple-music-settings" aria-hidden="true">
       <div class="modal__backdrop" data-modal-backdrop></div>
       <div class="modal__panel settings-modal__panel" role="dialog" aria-modal="true" aria-label="Apple Music Settings">
         <button class="modal__esc-hint" type="button" data-modal-close>esc</button>
@@ -868,7 +884,7 @@
         </div>
       </div>
     </div>
-    <div class="modal settings-modal service-modal coverart-modal" data-modal="coverart-settings" aria-hidden="true">
+    <div class="modal settings-modal provider-modal coverart-modal" data-modal="coverart-settings" aria-hidden="true">
       <div class="modal__backdrop" data-modal-backdrop></div>
       <div class="modal__panel settings-modal__panel" role="dialog" aria-modal="true" aria-label="Cover Art Archive Settings">
         <button class="modal__esc-hint" type="button" data-modal-close>esc</button>
@@ -908,7 +924,7 @@
         </div>
       </div>
     </div>
-    <div class="modal settings-modal service-modal" data-modal="musicbrainz-settings" aria-hidden="true">
+    <div class="modal settings-modal provider-modal" data-modal="musicbrainz-settings" aria-hidden="true">
       <div class="modal__backdrop" data-modal-backdrop></div>
       <div class="modal__panel settings-modal__panel" role="dialog" aria-modal="true" aria-label="MusicBrainz Settings">
         <button class="modal__esc-hint" type="button" data-modal-close>esc</button>
@@ -926,11 +942,12 @@
           </div>
           <div class="refresh-modal__actions">
             <button class="modal-link modal-link-text modal-link-cancel" type="button" data-modal-close>CANCEL</button>
+            <button class="modal-link modal-link-text" type="button" data-musicbrainz-save>SAVE</button>
           </div>
         </div>
       </div>
     </div>
-    <div class="modal settings-modal service-modal" data-modal="wikipedia-settings" aria-hidden="true">
+    <div class="modal settings-modal provider-modal" data-modal="wikipedia-settings" aria-hidden="true">
       <div class="modal__backdrop" data-modal-backdrop></div>
       <div class="modal__panel settings-modal__panel" role="dialog" aria-modal="true" aria-label="Wikipedia Settings">
         <button class="modal__esc-hint" type="button" data-modal-close>esc</button>
@@ -953,7 +970,7 @@
         </div>
       </div>
     </div>
-    <div class="modal settings-modal service-modal" data-modal="plex-settings" aria-hidden="true">
+    <div class="modal settings-modal provider-modal" data-modal="plex-settings" aria-hidden="true">
       <div class="modal__backdrop" data-modal-backdrop></div>
       <div class="modal__panel settings-modal__panel" role="dialog" aria-modal="true" aria-label="Plex Settings">
         <button class="modal__esc-hint" type="button" data-modal-close>esc</button>
@@ -1459,7 +1476,11 @@
       const coverartSaveButton = document.querySelector("[data-coverart-save]");
       const plexSaveButton = document.querySelector("[data-plex-save]");
       const wikipediaSaveButton = document.querySelector("[data-wikipedia-save]");
-      const servicesList = document.querySelector("[data-services]");
+      const musicbrainzSaveButton = document.querySelector("[data-musicbrainz-save]");
+      const providersList = document.querySelector("[data-providers]");
+      const providerTestAllButton = document.querySelector(
+        "[data-provider-test-all]",
+      );
       const servicesPriorityList = document.querySelector("[data-services-priority]");
       const priorityAddButton = document.querySelector(
         "[data-service-priority-add]",
@@ -1481,9 +1502,6 @@
       );
       const priorityRemoveButton = document.querySelector(
         "[data-service-priority-remove]",
-      );
-      const priorityTestButton = document.querySelector(
-        "[data-service-priority-test]",
       );
       const priorityEditButton = document.querySelector(
         "[data-service-priority-edit]",
@@ -1594,8 +1612,8 @@
             coverartUnitsLabel.hidden = normalized === "original";
           }
         }
-        if (servicesList && updateDataset) {
-          servicesList.dataset.serviceCoverartSize = normalized;
+        if (providersList && updateDataset) {
+          providersList.dataset.providerCoverartSize = normalized;
         }
         coverartMenuOptions.forEach((option) => {
           option.classList.toggle(
@@ -2972,6 +2990,20 @@
       const filterDetailsPanel = document.querySelector(
         '[data-tab-panel="filter-details"]',
       );
+      const animateMenuIcon = (row) => {
+        if (!row) {
+          return;
+        }
+        row.classList.remove("icon-animate");
+        row.classList.add("icon-animate");
+        row.addEventListener(
+          "animationend",
+          () => {
+            row.classList.remove("icon-animate");
+          },
+          { once: true },
+        );
+      };
 
       const resetMultiMenu = (index) => {
         const state = configMenuState.get(index);
@@ -3129,15 +3161,18 @@
           return;
         }
         state.valueText.dataset.mediaTypes = parts.join(", ");
-        const buildToken = (text, extraClass = "") => {
+        const buildToken = (text, extraClass = "", value = "") => {
           const span = document.createElement("span");
           span.className = `media-type-token${extraClass ? ` ${extraClass}` : ""}`;
           span.textContent = text;
+          if (value) {
+            span.dataset.value = value;
+          }
           return span;
         };
         state.valueText.innerHTML = "";
         const tokens = parts.map((part) =>
-          buildToken(part, "config-menu-check selected-exclude")
+          buildToken(part, "config-menu-check selected-exclude", part)
         );
         tokens.forEach((token) => state.valueText.appendChild(token));
         const needsEllipsis =
@@ -3364,6 +3399,129 @@
         }
         if (index === 2) {
           updateMediaTypesStrike();
+        }
+
+        if (index === 2 && valueText) {
+          valueText.addEventListener("click", (event) => {
+            const token = event.target.closest(
+              ".media-type-token.config-menu-check.selected-exclude",
+            );
+            if (!token || !valueText.contains(token)) {
+              return;
+            }
+            const rect = token.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            if (clickX > 26) {
+              return;
+            }
+            event.preventDefault();
+            event.stopPropagation();
+            const rawValue =
+              token.dataset.value || token.textContent || "";
+            const value = rawValue.trim().toLowerCase();
+            if (!value) {
+              return;
+            }
+            const input = menu.querySelector(
+              `input[type="checkbox"][data-value="${value}"]`,
+            );
+            if (!input) {
+              return;
+            }
+            const container = valueText || token.parentElement;
+            if (!container) {
+              return;
+            }
+            const overlayHost =
+              valueText?.closest(".config-value") || container;
+            if (!overlayHost) {
+              return;
+            }
+            const containerRect = overlayHost.getBoundingClientRect();
+            const tokenRect = token.getBoundingClientRect();
+            const clone = token.cloneNode(true);
+            clone.classList.add("media-type-token-clone");
+            clone.style.left = `${tokenRect.left - containerRect.left}px`;
+            clone.style.top = `${tokenRect.top - containerRect.top}px`;
+            clone.style.width = `${tokenRect.width}px`;
+            clone.style.height = `${tokenRect.height}px`;
+            overlayHost.appendChild(clone);
+            requestAnimationFrame(() => {
+              clone.classList.add("removing");
+            });
+            const reflowTargets = Array.from(
+              container.querySelectorAll(
+                ".media-type-token:not(.media-type-token-ellipsis):not(.media-type-token-clone)",
+              ),
+            );
+            const firstRects = new Map(
+              reflowTargets
+                .map((node) => {
+                  const key =
+                    node.dataset.value || node.textContent || "";
+                  return key ? [key, node.getBoundingClientRect()] : null;
+                })
+                .filter(Boolean),
+            );
+            const finalize = () => {
+              input.checked = true;
+              const row = input.closest(".config-menu-check");
+              row?.classList.add("selected");
+              row?.classList.remove("selected-exclude");
+              const specialButton = menu.querySelector(".config-menu-special");
+              specialButton?.classList.remove("selected");
+              syncMultiDisplay();
+              const state = configMenuState.get(index);
+              if (state) {
+                const snapshot = getMultiSnapshot(menu, config, valueText);
+                if (snapshot.checked && snapshot.checked.length) {
+                  state.lastActiveSnapshot = snapshot;
+                }
+              }
+              updateMediaTypesStrike();
+              const nextTargets = Array.from(
+                state.valueText.querySelectorAll(
+                  ".media-type-token:not(.media-type-token-ellipsis):not(.media-type-token-clone)",
+                ),
+              );
+              nextTargets.forEach((node) => {
+                const key =
+                  node.dataset.value || node.textContent || "";
+                const first = firstRects.get(key);
+                if (!first) {
+                  return;
+                }
+                const last = node.getBoundingClientRect();
+                const deltaX = first.left - last.left;
+                const deltaY = first.top - last.top;
+                if (!deltaX && !deltaY) {
+                  return;
+                }
+                node.style.transition = "none";
+                node.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+                node.getBoundingClientRect();
+                requestAnimationFrame(() => {
+                  const slideMs =
+                    getComputedStyle(state.valueText).getPropertyValue(
+                      "--chip-slide-ms",
+                    ) || "520ms";
+                  node.style.transition = `transform ${slideMs.trim()} ease-out`;
+                  node.style.transform = "";
+                  const cleanup = () => {
+                    node.style.transition = "";
+                    node.style.transform = "";
+                    node.removeEventListener("transitionend", cleanup);
+                  };
+                  node.addEventListener("transitionend", cleanup);
+                });
+              });
+              scheduleApplyFilterConfig();
+            };
+            finalize();
+            window.setTimeout(() => {
+              clone.remove();
+            }, 1000);
+          });
         }
 
         button.addEventListener("click", (event) => {
@@ -3619,6 +3777,7 @@
                 "selected-exclude",
                 config.inverse ? !input.checked : false,
               );
+              animateMenuIcon(row);
               specialButton?.classList.remove("selected");
               syncMultiDisplay();
               const state = configMenuState.get(index);
@@ -4023,7 +4182,7 @@
           event.stopPropagation();
           coverartMenu.classList.toggle("open");
           if (coverartMenu.classList.contains("open")) {
-            setCoverartSize(servicesList?.dataset.serviceCoverartSize || "", {
+            setCoverartSize(providersList?.dataset.providerCoverartSize || "", {
               updateDataset: false,
             });
             requestAnimationFrame(() => adjustMenuPosition(coverartMenu));
@@ -4189,6 +4348,9 @@
               panel.dataset.tabPanel === name,
             );
           });
+          if (providerTestAllButton) {
+            providerTestAllButton.hidden = name !== "providers";
+          }
           requestAnimationFrame(syncSettingsTabHeight);
         };
         settingsButtons.forEach((button) => {
@@ -4242,17 +4404,17 @@
         });
       }
 
-      if (appleMusicUpscaleInput && servicesList) {
-        const upscaleRaw = servicesList.dataset.serviceAppleUpscale || "";
+      if (appleMusicUpscaleInput && providersList) {
+        const upscaleRaw = providersList.dataset.providerAppleUpscale || "";
         const enabled =
           upscaleRaw === "true" || upscaleRaw === "1" || upscaleRaw === "yes";
         appleMusicUpscaleInput.checked = enabled;
       }
-      if (coverartSizeInput && servicesList) {
-        const storedSize = servicesList.dataset.serviceCoverartSize || "";
+      if (coverartSizeInput && providersList) {
+        const storedSize = providersList.dataset.providerCoverartSize || "";
         setCoverartSize(storedSize, { updateDataset: false });
       }
-      const serviceCatalog = [
+      const providerCatalog = [
         { id: "apple", label: "APPLE MUSIC", modal: "apple-music-settings" },
         { id: "coverart", label: "COVER ART ARCHIVE", modal: "coverart-settings" },
         { id: "discogs", label: "DISCOGS", modal: "discogs-settings" },
@@ -4264,11 +4426,10 @@
         { id: "plex", label: "PLEX", modal: "plex-settings" },
         { id: "tidal", label: "TIDAL", modal: "tidal-settings" },
       ];
-      const serviceOrderKey = "limbo-services-order";
-      let serviceForceAll = false;
-      const getServiceOrder = () => {
+      const providerOrderKey = "limbo-providers-order";
+      const getProviderOrder = () => {
         try {
-          const raw = localStorage.getItem(serviceOrderKey);
+          const raw = localStorage.getItem(providerOrderKey);
           if (!raw) {
             return [];
           }
@@ -4278,9 +4439,9 @@
           return [];
         }
       };
-      const setServiceOrder = (order) => {
+      const setProviderOrder = (order) => {
         try {
-          localStorage.setItem(serviceOrderKey, JSON.stringify(order));
+          localStorage.setItem(providerOrderKey, JSON.stringify(order));
         } catch (error) {
           // ignore
         }
@@ -4294,8 +4455,8 @@
           limboReferrer: limboUrlInput?.dataset.limboReferrer || "",
           limboHost: limboUrlInput?.dataset.limboHost || "",
           limboCustom: limboUrlInput?.dataset.limboCustom || "",
-          servicesDataset: servicesList ? { ...servicesList.dataset } : {},
-          serviceOrder: getServiceOrder(),
+          providersDataset: providersList ? { ...providersList.dataset } : {},
+          providerOrder: getProviderOrder(),
           servicePriorityOrder: getServicePriorityOrder(),
           fanartKey: fanartKeyInput?.value || "",
           tadbKey: tadbKeyInput?.value || "",
@@ -4309,7 +4470,7 @@
           tidalPassword: tidalUserPasswordInput?.value || "",
           appleMax: appleMusicMaxInput?.value || "",
           appleUpscale: appleMusicUpscaleInput?.checked || false,
-          coverartSize: servicesList?.dataset.serviceCoverartSize || "",
+          coverartSize: providersList?.dataset.providerCoverartSize || "",
         };
         settingsRestoreEnabled = true;
       };
@@ -4362,15 +4523,15 @@
             updateDataset: true,
           });
         }
-        if (servicesList) {
-          Object.entries(settingsSnapshot.servicesDataset || {}).forEach(
+        if (providersList) {
+          Object.entries(settingsSnapshot.providersDataset || {}).forEach(
             ([key, value]) => {
-              servicesList.dataset[key] = value;
+              providersList.dataset[key] = value;
             },
           );
-          setServiceOrder(settingsSnapshot.serviceOrder || []);
-          renderServiceList();
-          clearServiceSelection();
+          setProviderOrder(settingsSnapshot.providerOrder || []);
+          renderProviderList();
+          clearProviderSelection();
         }
         if (servicesPriorityList) {
           setServicePriorityOrder(settingsSnapshot.servicePriorityOrder || []);
@@ -4378,29 +4539,56 @@
           clearPrioritySelection();
         }
       };
-      const getServiceEnabled = (id) => {
-        if (!servicesList) {
+      const getProviderEnabled = (id) => {
+        if (!providersList) {
           return false;
         }
-        const value = servicesList.dataset[`service${id[0].toUpperCase()}${id.slice(1)}`];
-        return value === "true" || value === "1" || value === "yes";
+        const key = `provider${id[0].toUpperCase()}${id.slice(1)}`;
+        const value = providersList.dataset[key];
+        if (value === "true" || value === "1" || value === "yes") {
+          return true;
+        }
+        if (value === "false" || value === "0" || value === "no") {
+          return false;
+        }
+        const provider = getProviderMeta(id);
+        if ((provider?.auth?.type || "none") === "none") {
+          return true;
+        }
+        if (id === "fanart") {
+          return Boolean((providersList.dataset.providerFanartKey || "").trim());
+        }
+        if (id === "tadb") {
+          return Boolean((providersList.dataset.providerTadbKey || "").trim());
+        }
+        if (id === "discogs") {
+          return Boolean((providersList.dataset.providerDiscogsKey || "").trim());
+        }
+        if (id === "lastfm") {
+          return Boolean(
+            (providersList.dataset.providerLastfmKey || "").trim() &&
+              (providersList.dataset.providerLastfmSecret || "").trim(),
+          );
+        }
+        if (id === "tidal") {
+          return Boolean(
+            (providersList.dataset.providerTidalClientId || "").trim() &&
+              (providersList.dataset.providerTidalClientSecret || "").trim() &&
+              (providersList.dataset.providerTidalCountry || "").trim(),
+          );
+        }
+        return false;
       };
-      const setServiceEnabled = (id, enabled) => {
-        if (!servicesList) {
+      const setProviderEnabled = (id, enabled) => {
+        if (!providersList) {
           return;
         }
-        servicesList.dataset[`service${id[0].toUpperCase()}${id.slice(1)}`] = enabled
+        providersList.dataset[`provider${id[0].toUpperCase()}${id.slice(1)}`] = enabled
           ? "true"
           : "false";
       };
-      const isServiceConfigured = (id) => {
-        if (!servicesList) {
-          return false;
-        }
-        if (serviceForceAll) {
-          return true;
-        }
-        if (!getServiceEnabled(id)) {
+      const isProviderConfigComplete = (id) => {
+        if (!providersList) {
           return false;
         }
         if (id === "fanart") {
@@ -4432,7 +4620,7 @@
         }
         if (id === "coverart") {
           return Boolean(
-            (servicesList?.dataset.serviceCoverartSize || "").trim(),
+            (providersList?.dataset.providerCoverartSize || "").trim(),
           );
         }
         if (id === "musicbrainz") {
@@ -4446,11 +4634,30 @@
         }
         return false;
       };
-      const renderServiceList = (selectedId = null) => {
-        if (!servicesList) {
+      const isProviderConfigured = (id) =>
+        getProviderEnabled(id) && isProviderConfigComplete(id);
+      const getProviderError = (id) => {
+        if (!providersList) {
+          return false;
+        }
+        const key = `provider${id[0].toUpperCase()}${id.slice(1)}Error`;
+        const value = providersList.dataset[key];
+        if (!value || (typeof value === "string" && value.startsWith("__"))) {
+          return false;
+        }
+        if (value === "true" || value === "1" || value === "yes") {
+          return true;
+        }
+        if (value === "false" || value === "0" || value === "no") {
+          return false;
+        }
+        return Boolean(value);
+      };
+      const renderProviderList = (selectedId = null) => {
+        if (!providersList) {
           return;
         }
-        servicesList.innerHTML = "";
+        providersList.innerHTML = "";
         let dragSuppressClick = false;
         const stripArticle = (label) => {
           const trimmed = label.trim();
@@ -4460,28 +4667,41 @@
           }
           return lower;
         };
-        const orderedIds = [...serviceCatalog]
+        const orderedIds = [...providerCatalog]
           .sort((a, b) => stripArticle(a.label).localeCompare(stripArticle(b.label)))
           .map((item) => item.id);
         orderedIds.forEach((id) => {
-          const item = serviceCatalog.find((entry) => entry.id === id);
+          const item = providerCatalog.find((entry) => entry.id === id);
           if (!item) {
             return;
           }
           const row = document.createElement("div");
           row.className = "settings-list__item config-menu-check";
-          row.dataset.serviceId = item.id;
+          row.dataset.providerId = item.id;
           row.textContent = "";
           const label = document.createElement("span");
           label.className = "settings-list__label";
           label.textContent = item.label;
-          const isEnabled = getServiceEnabled(item.id);
-          row.classList.toggle("selected", isEnabled);
+          const isEnabled = getProviderEnabled(item.id);
+          const isConfigured = isProviderConfigComplete(item.id);
+          const hasError = getProviderError(item.id);
+          const showError = isEnabled && isConfigured && hasError;
+          row.classList.toggle("enabled", isEnabled && isConfigured && !showError);
+          row.classList.toggle("connection-error", showError);
+          row.classList.toggle("inactive", !isEnabled || !isConfigured);
           const applyToggle = (nextEnabled) => {
-            setServiceEnabled(item.id, nextEnabled);
-            row.classList.toggle("selected", nextEnabled);
+            setProviderEnabled(item.id, nextEnabled);
+            const nextConfigured = isProviderConfigComplete(item.id);
+            const nextHasError = getProviderError(item.id);
+            const nextShowError = nextEnabled && nextConfigured && nextHasError;
+            row.classList.toggle(
+              "enabled",
+              nextEnabled && nextConfigured && !nextShowError,
+            );
+            row.classList.toggle("connection-error", nextShowError);
+            row.classList.toggle("inactive", !nextEnabled || !nextConfigured);
             if (!nextEnabled && !isLocalPreview) {
-              fetch("/config/service-disable", {
+              fetch("/config/provider-disable", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ provider: item.id }),
@@ -4489,7 +4709,7 @@
             }
           };
           const toggleEnabled = () => {
-            const nextEnabled = !getServiceEnabled(item.id);
+            const nextEnabled = !getProviderEnabled(item.id);
             if (!nextEnabled) {
               const provider = getProviderMeta(item.id);
               const lockStatus = provider.lock_status || "none";
@@ -4522,15 +4742,75 @@
             const rect = row.getBoundingClientRect();
             const checkboxZone = 8 + 16 + 8;
             if (event.clientX - rect.left <= checkboxZone) {
+              const nextEnabled = !getProviderEnabled(item.id);
+              if (nextEnabled && !isProviderConfigComplete(item.id)) {
+                pendingProviderEnable = item.id;
+                openProviderModal(item.id);
+                return;
+              }
               toggleEnabled();
               return;
             }
-            openServiceModal(item.id);
+            openProviderModal(item.id);
+            return;
+            providersList
+              .querySelectorAll(".settings-list__item")
+              .forEach((node) => node.classList.remove("is-selected"));
+            row.classList.add("is-selected");
           });
-          servicesList.appendChild(row);
+          row.addEventListener("dblclick", (event) => {
+            const rect = row.getBoundingClientRect();
+            const checkboxZone = 8 + 16 + 8;
+            if (event.clientX - rect.left <= checkboxZone) {
+              return;
+            }
+            openProviderModal(item.id);
+          });
+          providersList.appendChild(row);
         });
       };
-      renderServiceList();
+      renderProviderList();
+      const setProviderErrorFlag = (id, hasError) => {
+        if (!providersList) {
+          return;
+        }
+        const key = `provider${id[0].toUpperCase()}${id.slice(1)}Error`;
+        providersList.dataset[key] = hasError ? "true" : "false";
+      };
+      const shouldTestProvider = (id) =>
+        ["fanart", "tadb", "lastfm", "discogs", "tidal", "plex"].includes(id);
+      const runProviderTestAll = async () => {
+        if (!providersList) {
+          return;
+        }
+        try {
+          const response = await fetch("/config/provider-test-all", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({}),
+          });
+          const data = await response.json().catch(() => ({}));
+          if (response.ok && data && data.results) {
+            Object.entries(data.results).forEach(([id, hasError]) => {
+              setProviderErrorFlag(id, Boolean(hasError));
+            });
+            renderProviderList();
+          } else if (!response.ok) {
+            ["fanart", "tadb", "lastfm", "discogs", "tidal", "plex"].forEach(
+              (id) => setProviderErrorFlag(id, true),
+            );
+            renderProviderList();
+          }
+        } catch (error) {
+          ["fanart", "tadb", "lastfm", "discogs", "tidal", "plex"].forEach(
+            (id) => setProviderErrorFlag(id, true),
+          );
+          renderProviderList();
+        }
+      };
+      if (providerTestAllButton) {
+        providerTestAllButton.addEventListener("click", runProviderTestAll);
+      }
 
       const priorityTypeStorageKey = "limbo-service-priority-type";
       const priorityTypeLabels = {
@@ -4624,8 +4904,8 @@
         }
         servicesPriorityList.innerHTML = "";
         let dragSuppressClick = false;
-        const configuredIds = serviceCatalog
-          .filter((item) => isServiceConfigured(item.id))
+        const configuredIds = providerCatalog
+          .filter((item) => isProviderConfigured(item.id))
           .map((item) => item.id)
           .filter((id) => {
             const requiredCaps = priorityTypeCapabilityMap[priorityType] || [];
@@ -4650,7 +4930,7 @@
           }
         });
         orderedIds.forEach((id) => {
-          const item = serviceCatalog.find((entry) => entry.id === id);
+          const item = providerCatalog.find((entry) => entry.id === id);
           if (!item) {
             return;
           }
@@ -4660,7 +4940,7 @@
           if (item.id === selectedId) {
             row.classList.add("selected");
           }
-          row.dataset.serviceId = item.id;
+          row.dataset.providerId = item.id;
           row.textContent = "";
           const label = document.createElement("span");
           label.className = "settings-list__label";
@@ -4688,7 +4968,6 @@
               .querySelectorAll(".settings-list__item")
               .forEach((node) => node.classList.remove("selected"));
             row.classList.add("selected");
-            openServiceModal(item.id);
           });
           row.addEventListener("dragstart", (event) => {
             dragSuppressClick = true;
@@ -4738,13 +5017,13 @@
             }
           });
           row.addEventListener("dblclick", () => {
-            openServiceModal(item.id);
+            openProviderModal(item.id);
           });
           servicesPriorityList.appendChild(row);
         });
         setServicePriorityOrder(orderedIds);
         priorityMenuOptions.forEach((option) => {
-          const id = option.dataset.servicePriorityOption;
+          const id = option.dataset.providerPriorityOption;
           option.style.display = !orderedIds.includes(id) ? "" : "none";
         });
       };
@@ -4758,7 +5037,7 @@
           tadb: "theaudiodb",
         };
         priorityMenuOptions.forEach((option) => {
-          const id = option.dataset.servicePriorityOption;
+          const id = option.dataset.providerPriorityOption;
           const lookupId = capabilityIdMap[id] || id;
           const provider =
             providerCapabilities.find((entry) => entry.id === lookupId) ||
@@ -4774,13 +5053,13 @@
       };
       filterPriorityMenuOptions();
 
-      const clearServiceSelection = () => {
-        if (!servicesList) {
+      const clearProviderSelection = () => {
+        if (!providersList) {
           return;
         }
-        servicesList
-          .querySelectorAll(".settings-list__item.selected")
-          .forEach((node) => node.classList.remove("selected"));
+        providersList
+          .querySelectorAll(".settings-list__item.is-selected")
+          .forEach((node) => node.classList.remove("is-selected"));
       };
       const clearPrioritySelection = () => {
         if (!servicesPriorityList) {
@@ -4832,17 +5111,10 @@
         });
       };
 
-      if (priorityTestButton) {
-        priorityTestButton.addEventListener("click", () => {
-          serviceForceAll = !serviceForceAll;
-          renderPriorityList();
-        });
-      }
-
-      if (servicesList) {
-        servicesList.addEventListener("click", (event) => {
-          if (event.target === servicesList) {
-            clearServiceSelection();
+      if (providersList) {
+        providersList.addEventListener("click", (event) => {
+          if (event.target === providersList) {
+            clearProviderSelection();
           }
         });
       }
@@ -4891,7 +5163,7 @@
           const orderedIds = Array.from(
             servicesPriorityList.querySelectorAll(".settings-list__item"),
           )
-            .map((node) => node.dataset.serviceId)
+            .map((node) => node.dataset.providerId)
             .filter(Boolean);
           setServicePriorityOrder(orderedIds);
         });
@@ -4906,15 +5178,20 @@
           if (event.target.closest(".settings-list__item")) {
             return;
           }
-          clearServiceSelection();
+          clearProviderSelection();
           clearPrioritySelection();
         });
       }
 
       let serviceDragGhost = null;
+      let pendingProviderEnable = null;
 
-      const openServiceModal = (id) => {
-        const entry = serviceCatalog.find((item) => item.id === id);
+      const getProviderModalId = (id) => {
+        const entry = providerCatalog.find((item) => item.id === id);
+        return entry?.modal || "";
+      };
+      const openProviderModal = (id) => {
+        const entry = providerCatalog.find((item) => item.id === id);
 
         if (!entry) {
           return;
@@ -4940,10 +5217,12 @@
         }
       };
 
-      const saveService = async (id, payload, endpointId = id) => {
+      const saveProvider = async (id, payload, endpointId = id) => {
         if (isLocalPreview) {
-          setServiceEnabled(id, true);
-          renderServiceList(id);
+          setProviderEnabled(id, true);
+          renderProviderList(id);
+          renderPriorityList();
+          pendingProviderEnable = null;
           return true;
         }
         try {
@@ -4960,8 +5239,10 @@
             );
             return false;
           }
-          setServiceEnabled(id, true);
-          renderServiceList(id);
+          setProviderEnabled(id, true);
+          renderProviderList(id);
+          renderPriorityList();
+          pendingProviderEnable = null;
           return true;
         } catch (error) {
           suppressHover();
@@ -4969,21 +5250,36 @@
           return false;
         }
       };
+      const clearPendingProviderEnable = (modal) => {
+        if (!pendingProviderEnable || !modal) {
+          return;
+        }
+        if (!modal.classList.contains("provider-modal")) {
+          return;
+        }
+        const modalId = modal.getAttribute("data-modal") || "";
+        if (!modalId) {
+          return;
+        }
+        if (modalId === getProviderModalId(pendingProviderEnable)) {
+          pendingProviderEnable = null;
+        }
+      };
 
       if (priorityMenuOptions.length) {
         priorityMenuOptions.forEach((option) => {
           option.addEventListener("click", async (event) => {
             event.stopPropagation();
-            const id = option.dataset.servicePriorityOption;
+            const id = option.dataset.providerPriorityOption;
             if (!id) {
               return;
             }
             if (priorityMenu) {
               priorityMenu.classList.remove("open");
             }
-            const entry = serviceCatalog.find((item) => item.id === id);
+            const entry = providerCatalog.find((item) => item.id === id);
             if (entry?.modal) {
-              openServiceModal(id);
+              openProviderModal(id);
               return;
             }
             const order = getServicePriorityOrder();
@@ -5005,7 +5301,7 @@
           if (!selected) {
             return;
           }
-          const id = selected.dataset.serviceId;
+          const id = selected.dataset.providerId;
           if (!id) {
             return;
           }
@@ -5024,11 +5320,11 @@
           if (!selected) {
             return;
           }
-          const id = selected.dataset.serviceId;
+          const id = selected.dataset.providerId;
           if (!id) {
             return;
           }
-          openServiceModal(id);
+          openProviderModal(id);
         });
       }
 
@@ -5037,14 +5333,13 @@
           const key = sanitizeApiKey(fanartKeyInput?.value || "");
           if (fanartKeyInput) fanartKeyInput.value = key;
           if (!key) {
-            suppressHover();
-            openInfo("Fanart.tv API key is required.");
             return;
           }
-          const ok = await saveService("fanart", { fanart_key: key });
+          const ok = await saveProvider("fanart", { fanart_key: key });
           if (ok) {
             disableModalRestore("fanart-settings");
             closeModal(getModalById("fanart-settings"));
+            runProviderTest("fanart");
           }
         });
       }
@@ -5053,14 +5348,13 @@
           const key = sanitizeApiKey(tadbKeyInput?.value || "");
           if (tadbKeyInput) tadbKeyInput.value = key;
           if (!key) {
-            suppressHover();
-            openInfo("The AudioDB API key is required.");
             return;
           }
-          const ok = await saveService("tadb", { tadb_key: key });
+          const ok = await saveProvider("tadb", { tadb_key: key });
           if (ok) {
             disableModalRestore("tadb-settings");
             closeModal(getModalById("tadb-settings"));
+            runProviderTest("tadb");
           }
         });
       }
@@ -5069,14 +5363,13 @@
           const key = sanitizeApiKey(discogsKeyInput?.value || "");
           if (discogsKeyInput) discogsKeyInput.value = key;
           if (!key) {
-            suppressHover();
-            openInfo("Discogs API key is required.");
             return;
           }
-          const ok = await saveService("discogs", { discogs_key: key });
+          const ok = await saveProvider("discogs", { discogs_key: key });
           if (ok) {
             disableModalRestore("discogs-settings");
             closeModal(getModalById("discogs-settings"));
+            runProviderTest("discogs");
           }
         });
       }
@@ -5087,17 +5380,16 @@
           if (lastfmKeyInput) lastfmKeyInput.value = key;
           if (lastfmSecretInput) lastfmSecretInput.value = secret;
           if (!key || !secret) {
-            suppressHover();
-            openInfo("Last.fm API key and secret are required.");
             return;
           }
-          const ok = await saveService("lastfm", {
+          const ok = await saveProvider("lastfm", {
             lastfm_key: key,
             lastfm_secret: secret,
           });
           if (ok) {
             disableModalRestore("lastfm-settings");
             closeModal(getModalById("lastfm-settings"));
+            runProviderTest("lastfm");
           }
         });
       }
@@ -5110,29 +5402,28 @@
           if (appleMusicMaxInput) appleMusicMaxInput.value = maxSize;
           const allowUpscale = Boolean(appleMusicUpscaleInput?.checked);
           if (!maxSize) {
-            suppressHover();
-            openInfo("Maximum image size is required.");
             return;
           }
-          const ok = await saveService("apple", {
+          const ok = await saveProvider("apple", {
             apple_music_max_image_size: maxSize,
             apple_music_allow_upscale: allowUpscale,
           }, "apple-music");
           if (ok) {
             disableModalRestore("apple-music-settings");
             closeModal(getModalById("apple-music-settings"));
+            runProviderTest("apple");
           }
         });
       }
       if (coverartSaveButton) {
         coverartSaveButton.addEventListener("click", async () => {
           const sizeValue = normalizeCoverartSize(
-            servicesList?.dataset.serviceCoverartSize ||
+            providersList?.dataset.providerCoverartSize ||
               coverartSizeInput?.value ||
               "",
           );
           setCoverartSize(sizeValue);
-          const ok = await saveService(
+          const ok = await saveProvider(
             "coverart",
             { coverart_size: sizeValue },
             "coverart",
@@ -5140,24 +5431,37 @@
           if (ok) {
             disableModalRestore("coverart-settings");
             closeModal(getModalById("coverart-settings"));
+            runProviderTest("coverart");
           }
         });
       }
       if (plexSaveButton) {
         plexSaveButton.addEventListener("click", async () => {
-          const ok = await saveService("plex", {}, "plex");
+          const ok = await saveProvider("plex", {}, "plex");
           if (ok) {
             disableModalRestore("plex-settings");
             closeModal(getModalById("plex-settings"));
+            runProviderTest("plex");
+          }
+        });
+      }
+      if (musicbrainzSaveButton) {
+        musicbrainzSaveButton.addEventListener("click", async () => {
+          const ok = await saveProvider("musicbrainz", {}, "musicbrainz");
+          if (ok) {
+            disableModalRestore("musicbrainz-settings");
+            closeModal(getModalById("musicbrainz-settings"));
+            runProviderTest("musicbrainz");
           }
         });
       }
       if (wikipediaSaveButton) {
         wikipediaSaveButton.addEventListener("click", async () => {
-          const ok = await saveService("wikipedia", {}, "wikipedia");
+          const ok = await saveProvider("wikipedia", {}, "wikipedia");
           if (ok) {
             disableModalRestore("wikipedia-settings");
             closeModal(getModalById("wikipedia-settings"));
+            runProviderTest("wikipedia");
           }
         });
       }
@@ -5166,7 +5470,9 @@
       );
       musicbrainzCloseButtons.forEach((button) => {
         button.addEventListener("click", () => {
-          closeModal(getModalById("musicbrainz-settings"));
+          const modal = getModalById("musicbrainz-settings");
+          clearPendingProviderEnable(modal);
+          closeModal(modal);
         });
       });
 
@@ -5198,11 +5504,9 @@
             !tidalUser ||
             !tidalUserPassword
           ) {
-            suppressHover();
-            openInfo("All TIDAL fields are required.");
             return;
           }
-          const ok = await saveService("tidal", {
+          const ok = await saveProvider("tidal", {
             tidal_client_id: tidalClientId,
             tidal_client_secret: tidalClientSecret,
             tidal_country_code: tidalCountryCode,
@@ -5212,6 +5516,7 @@
           if (ok) {
             disableModalRestore("tidal-settings");
             closeModal(getModalById("tidal-settings"));
+            runProviderTest("tidal");
           }
         });
       }
@@ -5284,7 +5589,7 @@
             }
           }
           if (
-            modal?.classList.contains("service-modal") ||
+            modal?.classList.contains("provider-modal") ||
             modal?.classList.contains("tidal-modal")
           ) {
             captureModalSnapshot(modal);
@@ -5295,6 +5600,7 @@
       document.querySelectorAll("[data-modal-close]").forEach((button) => {
         button.addEventListener("click", () => {
           const modal = button.closest("[data-modal]");
+          clearPendingProviderEnable(modal);
           if (modal?.getAttribute("data-modal") === "settings") {
             if (settingsRestoreEnabled) {
               restoreSettingsSnapshot();
@@ -5317,6 +5623,7 @@
           if (modal && modal.hasAttribute("data-modal-static")) {
             return;
           }
+          clearPendingProviderEnable(modal);
           if (modal?.getAttribute("data-modal") === "settings") {
             if (settingsRestoreEnabled) {
               restoreSettingsSnapshot();
@@ -5338,6 +5645,7 @@
           return;
         }
         document.querySelectorAll("[data-modal].open").forEach((modal) => {
+          clearPendingProviderEnable(modal);
           if (modal?.getAttribute("data-modal") === "refresh-modal") {
             refreshValidationActive = false;
             if (refreshValidateController) {

@@ -5,6 +5,7 @@ import socket
 from urllib.parse import urlparse
 from pathlib import Path
 from typing import Any, Dict, Optional, List, Tuple
+import base64
 
 import aiohttp
 
@@ -28,6 +29,186 @@ _LIDARR_CONFIG_PATH = "/api/v1/config/metadataprovider"
 _LIDARR_WARMUP_MID = "88f69eab-8f07-343b-847c-b944ad33dfcf"
 _LIDARR_WARMED = False
 _LIDARR_WARM_LOCK = asyncio.Lock()
+_PROVIDER_TEST_MBID = "83d91898-7763-47d7-b03b-b92132375c47"
+
+
+def _as_bool(value: object) -> bool:
+    if isinstance(value, bool):
+        return value
+    text = str(value).strip().lower()
+    return text in {"1", "true", "yes", "on"}
+
+
+async def _fetch_json(session: aiohttp.ClientSession, url: str, *, headers: Optional[Dict[str, str]] = None, params: Optional[Dict[str, str]] = None, timeout: int = 6) -> Tuple[bool, Dict[str, Any]]:
+    try:
+        async with session.get(url, headers=headers, params=params, timeout=timeout) as resp:
+            if resp.status != 200:
+                return False, {"status": resp.status}
+            data = await resp.json(content_type=None)
+            if not isinstance(data, dict):
+                return False, {"error": "invalid_response"}
+            return True, data
+    except Exception as exc:
+        return False, {"error": str(exc)}
+
+
+async def _test_fanart(session: aiohttp.ClientSession) -> bool:
+    key = root_patch.get_fanart_key()
+    if not key:
+        return False
+    url = f"https://webservice.fanart.tv/v3/music/{_PROVIDER_TEST_MBID}"
+    ok, data = await _fetch_json(session, url, params={"api_key": key})
+    if not ok:
+        return False
+    if data.get("status"):
+        return False
+    return True
+
+
+async def _test_tadb(session: aiohttp.ClientSession) -> bool:
+    key = root_patch.get_tadb_key()
+    if not key:
+        return False
+    url = f"https://www.theaudiodb.com/api/v2/json/{key}/artist-mb.php"
+    ok, _ = await _fetch_json(session, url, params={"i": _PROVIDER_TEST_MBID})
+    return ok
+
+
+async def _test_lastfm(session: aiohttp.ClientSession) -> bool:
+    key = root_patch.get_lastfm_key()
+    if not key:
+        return False
+    url = "https://ws.audioscrobbler.com/2.0/"
+    ok, data = await _fetch_json(
+        session,
+        url,
+        params={"method": "chart.gettopartists", "api_key": key, "format": "json"},
+    )
+    if not ok:
+        return False
+    if data.get("error"):
+        return False
+    return True
+
+
+async def _test_discogs(session: aiohttp.ClientSession) -> bool:
+    token = root_patch.get_discogs_key()
+    if not token:
+        return False
+    url = "https://api.discogs.com/oauth/identity"
+    headers = {"Authorization": f"Discogs token={token}"}
+    ok, _ = await _fetch_json(session, url, headers=headers)
+    return ok
+
+
+async def _test_tidal(session: aiohttp.ClientSession) -> bool:
+    client_id = root_patch.get_tidal_client_id()
+    client_secret = root_patch.get_tidal_client_secret()
+    if not client_id or not client_secret:
+        return False
+    basic = base64.b64encode(f"{client_id}:{client_secret}".encode("utf-8")).decode("ascii")
+    headers = {
+        "Authorization": f"Basic {basic}",
+        "Content-Type": "application/x-www-form-urlencoded",
+    }
+    data = {"grant_type": "client_credentials"}
+    try:
+        async with session.post("https://auth.tidal.com/v1/oauth2/token", headers=headers, data=data, timeout=8) as resp:
+            if resp.status >= 400:
+                return False
+            payload = await resp.json(content_type=None)
+            return bool(payload.get("access_token"))
+    except Exception:
+        return False
+
+
+async def _test_plex(session: aiohttp.ClientSession) -> bool:
+    plex_url = str(os.getenv("PLEX_URL") or "").strip().rstrip("/")
+    plex_token = str(os.getenv("PLEX_TOKEN") or "").strip()
+    if not plex_url or not plex_token:
+        return False
+    url = f"{plex_url}/status/sessions"
+    try:
+        async with session.get(url, params={"X-Plex-Token": plex_token}, timeout=6) as resp:
+            return resp.status == 200
+    except Exception:
+        return False
+
+
+async def _run_provider_test(provider_id: str) -> bool:
+    async with aiohttp.ClientSession() as session:
+        if provider_id == "fanart":
+            return await _test_fanart(session)
+        if provider_id == "tadb":
+            return await _test_tadb(session)
+        if provider_id == "lastfm":
+            return await _test_lastfm(session)
+        if provider_id == "discogs":
+            return await _test_discogs(session)
+        if provider_id == "tidal":
+            return await _test_tidal(session)
+        if provider_id == "plex":
+            return await _test_plex(session)
+    return True
+
+
+def _set_provider_error(provider_id: str, value: bool) -> None:
+    if provider_id == "fanart":
+        root_patch.set_fanart_error(value)
+    elif provider_id == "tadb":
+        root_patch.set_tadb_error(value)
+    elif provider_id == "lastfm":
+        root_patch.set_lastfm_error(value)
+    elif provider_id == "discogs":
+        root_patch.set_discogs_error(value)
+    elif provider_id == "tidal":
+        root_patch.set_tidal_error(value)
+    elif provider_id == "apple":
+        root_patch.set_apple_music_error(value)
+    elif provider_id == "plex":
+        root_patch.set_plex_error(value)
+    elif provider_id == "coverart":
+        root_patch.set_coverart_error(value)
+    elif provider_id == "musicbrainz":
+        root_patch.set_musicbrainz_error(value)
+    elif provider_id == "wikipedia":
+        root_patch.set_wikipedia_error(value)
+
+
+def _should_test_provider(provider_id: str) -> bool:
+    return provider_id in {"fanart", "tadb", "lastfm", "discogs", "tidal", "plex"}
+
+
+async def _queue_provider_test(provider_id: str) -> None:
+    if not _should_test_provider(provider_id):
+        _set_provider_error(provider_id, False)
+        return
+    ok = await _run_provider_test(provider_id)
+    _set_provider_error(provider_id, not ok)
+
+
+def _is_provider_enabled(provider_id: str) -> bool:
+    if provider_id == "fanart":
+        return root_patch.get_fanart_enabled()
+    if provider_id == "tadb":
+        return root_patch.get_tadb_enabled()
+    if provider_id == "lastfm":
+        return root_patch.get_lastfm_enabled()
+    if provider_id == "discogs":
+        return root_patch.get_discogs_enabled()
+    if provider_id == "tidal":
+        return root_patch.get_tidal_enabled()
+    if provider_id == "plex":
+        return root_patch.get_plex_enabled()
+    if provider_id == "apple":
+        return root_patch.get_apple_music_enabled()
+    if provider_id == "coverart":
+        return root_patch.get_coverart_enabled()
+    if provider_id == "musicbrainz":
+        return root_patch.get_musicbrainz_enabled()
+    if provider_id == "wikipedia":
+        return root_patch.get_wikipedia_enabled()
+    return False
 
 
 def register_config_routes() -> None:
@@ -167,6 +348,7 @@ def register_config_routes() -> None:
                 str(payload.get("tidal_user_password") or "").strip()
             )
             root_patch.set_tidal_enabled(True)
+            asyncio.create_task(_queue_provider_test("tidal"))
             return jsonify({"ok": True})
 
     if "/config/fanart-settings" not in existing_rules:
@@ -177,6 +359,7 @@ def register_config_routes() -> None:
                 payload = {}
             root_patch.set_fanart_key(str(payload.get("fanart_key") or "").strip())
             root_patch.set_fanart_enabled(True)
+            asyncio.create_task(_queue_provider_test("fanart"))
             return jsonify({"ok": True})
 
     if "/config/tadb-settings" not in existing_rules:
@@ -187,6 +370,7 @@ def register_config_routes() -> None:
                 payload = {}
             root_patch.set_tadb_key(str(payload.get("tadb_key") or "").strip())
             root_patch.set_tadb_enabled(True)
+            asyncio.create_task(_queue_provider_test("tadb"))
             return jsonify({"ok": True})
 
     if "/config/discogs-settings" not in existing_rules:
@@ -197,6 +381,7 @@ def register_config_routes() -> None:
                 payload = {}
             root_patch.set_discogs_key(str(payload.get("discogs_key") or "").strip())
             root_patch.set_discogs_enabled(True)
+            asyncio.create_task(_queue_provider_test("discogs"))
             return jsonify({"ok": True})
 
     if "/config/coverart-settings" not in existing_rules:
@@ -220,6 +405,7 @@ def register_config_routes() -> None:
         @upstream_app.app.route("/config/plex-settings", methods=["POST"])
         async def _limbo_plex_settings():
             root_patch.set_plex_enabled(True)
+            asyncio.create_task(_queue_provider_test("plex"))
             return jsonify({"ok": True})
 
     if "/config/wikipedia-settings" not in existing_rules:
@@ -246,6 +432,7 @@ def register_config_routes() -> None:
             root_patch.set_lastfm_key(str(payload.get("lastfm_key") or "").strip())
             root_patch.set_lastfm_secret(str(payload.get("lastfm_secret") or "").strip())
             root_patch.set_lastfm_enabled(True)
+            asyncio.create_task(_queue_provider_test("lastfm"))
             return jsonify({"ok": True})
 
     if "/config/apple-music-settings" not in existing_rules:
@@ -263,8 +450,8 @@ def register_config_routes() -> None:
             root_patch.set_apple_music_enabled(True)
             return jsonify({"ok": True})
 
-    if "/config/service-disable" not in existing_rules:
-        @upstream_app.app.route("/config/service-disable", methods=["POST"])
+    if "/config/provider-disable" not in existing_rules:
+        @upstream_app.app.route("/config/provider-disable", methods=["POST"])
         async def _limbo_service_disable():
             payload = await request.get_json(silent=True) or {}
             if not isinstance(payload, dict):
@@ -273,18 +460,23 @@ def register_config_routes() -> None:
             if provider == "fanart":
                 root_patch.set_fanart_key("")
                 root_patch.set_fanart_enabled(False)
+                root_patch.set_fanart_error(False)
             elif provider == "tadb":
                 root_patch.set_tadb_key("")
                 root_patch.set_tadb_enabled(False)
+                root_patch.set_tadb_error(False)
             elif provider == "discogs":
                 root_patch.set_discogs_key("")
                 root_patch.set_discogs_enabled(False)
+                root_patch.set_discogs_error(False)
             elif provider == "plex":
                 root_patch.set_plex_enabled(False)
+                root_patch.set_plex_error(False)
             elif provider == "lastfm":
                 root_patch.set_lastfm_key("")
                 root_patch.set_lastfm_secret("")
                 root_patch.set_lastfm_enabled(False)
+                root_patch.set_lastfm_error(False)
             elif provider == "tidal":
                 root_patch.set_tidal_client_id("")
                 root_patch.set_tidal_client_secret("")
@@ -292,17 +484,22 @@ def register_config_routes() -> None:
                 root_patch.set_tidal_user("")
                 root_patch.set_tidal_user_password("")
                 root_patch.set_tidal_enabled(False)
+                root_patch.set_tidal_error(False)
             elif provider == "apple":
                 root_patch.set_apple_music_max_image_size("")
                 root_patch.set_apple_music_allow_upscale(False)
                 root_patch.set_apple_music_enabled(False)
+                root_patch.set_apple_music_error(False)
             elif provider == "coverart":
                 root_patch.set_coverart_size("")
                 root_patch.set_coverart_enabled(False)
+                root_patch.set_coverart_error(False)
             elif provider == "musicbrainz":
                 root_patch.set_musicbrainz_enabled(False)
+                root_patch.set_musicbrainz_error(False)
             elif provider == "wikipedia":
                 root_patch.set_wikipedia_enabled(False)
+                root_patch.set_wikipedia_error(False)
             else:
                 return jsonify({"ok": False, "error": "Unknown provider."}), 400
             return jsonify({"ok": True})
@@ -394,8 +591,8 @@ def register_config_routes() -> None:
                 }
             )
 
-    if "/config/service-capabilities" not in existing_rules:
-        @upstream_app.app.route("/config/service-capabilities", methods=["GET"])
+    if "/config/provider-capabilities" not in existing_rules:
+        @upstream_app.app.route("/config/provider-capabilities", methods=["GET"])
         async def _limbo_service_capabilities():
             return jsonify(
                 {
@@ -403,6 +600,20 @@ def register_config_routes() -> None:
                     "providers": provider_capabilities.list_provider_capabilities(),
                 }
             )
+
+    if "/config/provider-test-all" not in existing_rules:
+        @upstream_app.app.route("/config/provider-test-all", methods=["POST"])
+        async def _limbo_provider_test_all():
+            results: Dict[str, bool] = {}
+            for provider_id in ("fanart", "tadb", "lastfm", "discogs", "tidal", "plex"):
+                if not _is_provider_enabled(provider_id):
+                    _set_provider_error(provider_id, False)
+                    results[provider_id] = False
+                    continue
+                ok = await _run_provider_test(provider_id)
+                _set_provider_error(provider_id, not ok)
+                results[provider_id] = not ok
+            return jsonify({"ok": True, "results": results})
 
     if "/config/resolve-names" not in existing_rules:
         @upstream_app.app.route("/config/resolve-names", methods=["POST"])
