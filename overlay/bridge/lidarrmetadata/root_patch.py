@@ -1129,7 +1129,7 @@ def _format_replication_date(value: object) -> str:
         except Exception:
             return raw
     if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=timezone.utc)
+        dt = dt.replace(tzinfo=datetime.now().astimezone().tzinfo)
     dt_local = dt.astimezone()
     date_part = dt_local.strftime("%Y-%m-%d")
     time_part = dt_local.strftime("%I:%M %p").lstrip("0")
