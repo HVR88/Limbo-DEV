@@ -217,6 +217,7 @@
           <h2 class="settings-modal__title">Settings</h2>
           <div class="settings-layout">
             <div class="settings-nav" data-settings-nav>
+              <span class="settings-nav__highlight" aria-hidden="true"></span>
               <button
                 class="settings-nav__item is-active"
                 type="button"
@@ -235,7 +236,7 @@
               <button
                 class="settings-nav__item"
                 type="button"
-                data-settings-target="services"
+                data-settings-target="metadata"
                 data-priority-type="data"
                 data-test-only
               >
@@ -244,7 +245,7 @@
               <button
                 class="settings-nav__item"
                 type="button"
-                data-settings-target="services"
+                data-settings-target="artist_art"
                 data-priority-type="artist_bio"
                 data-test-only
               >
@@ -253,7 +254,7 @@
               <button
                 class="settings-nav__item"
                 type="button"
-                data-settings-target="services"
+                data-settings-target="album_art"
                 data-priority-type="album_artwork"
                 data-test-only
               >
@@ -262,7 +263,7 @@
               <button
                 class="settings-nav__item"
                 type="button"
-                data-settings-target="services"
+                data-settings-target="fan_art"
                 data-priority-type="artist_extras"
                 data-test-only
               >
@@ -278,7 +279,9 @@
                   <label class="settings-field__label" for="lidarr-url"
                     >Lidarr URL</label
                   >
-                  <div class="settings-field__control settings-field__control--framed">
+                  <div
+                    class="settings-field__control settings-field__control--framed"
+                  >
                     <input
                       id="lidarr-url"
                       class="settings-field__input settings-field__input--framed"
@@ -323,6 +326,11 @@
                     class="settings-field__control settings-field__control--framed"
                     data-apikey-control
                   >
+                    <div class="apikey-frame">
+                      <div class="apikey-block">
+                        <span class="apikey-chip">API KEY</span>
+                      </div>
+                    </div>
                     <input
                       id="lidarr-apikey"
                       class="settings-field__input settings-field__input--framed"
@@ -330,15 +338,15 @@
                       maxlength="255"
                       spellcheck="false"
                       autocomplete="off"
-                      placeholder="lkd9a8s7df0a9s8d7f0a9s8d7f0a9s8d"
+                      placeholder="lkd9a8s744444444f0a9s8d7f0a9s8d"
                       value="__LIDARR_API_KEY__"
                     />
-                    <span class="settings-field__mask-chip" data-apikey-mask></span>
                     <button
                       class="config-action settings-field__menu-toggle"
                       type="button"
                       aria-label="Toggle API key visibility"
                       data-secret-toggle
+                      tabindex="-1"
                     >
                       <span class="config-action__inner" aria-hidden="true">
                         <svg
@@ -462,8 +470,37 @@
               </div>
               <div
                 class="settings-panel"
+                data-settings-panel="metadata"
+                data-test-only
+              >
+                <div data-services-slot></div>
+              </div>
+              <div
+                class="settings-panel"
+                data-settings-panel="artist_art"
+                data-test-only
+              >
+                <div data-services-slot></div>
+              </div>
+              <div
+                class="settings-panel"
+                data-settings-panel="album_art"
+                data-test-only
+              >
+                <div data-services-slot></div>
+              </div>
+              <div
+                class="settings-panel"
+                data-settings-panel="fan_art"
+                data-test-only
+              >
+                <div data-services-slot></div>
+              </div>
+              <div
+                class="settings-panel"
                 data-settings-panel="services"
                 data-test-only
+                hidden
               >
                 <div
                   class="settings-list settings-list--draggable settings-list--priorities"
@@ -1836,8 +1873,6 @@
         "[data-lidarr-menu-toggle]",
       );
       const secretToggle = document.querySelector("[data-secret-toggle]");
-      const apiKeyControl = document.querySelector("[data-apikey-control]");
-      const apiKeyMask = document.querySelector("[data-apikey-mask]");
       const lidarrSaveButton = document.querySelector("[data-lidarr-save]");
       const tidalClientIdInput = document.querySelector("#tidal-client-id");
       const tidalClientSecretInput = document.querySelector(
@@ -2192,42 +2227,13 @@
         return `${prefix}${host}${port ? `:${port}` : ""}`;
       };
 
-      const updateApiKeyMask = () => {
-        if (!apiKeyMask || !lidarrApiKeyInput) {
-          return;
-        }
-        apiKeyMask.textContent = "API KEY";
-      };
-      const setApiKeyMasked = (masked) => {
-        if (!apiKeyControl || !lidarrApiKeyInput) {
-          return;
-        }
-        apiKeyControl.classList.toggle("is-masked", masked);
-      };
-      if (lidarrApiKeyInput) {
-        updateApiKeyMask();
-        lidarrApiKeyInput.addEventListener("input", () => {
-          updateApiKeyMask();
-        });
-        lidarrApiKeyInput.addEventListener("focus", () => {
-          setApiKeyMasked(false);
-        });
-        lidarrApiKeyInput.addEventListener("blur", () => {
-          setApiKeyMasked(true);
-        });
-        setApiKeyMasked(true);
-        if (apiKeyControl) {
-          requestAnimationFrame(() => {
-            apiKeyControl.classList.add("chip-animate");
-          });
-        }
-      }
       if (secretToggle && lidarrApiKeyInput) {
         secretToggle.addEventListener("mousedown", (event) => {
           event.preventDefault();
-          event.stopPropagation();
-          lidarrApiKeyInput.focus();
-          lidarrApiKeyInput.setSelectionRange(0, 0);
+          requestAnimationFrame(() => {
+            lidarrApiKeyInput.focus({ preventScroll: true });
+            lidarrApiKeyInput.setSelectionRange(0, 0);
+          });
         });
       }
 
@@ -4880,9 +4886,36 @@
         const settingsItems = Array.from(
           settingsNav.querySelectorAll("[data-settings-target]"),
         );
+        const settingsHighlight = settingsNav.querySelector(
+          ".settings-nav__highlight",
+        );
         const settingsPanels = Array.from(
           document.querySelectorAll("[data-settings-panel]"),
         );
+        const serviceSlots = Array.from(
+          document.querySelectorAll("[data-services-slot]"),
+        );
+        const serviceSlotMap = new Map(
+          serviceSlots.map((slot) => [
+            slot.closest("[data-settings-panel]")?.dataset.settingsPanel || "",
+            slot,
+          ]),
+        );
+        const updateSettingsHighlight = () => {
+          if (!settingsHighlight) {
+            return;
+          }
+          const activeItem = settingsItems.find((button) =>
+            button.classList.contains("is-active"),
+          );
+          if (!activeItem) {
+            return;
+          }
+          const top = activeItem.offsetTop;
+          const height = activeItem.offsetHeight;
+          settingsHighlight.style.transform = `translateY(${top}px)`;
+          settingsHighlight.style.height = `${height}px`;
+        };
         const setSettingsSection = (target, priorityType) => {
           settingsItems.forEach((button) => {
             button.classList.toggle(
@@ -4903,6 +4936,14 @@
           if (priorityType) {
             setPriorityType(priorityType);
           }
+          if (
+            servicesPriorityList &&
+            serviceSlotMap.has(target) &&
+            servicesPriorityList.parentElement !== serviceSlotMap.get(target)
+          ) {
+            serviceSlotMap.get(target).appendChild(servicesPriorityList);
+          }
+          updateSettingsHighlight();
         };
         settingsItems.forEach((button) => {
           button.addEventListener("click", () => {
@@ -4913,8 +4954,9 @@
           });
         });
         const activeItem =
-          settingsItems.find((button) => button.classList.contains("is-active")) ||
-          settingsItems[0];
+          settingsItems.find((button) =>
+            button.classList.contains("is-active"),
+          ) || settingsItems[0];
         if (activeItem) {
           const target = activeItem.dataset.settingsTarget || "";
           settingsPanels.forEach((panel) => {
@@ -4926,7 +4968,18 @@
           if (providerTestAllButton) {
             providerTestAllButton.hidden = target !== "providers";
           }
+          if (
+            servicesPriorityList &&
+            serviceSlotMap.has(target) &&
+            servicesPriorityList.parentElement !== serviceSlotMap.get(target)
+          ) {
+            serviceSlotMap.get(target).appendChild(servicesPriorityList);
+          }
+          updateSettingsHighlight();
         }
+        window.addEventListener("resize", () => {
+          updateSettingsHighlight();
+        });
       }
       if (priorityAddButton && priorityMenu) {
         priorityAddButton.addEventListener("click", (event) => {
@@ -6236,6 +6289,12 @@
             if (refreshValidateController) {
               refreshValidateController.abort();
             }
+          }
+          if (modal?.getAttribute("data-modal") === "settings") {
+            if (settingsRestoreEnabled) {
+              restoreSettingsSnapshot();
+            }
+            settingsRestoreEnabled = false;
           }
           closeModal(modal);
         });

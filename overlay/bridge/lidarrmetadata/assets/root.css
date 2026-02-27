@@ -717,6 +717,20 @@ body[data-theme="dark"] .modal__esc-hint {
   gap: 8px;
   width: calc(12ch + 30px);
   flex: 0 0 calc(12ch + 30px);
+  position: relative;
+}
+.settings-nav__highlight {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 0;
+  border-radius: 8px;
+  background: rgba(11, 125, 109, 0.2);
+  border: 1px solid rgba(11, 125, 109, 0.45);
+  box-shadow: 0 6px 16px rgba(7, 12, 14, 0.2);
+  transform: translateY(0);
+  transition: transform 400ms ease, height 400ms ease;
+  pointer-events: none;
 }
 .settings-nav__item {
   border: 1px solid transparent;
@@ -730,12 +744,14 @@ body[data-theme="dark"] .modal__esc-hint {
   border-radius: 8px;
   cursor: pointer;
   text-align: left;
+  position: relative;
+  z-index: 1;
 }
 .settings-nav__item.is-active {
   color: var(--ink);
-  background: rgba(11, 125, 109, 0.2);
-  border-color: rgba(11, 125, 109, 0.45);
-  box-shadow: 0 6px 16px rgba(7, 12, 14, 0.2);
+  background: none;
+  border-color: transparent;
+  box-shadow: none;
 }
 .settings-panels {
   min-height: 460px;
@@ -748,7 +764,7 @@ body[data-theme="dark"] .modal__esc-hint {
 }
 .settings-panel.is-active {
   display: block;
-  animation: settings-tab-fade 220ms ease-out;
+  animation: settings-tab-fade 4000ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 .settings-panel .settings-list {
   margin-top: 12px;
@@ -756,9 +772,11 @@ body[data-theme="dark"] .modal__esc-hint {
 @keyframes settings-tab-fade {
   from {
     opacity: 0;
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
+    transform: translateY(0);
   }
 }
 .settings-tab-empty {
@@ -1145,13 +1163,36 @@ body.debug-ui .settings-list__test-toggle {
   letter-spacing: 0.02em;
   white-space: nowrap;
 }
-.settings-field__mask-chip {
+.apikey-frame {
   position: absolute;
+  top: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 100;
+  border-radius: 6px;
   left: 8px;
   right: 42px;
+  overflow: hidden;
+}
+.apikey-block {
+  position: absolute;
+  left: 0;
+  right: 0;
   top: 50%;
-  z-index: 100;
   transform: translateY(-50%) translateX(0);
+  border-radius: 6px;
+  background: var(--panel);
+  box-shadow: inset -1px -1px 100px 100px var(--panel);
+  opacity: 1;
+  transition: transform 1200ms ease;
+}
+.settings-field:focus-within .apikey-block,
+[data-apikey-control]:focus-within .apikey-block {
+  transform: translateY(-50%) translateX(120%);
+  transition-duration: 2000ms;
+}
+.apikey-chip {
+  display: block;
   padding: 6px 10px;
   border-radius: 6px;
   background: rgba(11, 125, 109, 0.2);
@@ -1162,30 +1203,7 @@ body.debug-ui .settings-list__test-toggle {
   text-align: center;
   white-space: nowrap;
   pointer-events: none;
-  opacity: 1;
-  --chip-slide-in: 5000ms;
-  --chip-slide-out: 5000ms;
-}
-.settings-field__control.chip-animate .settings-field__mask-chip {
-  transition: transform var(--chip-slide-out) ease;
-}
-.settings-field__control.is-masked .settings-field__mask-chip {
-  transform: translateY(-50%) translateX(0);
-  transition-duration: var(--chip-slide-in);
-}
-.settings-field__control:not(.is-masked) .settings-field__mask-chip {
-  transform: translateY(-50%) translateX(120%);
-  transition-duration: var(--chip-slide-out);
-}
-.settings-field__control.is-masked .settings-field__input--framed {
-  color: transparent;
-  caret-color: var(--ink);
-}
-.settings-field__control:not(.is-masked) .settings-field__input--framed {
-  color: var(--ink);
-}
-body[data-theme="dark"] .settings-field__mask-chip {
-  background: rgba(11, 125, 109, 0.2);
+  z-index: 100;
 }
 .settings-field__chip[hidden] {
   display: none;
