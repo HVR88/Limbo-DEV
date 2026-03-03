@@ -255,6 +255,8 @@ def register_config_routes() -> None:
                     {
                         "lidarr_base_url": root_patch.get_lidarr_base_url(),
                         "lidarr_api_key": root_patch.get_lidarr_api_key(),
+                        "slskd_base_url": root_patch.get_slskd_base_url(),
+                        "slskd_api_key": root_patch.get_slskd_api_key(),
                         "limbo_url_mode": root_patch.get_limbo_url_mode(),
                         "limbo_url": root_patch.get_limbo_url_custom(),
                         "fanart_key": root_patch.get_fanart_key(),
@@ -269,6 +271,8 @@ def register_config_routes() -> None:
                 payload = {}
             base_url = str(payload.get("lidarr_base_url") or "").strip()
             api_key = str(payload.get("lidarr_api_key") or "").strip()
+            slskd_base_url = str(payload.get("slskd_base_url") or "").strip()
+            slskd_api_key = str(payload.get("slskd_api_key") or "").strip()
             fanart_key = str(payload.get("fanart_key") or "").strip()
             tadb_key = str(payload.get("tadb_key") or "").strip()
             lastfm_key = str(payload.get("lastfm_key") or "").strip()
@@ -315,6 +319,10 @@ def register_config_routes() -> None:
             if connection_ok and metadata_update_ok:
                 root_patch.set_lidarr_base_url(base_url)
                 root_patch.set_lidarr_api_key(api_key)
+                if "slskd_base_url" in payload:
+                    root_patch.set_slskd_base_url(slskd_base_url)
+                if "slskd_api_key" in payload:
+                    root_patch.set_slskd_api_key(slskd_api_key)
                 root_patch.set_limbo_url_mode(limbo_url_mode)
                 if limbo_url_mode == "custom":
                     root_patch.set_limbo_url_custom(limbo_url_custom)
@@ -454,6 +462,33 @@ def register_config_routes() -> None:
             )
             return jsonify({"ok": True})
 
+    if "/config/service-priority" not in existing_rules:
+        @upstream_app.app.route("/config/service-priority", methods=["GET", "POST"])
+        async def _limbo_service_priority():
+            if request.method == "GET":
+                return jsonify(
+                    {
+                        "ok": True,
+                        "orders": root_patch.get_service_priority_orders(),
+                    }
+                )
+            payload = await request.get_json(silent=True) or {}
+            if not isinstance(payload, dict):
+                payload = {}
+            priority_type = str(payload.get("priority_type") or "").strip().lower()
+            order = payload.get("order")
+            if priority_type not in {"metadata", "artistart", "albumart", "fanart"}:
+                return jsonify({"ok": False, "error": "Invalid priority_type."}), 400
+            if not isinstance(order, list):
+                order = []
+            root_patch.set_service_priority_order(priority_type, order)
+            return jsonify(
+                {
+                    "ok": True,
+                    "orders": root_patch.get_service_priority_orders(),
+                }
+            )
+
     if "/config/lastfm-settings" not in existing_rules:
         @upstream_app.app.route("/config/lastfm-settings", methods=["POST"])
         async def _limbo_lastfm_settings():
@@ -500,6 +535,8 @@ def register_config_routes() -> None:
                 root_patch.set_discogs_key("")
                 root_patch.set_discogs_enabled(False)
                 root_patch.set_discogs_error(False)
+            elif provider == "discogs_mirror":
+                root_patch.set_discogs_mirror_enabled(False)
             elif provider == "plex":
                 root_patch.set_plex_enabled(False)
                 root_patch.set_plex_error(False)
@@ -531,6 +568,45 @@ def register_config_routes() -> None:
             elif provider == "wikipedia":
                 root_patch.set_wikipedia_enabled(False)
                 root_patch.set_wikipedia_error(False)
+            else:
+                return jsonify({"ok": False, "error": "Unknown provider."}), 400
+            return jsonify({"ok": True})
+
+    if "/config/provider-enable" not in existing_rules:
+        @upstream_app.app.route("/config/provider-enable", methods=["POST"])
+        async def _limbo_service_enable():
+            payload = await request.get_json(silent=True) or {}
+            if not isinstance(payload, dict):
+                payload = {}
+            provider = str(payload.get("provider") or "").strip().lower()
+            if provider == "fanart":
+                root_patch.set_fanart_enabled(True)
+                asyncio.create_task(_queue_provider_test("fanart"))
+            elif provider == "tadb":
+                root_patch.set_tadb_enabled(True)
+                asyncio.create_task(_queue_provider_test("tadb"))
+            elif provider == "discogs":
+                root_patch.set_discogs_enabled(True)
+                asyncio.create_task(_queue_provider_test("discogs"))
+            elif provider == "discogs_mirror":
+                root_patch.set_discogs_mirror_enabled(True)
+            elif provider == "plex":
+                root_patch.set_plex_enabled(True)
+                asyncio.create_task(_queue_provider_test("plex"))
+            elif provider == "lastfm":
+                root_patch.set_lastfm_enabled(True)
+                asyncio.create_task(_queue_provider_test("lastfm"))
+            elif provider == "tidal":
+                root_patch.set_tidal_enabled(True)
+                asyncio.create_task(_queue_provider_test("tidal"))
+            elif provider == "apple":
+                root_patch.set_apple_music_enabled(True)
+            elif provider == "coverart":
+                root_patch.set_coverart_enabled(True)
+            elif provider == "musicbrainz":
+                root_patch.set_musicbrainz_enabled(True)
+            elif provider == "wikipedia":
+                root_patch.set_wikipedia_enabled(True)
             else:
                 return jsonify({"ok": False, "error": "Unknown provider."}), 400
             return jsonify({"ok": True})

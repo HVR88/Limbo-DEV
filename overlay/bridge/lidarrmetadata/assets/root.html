@@ -120,11 +120,10 @@
             data-tab-panel="releasesplitting"
             data-test-only
           >
-            <div class="tab_inside-box">
-              <div class="actions_box">
-                <div class="tabs-footnote">
-                  Free-form, no special formatting needed
-                </div>
+            <div class="filters_box">
+              <div class="links">
+                <div class="links-left"></div>
+                <div class="links-right"></div>
               </div>
             </div>
           </div>
@@ -281,6 +280,14 @@
               >
                 FAN ART
               </button>
+              <button
+                class="settings-nav__item"
+                type="button"
+                data-settings-target="downloads"
+                data-test-only
+              >
+                DOWNLOADS
+              </button>
             </div>
             <div class="settings-panels" data-settings-panels>
               <div
@@ -401,7 +408,7 @@
                       spellcheck="false"
                       autocomplete="off"
                       placeholder="http://slskd-ip:port"
-                      value=""
+                      value="__SLSKD_BASE_URL__"
                     />
                     <button
                       class="config-action settings-field__menu-toggle"
@@ -450,7 +457,7 @@
                       spellcheck="false"
                       autocomplete="off"
                       placeholder="slskd-api-key"
-                      value=""
+                      value="__SLSKD_API_KEY__"
                     />
                     <button
                       class="config-action settings-field__menu-toggle"
@@ -554,6 +561,7 @@
                   data-provider-tadb="__TADB_ENABLED__"
                   data-provider-lastfm="__LASTFM_ENABLED__"
                   data-provider-discogs="__DISCOGS_ENABLED__"
+                  data-provider-discogs_mirror="__DISCOGS_MIRROR_ENABLED__"
                   data-provider-plex="__PLEX_ENABLED__"
                   data-provider-tidal="__TIDAL_ENABLED__"
                   data-provider-apple="__APPLE_MUSIC_ENABLED__"
@@ -624,6 +632,15 @@
               </div>
               <div
                 class="settings-panel"
+                data-settings-panel="downloads"
+                data-test-only
+              >
+                <p class="settings-field__label settings-panel__heading">
+                  Downloads
+                </p>
+              </div>
+              <div
+                class="settings-panel"
                 data-settings-panel="services"
                 data-test-only
                 hidden
@@ -635,6 +652,7 @@
                   data-provider-tadb="__TADB_ENABLED__"
                   data-provider-lastfm="__LASTFM_ENABLED__"
                   data-provider-discogs="__DISCOGS_ENABLED__"
+                  data-provider-discogs_mirror="__DISCOGS_MIRROR_ENABLED__"
                   data-provider-plex="__PLEX_ENABLED__"
                   data-provider-tidal="__TIDAL_ENABLED__"
                   data-provider-apple="__APPLE_MUSIC_ENABLED__"
@@ -2628,6 +2646,14 @@
         if (lidarrApiKeyInput) {
           lidarrApiKeyInput.value = apiKey;
         }
+        const slskdUrl = sanitizeHostPort(slskdUrlInput?.value || "");
+        if (slskdUrlInput && slskdUrl) {
+          slskdUrlInput.value = slskdUrl;
+        }
+        const slskdKey = sanitizeApiKey(slskdKeyInput?.value || "");
+        if (slskdKeyInput) {
+          slskdKeyInput.value = slskdKey;
+        }
         if (!baseUrl || !apiKey) {
           suppressHover();
           openInfo("Lidarr URL and API key are required.");
@@ -4160,6 +4186,8 @@
             body: JSON.stringify({
               lidarr_base_url: baseUrl,
               lidarr_api_key: apiKey,
+              slskd_base_url: slskdUrl,
+              slskd_api_key: slskdKey,
               limbo_url_mode: limboMode,
               limbo_url:
                 limboMode === "custom"
@@ -6056,7 +6084,12 @@
           limboCustom: limboUrlInput?.dataset.limboCustom || "",
           providersDataset: providersList ? { ...providersList.dataset } : {},
           providerOrder: getProviderOrder(),
-          servicePriorityOrder: getServicePriorityOrder(),
+          servicePriorityOrders: {
+            metadata: normalizePriorityOrder(servicePriorityOrders.metadata),
+            artistart: normalizePriorityOrder(servicePriorityOrders.artistart),
+            albumart: normalizePriorityOrder(servicePriorityOrders.albumart),
+            fanart: normalizePriorityOrder(servicePriorityOrders.fanart),
+          },
           fanartKey: fanartKeyInput?.value || "",
           tadbKey: tadbKeyInput?.value || "",
           discogsKey: discogsKeyInput?.value || "",
@@ -6134,7 +6167,9 @@
           clearProviderSelection();
         }
         if (servicesPriorityList) {
-          setServicePriorityOrder(settingsSnapshot.servicePriorityOrder || []);
+          servicePriorityOrders = normalizePriorityOrdersPayload(
+            settingsSnapshot.servicePriorityOrders,
+          );
           renderPriorityList();
           clearPrioritySelection();
         }
@@ -6311,12 +6346,11 @@
             );
             row.classList.toggle("connection-error", nextShowError);
             row.classList.toggle("inactive", !nextEnabled || !nextConfigured);
-            if (
-              !nextEnabled &&
-              !isLocalPreview &&
-              item.id !== "discogs_mirror"
-            ) {
-              fetch("/config/provider-disable", {
+            if (!isLocalPreview) {
+              const endpoint = nextEnabled
+                ? "/config/provider-enable"
+                : "/config/provider-disable";
+              fetch(endpoint, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ provider: item.id }),
@@ -6424,6 +6458,7 @@
       }
 
       const priorityTypeStorageKey = "limbo-service-priority-type";
+      const validPriorityTypes = ["metadata", "artistart", "albumart", "fanart"];
       const priorityTypeLabels = {
         metadata: "Metadata",
         artistart: "Artist Art",
@@ -6431,25 +6466,77 @@
         albumart: "Album Art",
       };
       let priorityType = "metadata";
-      const getPriorityStorageKey = () =>
-        `limbo-service-priority-${priorityType}`;
-      const getServicePriorityOrder = () => {
-        try {
-          const raw = localStorage.getItem(getPriorityStorageKey());
-          if (!raw) {
-            return [];
-          }
-          const parsed = JSON.parse(raw);
-          return Array.isArray(parsed) ? parsed : [];
-        } catch (error) {
+      const createEmptyPriorityOrders = () => ({
+        metadata: [],
+        artistart: [],
+        albumart: [],
+        fanart: [],
+      });
+      let servicePriorityOrders = createEmptyPriorityOrders();
+      const normalizePriorityOrder = (value) => {
+        if (!Array.isArray(value)) {
           return [];
         }
+        return value
+          .map((entry) => String(entry || "").trim())
+          .filter(Boolean);
       };
+      const normalizePriorityOrdersPayload = (value) => {
+        const normalized = createEmptyPriorityOrders();
+        if (!value || typeof value !== "object") {
+          return normalized;
+        }
+        validPriorityTypes.forEach((type) => {
+          normalized[type] = normalizePriorityOrder(value[type]);
+        });
+        return normalized;
+      };
+      const getServicePriorityOrder = () =>
+        normalizePriorityOrder(servicePriorityOrders[priorityType]);
       const setServicePriorityOrder = (order) => {
+        servicePriorityOrders[priorityType] = normalizePriorityOrder(order);
+      };
+      const isSamePriorityOrder = (a, b) => {
+        if (a.length !== b.length) {
+          return false;
+        }
+        for (let i = 0; i < a.length; i += 1) {
+          if (a[i] !== b[i]) {
+            return false;
+          }
+        }
+        return true;
+      };
+      const persistServicePriorityOrder = async (type, order) => {
+        if (isLocalPreview) {
+          return;
+        }
         try {
-          localStorage.setItem(getPriorityStorageKey(), JSON.stringify(order));
+          await fetch("/config/service-priority", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              priority_type: type,
+              order: normalizePriorityOrder(order),
+            }),
+          });
         } catch (error) {
-          // ignore
+          // ignore persistence failures
+        }
+      };
+      const loadServicePriorityOrders = async () => {
+        if (isLocalPreview) {
+          return;
+        }
+        try {
+          const response = await fetch("/config/service-priority");
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok || !payload.ok) {
+            return;
+          }
+          servicePriorityOrders = normalizePriorityOrdersPayload(payload.orders);
+        } catch (error) {
+          // ignore load failures
         }
       };
       const setPriorityType = (value) => {
@@ -6616,12 +6703,18 @@
           servicesPriorityList.appendChild(row);
         });
         setServicePriorityOrder(orderedIds);
+        if (!isSamePriorityOrder(order, orderedIds)) {
+          void persistServicePriorityOrder(priorityType, orderedIds);
+        }
         priorityMenuOptions.forEach((option) => {
           const id = option.dataset.providerPriorityOption;
           option.style.display = !orderedIds.includes(id) ? "" : "none";
         });
       };
-      renderPriorityList();
+      loadServicePriorityOrders().finally(() => {
+        renderPriorityList();
+        filterPriorityMenuOptions();
+      });
       const filterPriorityMenuOptions = () => {
         const serviceFlag = priorityType;
         priorityMenuOptions.forEach((option) => {
@@ -6635,7 +6728,6 @@
           option.style.display = supportsType ? "" : "none";
         });
       };
-      filterPriorityMenuOptions();
 
       const clearProviderSelection = () => {
         if (!providersList) {
@@ -6750,6 +6842,7 @@
             .map((node) => node.dataset.providerId)
             .filter(Boolean);
           setServicePriorityOrder(orderedIds);
+          void persistServicePriorityOrder(priorityType, orderedIds);
         });
         servicesPriorityList.addEventListener("click", (event) => {
           if (event.target === servicesPriorityList) {
@@ -6871,6 +6964,7 @@
             if (!order.includes(id)) {
               order.push(id);
               setServicePriorityOrder(order);
+              void persistServicePriorityOrder(priorityType, order);
               renderPriorityList(id);
               clearPrioritySelection();
             }
@@ -6894,6 +6988,7 @@
             (entry) => entry !== id,
           );
           setServicePriorityOrder(order);
+          void persistServicePriorityOrder(priorityType, order);
           renderPriorityList();
         });
       }

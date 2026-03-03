@@ -8,7 +8,7 @@ import time
 import asyncio
 import inspect
 from datetime import datetime, timezone
-from typing import Optional, Tuple, Iterable, Dict
+from typing import Optional, Tuple, Iterable, Dict, List
 
 try:
     import aiohttp
@@ -52,6 +52,8 @@ _LAST_PLUGIN_VERSION: Optional[str] = None
 _MBMS_VERSION_FILE = Path("/mbms/VERSION")
 _LIDARR_BASE_URL: Optional[str] = None
 _LIDARR_API_KEY: Optional[str] = None
+_SLSKD_BASE_URL: Optional[str] = None
+_SLSKD_API_KEY: Optional[str] = None
 _LIDARR_CLIENT_IP: Optional[str] = None
 _LIMBO_URL_MODE: Optional[str] = None
 _LIMBO_URL_CUSTOM: Optional[str] = None
@@ -70,6 +72,7 @@ _TADB_ENABLED: Optional[bool] = None
 _LASTFM_ENABLED: Optional[bool] = None
 _TIDAL_ENABLED: Optional[bool] = None
 _DISCOGS_ENABLED: Optional[bool] = None
+_DISCOGS_MIRROR_ENABLED: Optional[bool] = None
 _APPLE_MUSIC_ENABLED: Optional[bool] = None
 _PLEX_ENABLED: Optional[bool] = None
 _FANART_ERROR: Optional[bool] = None
@@ -89,6 +92,12 @@ _COVERART_ERROR: Optional[bool] = None
 _MUSICBRAINZ_ERROR: Optional[bool] = None
 _WIKIPEDIA_ERROR: Optional[bool] = None
 _REFRESH_RESOLVE_NAMES: Optional[bool] = None
+_SERVICE_PRIORITY_ORDERS: Dict[str, List[str]] = {
+    "metadata": [],
+    "artistart": [],
+    "albumart": [],
+    "fanart": [],
+}
 _GITHUB_RELEASE_CACHE: Dict[str, Tuple[float, Optional[str]]] = {}
 _GITHUB_RELEASE_CACHE_TTL = 300.0
 _REPLICATION_NOTIFY_FILE = Path(
@@ -248,15 +257,17 @@ def _read_full_limbo_version() -> str:
 
 
 def _load_lidarr_settings() -> None:
-    global _LIDARR_BASE_URL, _LIDARR_API_KEY, _LIMBO_URL_MODE, _LIMBO_URL_CUSTOM
+    global _LIDARR_BASE_URL, _LIDARR_API_KEY, _SLSKD_BASE_URL, _SLSKD_API_KEY
+    global _LIMBO_URL_MODE, _LIMBO_URL_CUSTOM
     global _FANART_KEY, _TADB_KEY, _LASTFM_KEY, _LASTFM_SECRET
     global _TIDAL_CLIENT_ID, _TIDAL_CLIENT_SECRET, _TIDAL_COUNTRY_CODE
     global _TIDAL_USER, _TIDAL_USER_PASSWORD, _DISCOGS_KEY
     global _FANART_ENABLED, _TADB_ENABLED, _LASTFM_ENABLED
-    global _TIDAL_ENABLED, _DISCOGS_ENABLED, _APPLE_MUSIC_ENABLED, _PLEX_ENABLED
+    global _TIDAL_ENABLED, _DISCOGS_ENABLED, _DISCOGS_MIRROR_ENABLED
+    global _APPLE_MUSIC_ENABLED, _PLEX_ENABLED
     global _APPLE_MUSIC_MAX_IMAGE_SIZE, _APPLE_MUSIC_ALLOW_UPSCALE
     global _COVERART_ENABLED, _COVERART_SIZE, _MUSICBRAINZ_ENABLED, _WIKIPEDIA_ENABLED
-    global _REFRESH_RESOLVE_NAMES
+    global _REFRESH_RESOLVE_NAMES, _SERVICE_PRIORITY_ORDERS
     try:
         data = json.loads(_SETTINGS_FILE.read_text(encoding="utf-8"))
     except Exception:
@@ -274,6 +285,8 @@ def _load_lidarr_settings() -> None:
         plex_token_env = str(os.getenv("PLEX_TOKEN") or "").strip()
         _LIDARR_BASE_URL = ""
         _LIDARR_API_KEY = ""
+        _SLSKD_BASE_URL = ""
+        _SLSKD_API_KEY = ""
         _LIMBO_URL_MODE = "auto-referrer"
         _LIMBO_URL_CUSTOM = ""
         _FANART_KEY = fanart_env
@@ -297,6 +310,7 @@ def _load_lidarr_settings() -> None:
             or tidal_user_password_env
         )
         _DISCOGS_ENABLED = bool(discogs_env)
+        _DISCOGS_MIRROR_ENABLED = True
         _APPLE_MUSIC_ENABLED = True
         _PLEX_ENABLED = bool(plex_url_env or plex_token_env)
         _APPLE_MUSIC_MAX_IMAGE_SIZE = "2500"
@@ -306,10 +320,18 @@ def _load_lidarr_settings() -> None:
         _MUSICBRAINZ_ENABLED = True
         _WIKIPEDIA_ENABLED = True
         _REFRESH_RESOLVE_NAMES = True
+        _SERVICE_PRIORITY_ORDERS = {
+            "metadata": [],
+            "artistart": [],
+            "albumart": [],
+            "fanart": [],
+        }
         _persist_lidarr_settings()
         return
     _LIDARR_BASE_URL = str(data.get("lidarr_base_url") or "").strip()
     _LIDARR_API_KEY = str(data.get("lidarr_api_key") or "").strip()
+    _SLSKD_BASE_URL = str(data.get("slskd_base_url") or "").strip()
+    _SLSKD_API_KEY = str(data.get("slskd_api_key") or "").strip()
     mode = str(data.get("limbo_url_mode") or "").strip().lower()
     if mode not in {"auto-referrer", "auto-host", "custom"}:
         mode = "auto-referrer"
@@ -336,6 +358,23 @@ def _load_lidarr_settings() -> None:
     _REFRESH_RESOLVE_NAMES = _read_enabled_flag(
         data.get("refresh_resolve_names"), True
     )
+    raw_orders = data.get("service_priority_orders")
+    normalized_orders: Dict[str, List[str]] = {
+        "metadata": [],
+        "artistart": [],
+        "albumart": [],
+        "fanart": [],
+    }
+    if isinstance(raw_orders, dict):
+        for key in normalized_orders.keys():
+            values = raw_orders.get(key)
+            if isinstance(values, list):
+                normalized_orders[key] = [
+                    str(item).strip()
+                    for item in values
+                    if str(item).strip()
+                ]
+    _SERVICE_PRIORITY_ORDERS = normalized_orders
     fanart_env = str(os.getenv("FANART_KEY") or "").strip()
     tadb_env = str(os.getenv("TADB_KEY") or "").strip()
     lastfm_env = str(os.getenv("LASTFM_KEY") or "").strip()
@@ -365,6 +404,9 @@ def _load_lidarr_settings() -> None:
     )
     _DISCOGS_ENABLED = _read_enabled_flag(
         data.get("discogs_enabled"), bool(discogs_env)
+    )
+    _DISCOGS_MIRROR_ENABLED = _read_enabled_flag(
+        data.get("discogs_mirror_enabled"), True
     )
     _APPLE_MUSIC_ENABLED = _read_enabled_flag(data.get("apple_music_enabled"), True)
     _PLEX_ENABLED = _read_enabled_flag(data.get("plex_enabled"), False)
@@ -406,6 +448,8 @@ def _persist_lidarr_settings() -> None:
         payload = {
             "lidarr_base_url": _LIDARR_BASE_URL or "",
             "lidarr_api_key": _LIDARR_API_KEY or "",
+            "slskd_base_url": _SLSKD_BASE_URL or "",
+            "slskd_api_key": _SLSKD_API_KEY or "",
             "limbo_url_mode": _LIMBO_URL_MODE or "auto-referrer",
             "limbo_url": _LIMBO_URL_CUSTOM or "",
             "fanart_key": _FANART_KEY or "",
@@ -423,11 +467,18 @@ def _persist_lidarr_settings() -> None:
             "musicbrainz_enabled": bool(_MUSICBRAINZ_ENABLED),
             "wikipedia_enabled": bool(_WIKIPEDIA_ENABLED),
             "refresh_resolve_names": bool(_REFRESH_RESOLVE_NAMES),
+            "service_priority_orders": {
+                "metadata": list(_SERVICE_PRIORITY_ORDERS.get("metadata") or []),
+                "artistart": list(_SERVICE_PRIORITY_ORDERS.get("artistart") or []),
+                "albumart": list(_SERVICE_PRIORITY_ORDERS.get("albumart") or []),
+                "fanart": list(_SERVICE_PRIORITY_ORDERS.get("fanart") or []),
+            },
             "fanart_enabled": bool(_FANART_ENABLED),
             "tadb_enabled": bool(_TADB_ENABLED),
             "lastfm_enabled": bool(_LASTFM_ENABLED),
             "tidal_enabled": bool(_TIDAL_ENABLED),
             "discogs_enabled": bool(_DISCOGS_ENABLED),
+            "discogs_mirror_enabled": bool(_DISCOGS_MIRROR_ENABLED),
             "apple_music_enabled": bool(_APPLE_MUSIC_ENABLED),
             "plex_enabled": bool(_PLEX_ENABLED),
             "apple_music_max_image_size": _APPLE_MUSIC_MAX_IMAGE_SIZE or "",
@@ -474,6 +525,67 @@ def _set_lidarr_api_key(value: str, *, persist: bool) -> None:
 
 def get_lidarr_api_key() -> str:
     return _LIDARR_API_KEY or ""
+
+
+def get_service_priority_orders() -> Dict[str, List[str]]:
+    return {
+        "metadata": list(_SERVICE_PRIORITY_ORDERS.get("metadata") or []),
+        "artistart": list(_SERVICE_PRIORITY_ORDERS.get("artistart") or []),
+        "albumart": list(_SERVICE_PRIORITY_ORDERS.get("albumart") or []),
+        "fanart": list(_SERVICE_PRIORITY_ORDERS.get("fanart") or []),
+    }
+
+
+def set_service_priority_order(priority_type: str, order: List[str]) -> None:
+    global _SERVICE_PRIORITY_ORDERS
+    key = str(priority_type or "").strip().lower()
+    if key not in {"metadata", "artistart", "albumart", "fanart"}:
+        return
+    values = [
+        str(item).strip()
+        for item in (order or [])
+        if str(item).strip()
+    ]
+    _SERVICE_PRIORITY_ORDERS[key] = values
+    _persist_lidarr_settings()
+
+
+def set_slskd_base_url(value: str) -> None:
+    _set_slskd_base_url(value, persist=True)
+
+
+def set_slskd_base_url_runtime(value: str) -> None:
+    _set_slskd_base_url(value, persist=False)
+
+
+def _set_slskd_base_url(value: str, *, persist: bool) -> None:
+    global _SLSKD_BASE_URL
+    _SLSKD_BASE_URL = value.strip() if value else ""
+    if persist:
+        _persist_lidarr_settings()
+
+
+def get_slskd_base_url() -> str:
+    return _SLSKD_BASE_URL or ""
+
+
+def set_slskd_api_key(value: str) -> None:
+    _set_slskd_api_key(value, persist=True)
+
+
+def set_slskd_api_key_runtime(value: str) -> None:
+    _set_slskd_api_key(value, persist=False)
+
+
+def _set_slskd_api_key(value: str, *, persist: bool) -> None:
+    global _SLSKD_API_KEY
+    _SLSKD_API_KEY = value.strip() if value else ""
+    if persist:
+        _persist_lidarr_settings()
+
+
+def get_slskd_api_key() -> str:
+    return _SLSKD_API_KEY or ""
 
 
 def set_limbo_url_mode(value: str) -> None:
@@ -829,6 +941,21 @@ def _set_discogs_enabled(value: bool, *, persist: bool) -> None:
 
 def get_discogs_enabled() -> bool:
     return bool(_DISCOGS_ENABLED)
+
+
+def set_discogs_mirror_enabled(value: bool) -> None:
+    _set_discogs_mirror_enabled(value, persist=True)
+
+
+def _set_discogs_mirror_enabled(value: bool, *, persist: bool) -> None:
+    global _DISCOGS_MIRROR_ENABLED
+    _DISCOGS_MIRROR_ENABLED = bool(value)
+    if persist:
+        _persist_lidarr_settings()
+
+
+def get_discogs_mirror_enabled() -> bool:
+    return bool(_DISCOGS_MIRROR_ENABLED)
 
 
 def get_discogs_error() -> bool:
@@ -1947,6 +2074,8 @@ def register_root_route() -> None:
             "__LIDARR_VERSION_LABEL__": safe["lidarr_version_label"],
             "__LIDARR_BASE_URL__": html.escape(get_lidarr_base_url()),
             "__LIDARR_API_KEY__": html.escape(get_lidarr_api_key()),
+            "__SLSKD_BASE_URL__": html.escape(get_slskd_base_url()),
+            "__SLSKD_API_KEY__": html.escape(get_slskd_api_key()),
             "__LIMBO_URL__": html.escape(limbo_url),
             "__LIMBO_URL_REFERRER__": html.escape(limbo_referrer_effective),
             "__LIMBO_URL_HOST__": html.escape(limbo_host_url),
@@ -1970,6 +2099,9 @@ def register_root_route() -> None:
             "__LASTFM_ENABLED__": "true" if get_lastfm_enabled() else "false",
             "__TIDAL_ENABLED__": "true" if get_tidal_enabled() else "false",
             "__DISCOGS_ENABLED__": "true" if get_discogs_enabled() else "false",
+            "__DISCOGS_MIRROR_ENABLED__": "true"
+            if get_discogs_mirror_enabled()
+            else "false",
             "__APPLE_MUSIC_ENABLED__": "true" if get_apple_music_enabled() else "false",
             "__PLEX_ENABLED__": "true" if get_plex_enabled() else "false",
             "__COVERART_ENABLED__": "true" if get_coverart_enabled() else "false",
