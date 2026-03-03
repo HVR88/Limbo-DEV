@@ -103,7 +103,6 @@ async def _probe_slskd_connection(base_url: str, api_key: str) -> Tuple[bool, st
     if not base_url or not api_key:
         return False, "SLSKD URL or API key is missing.", ""
     headers = {"X-Api-Key": api_key}
-    invalid_probe_headers = {"X-Api-Key": "__limbo_invalid_api_key_probe__"}
     candidates = (
         "/api/v0/application",
         "/api/v0/server",
@@ -127,25 +126,6 @@ async def _probe_slskd_connection(base_url: str, api_key: str) -> Tuple[bool, st
                     if _looks_like_lidarr_status(data):
                         return False, "You entered the Lidarr URL. Please enter a working SLSKD URL.", ""
                     version = _extract_slskd_version(data)
-                    # Verify the configured API key is actually enforced by SLSKD.
-                    # If the same endpoint also succeeds with a known invalid key,
-                    # we cannot treat the provided key as validated.
-                    try:
-                        async with session.get(url, headers=invalid_probe_headers) as invalid_resp:
-                            if invalid_resp.status == 200:
-                                return (
-                                    False,
-                                    "SLSKD accepted an invalid API key. Check SLSKD/proxy auth configuration.",
-                                    "",
-                                )
-                            if invalid_resp.status not in {401, 403}:
-                                return (
-                                    False,
-                                    f"SLSKD API key validation returned unexpected status {invalid_resp.status}.",
-                                    "",
-                                )
-                    except Exception:
-                        return False, "Unable to validate SLSKD API key.", ""
                     return True, "", version
     except Exception:
         return False, "Unable to connect to SLSKD.", ""
