@@ -408,6 +408,7 @@
                       class="config-action settings-field__menu-toggle"
                       type="button"
                       aria-label="slskd URL menu"
+                      data-slskd-menu-toggle
                       tabindex="-1"
                     >
                       <span class="config-action__inner" aria-hidden="true">
@@ -2239,6 +2240,9 @@
       const lidarrTestButton = document.querySelector(
         "[data-lidarr-menu-toggle]",
       );
+      const slskdTestButton = document.querySelector(
+        "[data-slskd-menu-toggle]",
+      );
       const secretToggle = document.querySelector("[data-secret-toggle]");
       const slskdSecretToggle = document.querySelector(
         "[data-slskd-secret-toggle]",
@@ -2699,6 +2703,43 @@
         } catch (error) {
           suppressHover();
           openInfo("Unable to connect.");
+        }
+      };
+      const testSlskdConnection = async () => {
+        const baseUrl = sanitizeHostPort(slskdUrlInput?.value || "");
+        if (slskdUrlInput) {
+          slskdUrlInput.value = baseUrl;
+        }
+        const apiKey = sanitizeApiKey(slskdKeyInput?.value || "");
+        if (slskdKeyInput) {
+          slskdKeyInput.value = apiKey;
+        }
+        if (!baseUrl || !apiKey) {
+          suppressHover();
+          openInfo("SLSKD URL and API key are required.");
+          return;
+        }
+        try {
+          const response = await fetch("/config/slskd-test", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              slskd_base_url: baseUrl,
+              slskd_api_key: apiKey,
+            }),
+          });
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok || !payload.ok) {
+            suppressHover();
+            openInfo(payload.error || `Error (${response.status})`);
+            return;
+          }
+          const version = payload.version ? ` (v${payload.version})` : "";
+          suppressHover();
+          openInfo(`SLSKD connection OK${version}.`);
+        } catch (error) {
+          suppressHover();
+          openInfo(`Request failed: ${error}`);
         }
       };
 
@@ -4229,6 +4270,31 @@
         if (slskdKeyInput) {
           slskdKeyInput.value = slskdKey;
         }
+        const saveSlskdSettings = async () => {
+          if (isLocalPreview) {
+            return true;
+          }
+          try {
+            const response = await fetch("/config/slskd-settings", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                slskd_base_url: slskdUrl,
+                slskd_api_key: slskdKey,
+              }),
+            });
+            const payload = await response.json().catch(() => ({}));
+            return {
+              ok: Boolean(response.ok && payload?.ok),
+              error: String(payload?.error || ""),
+            };
+          } catch (error) {
+            return {
+              ok: false,
+              error: `Request failed: ${error}`,
+            };
+          }
+        };
         const limboMode = (
           limboControl?.dataset.limboMode || "auto-referrer"
         ).trim();
@@ -4238,6 +4304,14 @@
           if (limboUrlInput && limboUrl) {
             limboUrlInput.value = limboUrl;
           }
+        }
+        const slskdSaveResult = await saveSlskdSettings();
+        if (!slskdSaveResult.ok && (slskdUrl || slskdKey)) {
+          if (!silent) {
+            suppressHover();
+            openInfo(slskdSaveResult.error || "SLSKD settings are invalid.");
+          }
+          return;
         }
         if (!baseUrl || !apiKey) {
           if (!silent) {
@@ -4277,8 +4351,6 @@
             body: JSON.stringify({
               lidarr_base_url: baseUrl,
               lidarr_api_key: apiKey,
-              slskd_base_url: slskdUrl,
-              slskd_api_key: slskdKey,
               limbo_url_mode: limboMode,
               limbo_url:
                 limboMode === "custom"
@@ -4392,12 +4464,48 @@
       };
       void hydrateRefreshSettings();
       let lidarrSaveTimer = null;
+      let slskdSaveTimer = null;
       const scheduleLidarrSave = (options = {}) => {
         if (lidarrSaveTimer) {
           clearTimeout(lidarrSaveTimer);
         }
         lidarrSaveTimer = setTimeout(() => {
           saveLidarrSettings({ silent: true, ...options });
+        }, 450);
+      };
+      const scheduleSlskdSave = () => {
+        if (slskdSaveTimer) {
+          clearTimeout(slskdSaveTimer);
+        }
+        slskdSaveTimer = setTimeout(async () => {
+          const slskdUrl = sanitizeHostPort(slskdUrlInput?.value || "");
+          const slskdKey = sanitizeApiKey(slskdKeyInput?.value || "");
+          if (slskdUrlInput && slskdUrl) {
+            slskdUrlInput.value = slskdUrl;
+          }
+          if (slskdKeyInput) {
+            slskdKeyInput.value = slskdKey;
+          }
+          if (isLocalPreview) {
+            return;
+          }
+          try {
+            const response = await fetch("/config/slskd-settings", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                slskd_base_url: slskdUrl,
+                slskd_api_key: slskdKey,
+              }),
+            });
+            const payload = await response.json().catch(() => ({}));
+            if (!response.ok || !payload?.ok) {
+              // keep silent on blur autosave; explicit save path handles feedback.
+              return;
+            }
+          } catch (error) {
+            // ignore background save failures
+          }
         }, 450);
       };
       if (lidarrUrlInput) {
@@ -4415,6 +4523,16 @@
           if (!limboUrlInput.readOnly) {
             scheduleLidarrSave({ sanitizeUrl: true });
           }
+        });
+      }
+      if (slskdUrlInput) {
+        slskdUrlInput.addEventListener("blur", () => {
+          scheduleSlskdSave();
+        });
+      }
+      if (slskdKeyInput) {
+        slskdKeyInput.addEventListener("blur", () => {
+          scheduleSlskdSave();
         });
       }
 
@@ -5854,6 +5972,13 @@
           event.preventDefault();
           event.stopPropagation();
           testLidarrConnection();
+        });
+      }
+      if (slskdTestButton) {
+        slskdTestButton.addEventListener("click", (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          testSlskdConnection();
         });
       }
       if (limboMenu) {

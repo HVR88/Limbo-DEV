@@ -249,6 +249,37 @@ def register_config_routes() -> None:
                     break
             return jsonify({"ok": True, "version": version or ""})
 
+    if "/config/slskd-test" not in existing_rules:
+        @upstream_app.app.route("/config/slskd-test", methods=["POST"])
+        async def _limbo_slskd_test():
+            payload = await request.get_json(silent=True) or {}
+            if not isinstance(payload, dict):
+                payload = {}
+            base_url = str(payload.get("slskd_base_url") or "").strip()
+            api_key = str(payload.get("slskd_api_key") or "").strip()
+            if not base_url or not api_key:
+                return jsonify({"ok": False, "error": "SLSKD URL or API key is missing."})
+            url = base_url.rstrip("/") + "/api/v1/system/status"
+            headers = {"X-Api-Key": api_key}
+            try:
+                timeout = aiohttp.ClientTimeout(total=3)
+                async with aiohttp.ClientSession(timeout=timeout) as session:
+                    async with session.get(url, headers=headers) as resp:
+                        if resp.status in {401, 403}:
+                            return jsonify({"ok": False, "error": "API key is invalid."})
+                        if resp.status != 200:
+                            return jsonify({"ok": False, "error": f"Unexpected status {resp.status}."})
+                        data = await resp.json()
+            except Exception:
+                return jsonify({"ok": False, "error": "Unable to connect."})
+            version = None
+            for key in ("version", "appVersion", "packageVersion", "buildVersion"):
+                value = data.get(key)
+                if value:
+                    version = str(value).strip()
+                    break
+            return jsonify({"ok": True, "version": version or ""})
+
     if "/config/lidarr-settings" not in existing_rules:
         @upstream_app.app.route("/config/lidarr-settings", methods=["GET", "POST"])
         async def _limbo_lidarr_settings():
@@ -373,6 +404,55 @@ def register_config_routes() -> None:
                     "metadata_update_error": metadata_update_error,
                 }
             )
+
+    if "/config/slskd-settings" not in existing_rules:
+        @upstream_app.app.route("/config/slskd-settings", methods=["POST"])
+        async def _limbo_slskd_settings():
+            payload = await request.get_json(silent=True) or {}
+            if not isinstance(payload, dict):
+                payload = {}
+            slskd_base_url = str(payload.get("slskd_base_url") or "").strip()
+            slskd_api_key = str(payload.get("slskd_api_key") or "").strip()
+            # Empty values are allowed without validation (explicit clear/reset).
+            if not slskd_base_url and not slskd_api_key:
+                root_patch.set_slskd_base_url("")
+                root_patch.set_slskd_api_key("")
+                return jsonify({"ok": True, "validated": False})
+            # If one is set, both are required.
+            if not slskd_base_url or not slskd_api_key:
+                return (
+                    jsonify(
+                        {
+                            "ok": False,
+                            "error": "SLSKD URL and API key are both required when either is set.",
+                        }
+                    ),
+                    400,
+                )
+            # Mirror Lidarr validation style.
+            url = slskd_base_url.rstrip("/") + "/api/v1/system/status"
+            headers = {"X-Api-Key": slskd_api_key}
+            try:
+                timeout = aiohttp.ClientTimeout(total=3)
+                async with aiohttp.ClientSession(timeout=timeout) as session:
+                    async with session.get(url, headers=headers) as resp:
+                        if resp.status in {401, 403}:
+                            return jsonify({"ok": False, "error": "SLSKD API key is invalid."}), 400
+                        if resp.status != 200:
+                            return (
+                                jsonify(
+                                    {
+                                        "ok": False,
+                                        "error": f"SLSKD returned unexpected status {resp.status}.",
+                                    }
+                                ),
+                                400,
+                            )
+            except Exception:
+                return jsonify({"ok": False, "error": "Unable to connect to SLSKD."}), 400
+            root_patch.set_slskd_base_url(slskd_base_url)
+            root_patch.set_slskd_api_key(slskd_api_key)
+            return jsonify({"ok": True, "validated": True})
 
     if "/config/limbo-url" not in existing_rules:
         @upstream_app.app.route("/config/limbo-url", methods=["GET"])
