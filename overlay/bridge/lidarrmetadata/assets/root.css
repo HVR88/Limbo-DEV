@@ -1204,6 +1204,26 @@ body.debug-ui .settings-list__test-toggle {
   pointer-events: none;
   z-index: 100;
 }
+[data-limbo-auto-mask] .apikey-chip {
+  background: rgba(11, 125, 109, 0.2);
+  color: transparent;
+}
+[data-limbo-auto-mask] .apikey-block {
+  background: transparent;
+  box-shadow: none;
+}
+[data-limbo-auto-mask] [data-limbo-chip].settings-field__chip {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  margin: 0;
+  z-index: 101;
+}
+[data-limbo-control]:focus-within [data-limbo-auto-mask] .apikey-block {
+  transform: translateY(-50%) translateX(0);
+  transition-duration: 0ms;
+}
 .settings-field__chip[hidden] {
   display: none;
 }
@@ -1220,6 +1240,10 @@ body.debug-ui .settings-list__test-toggle {
 }
 .settings-field__control--locked .settings-field__input--framed {
   color: rgba(151, 170, 180, 0.55);
+}
+[data-limbo-control].settings-field__control--locked
+  .settings-field__input--framed {
+  color: var(--ink);
 }
 .settings-field__menu-toggle {
   flex: 0 0 auto;
@@ -2062,6 +2086,9 @@ body[data-theme="dark"] .config-action__inner svg {
 .settings-field__control .settings-field__menu {
   right: -5px;
   bottom: -5px;
+}
+[data-limbo-menu].settings-field__menu {
+  z-index: 220;
 }
 .config-menu-compact {
   min-width: 180px;

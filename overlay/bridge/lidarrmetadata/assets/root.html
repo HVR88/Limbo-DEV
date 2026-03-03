@@ -495,6 +495,14 @@
                     class="settings-field__control settings-field__control--framed"
                     data-limbo-control
                   >
+                    <div class="apikey-frame" data-limbo-auto-mask hidden>
+                      <div class="apikey-block">
+                        <span class="apikey-chip">&nbsp;</span>
+                      </div>
+                      <span class="settings-field__chip" data-limbo-chip
+                        >AUTO</span
+                      >
+                    </div>
                     <input
                       id="limbo-url"
                       class="settings-field__input settings-field__input--framed"
@@ -510,7 +518,6 @@
                       data-limbo-custom="__LIMBO_URL_CUSTOM__"
                       readonly
                     />
-                    <span class="settings-field__chip" data-limbo-chip></span>
                     <button
                       class="config-action settings-field__menu-toggle"
                       type="button"
@@ -2229,6 +2236,7 @@
       );
       const limboUrlInput = document.querySelector("#limbo-url");
       const limboControl = document.querySelector("[data-limbo-control]");
+      const limboAutoMask = document.querySelector("[data-limbo-auto-mask]");
       const limboChip = document.querySelector("[data-limbo-chip]");
       const musicbrainzUiLink = document.querySelector(
         "[data-musicbrainz-ui-link]",
@@ -2897,6 +2905,9 @@
             limboChip.textContent = "";
             limboChip.hidden = true;
           }
+        }
+        if (limboAutoMask) {
+          limboAutoMask.hidden = isCustom;
         }
         if (isCustom) {
           const referrerValue = limboUrlInput.dataset.limboReferrer || "";
