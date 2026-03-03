@@ -81,12 +81,16 @@
             >
               Release Splitting
             </button>
+            <button class="tab-button" data-tab="downloader" data-test-only>
+              Downloader
+            </button>
             <button class="tab-button" data-tab="stats" data-test-only>
               Stats
             </button>
             <button class="tab-button" data-tab="tools" data-test-only>
               Tools
             </button>
+            <span class="tab-selection-line" data-tab-selection-line></span>
           </div>
           <div class="tab-panel active" data-tab-panel="filter-details">
             <div class="tab_inside-box">
@@ -121,6 +125,14 @@
                 <div class="tabs-footnote">
                   Free-form, no special formatting needed
                 </div>
+              </div>
+            </div>
+          </div>
+          <div class="tab-panel" data-tab-panel="downloader" data-test-only>
+            <div class="filters_box">
+              <div class="links">
+                <div class="links-left"></div>
+                <div class="links-right"></div>
               </div>
             </div>
           </div>
@@ -237,7 +249,7 @@
                 class="settings-nav__item"
                 type="button"
                 data-settings-target="metadata"
-                data-priority-type="data"
+                data-priority-type="metadata"
                 data-test-only
               >
                 METADATA
@@ -246,7 +258,7 @@
                 class="settings-nav__item"
                 type="button"
                 data-settings-target="artist_art"
-                data-priority-type="artist_bio"
+                data-priority-type="artistart"
                 data-test-only
               >
                 ARTIST ART
@@ -255,7 +267,7 @@
                 class="settings-nav__item"
                 type="button"
                 data-settings-target="album_art"
-                data-priority-type="album_artwork"
+                data-priority-type="albumart"
                 data-test-only
               >
                 ALBUM ART
@@ -264,7 +276,7 @@
                 class="settings-nav__item"
                 type="button"
                 data-settings-target="fan_art"
-                data-priority-type="artist_extras"
+                data-priority-type="fanart"
                 data-test-only
               >
                 FAN ART
@@ -375,6 +387,105 @@
                   </div>
                 </div>
                 <div class="settings-field">
+                  <label class="settings-field__label" for="slskd-url"
+                    >slskd URL</label
+                  >
+                  <div
+                    class="settings-field__control settings-field__control--framed"
+                  >
+                    <input
+                      id="slskd-url"
+                      class="settings-field__input settings-field__input--framed"
+                      type="text"
+                      maxlength="2048"
+                      spellcheck="false"
+                      autocomplete="off"
+                      placeholder="http://slskd-ip:port"
+                      value=""
+                    />
+                    <button
+                      class="config-action settings-field__menu-toggle"
+                      type="button"
+                      aria-label="slskd URL menu"
+                      tabindex="-1"
+                    >
+                      <span class="config-action__inner" aria-hidden="true">
+                        <svg
+                          viewBox="0 0 16 12"
+                          width="14"
+                          height="10"
+                          aria-hidden="true"
+                        >
+                          <path
+                            d="M1.5 6.5l3.5 3.5L14.5 1.5"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                        </svg>
+                      </span>
+                    </button>
+                  </div>
+                </div>
+                <div class="settings-field">
+                  <label class="settings-field__label" for="slskd-key"
+                    >slskd key</label
+                  >
+                  <div
+                    class="settings-field__control settings-field__control--framed"
+                    data-apikey-control
+                  >
+                    <div class="apikey-frame">
+                      <div class="apikey-block">
+                        <span class="apikey-chip">API KEY</span>
+                      </div>
+                    </div>
+                    <input
+                      id="slskd-key"
+                      class="settings-field__input settings-field__input--framed"
+                      type="text"
+                      maxlength="255"
+                      spellcheck="false"
+                      autocomplete="off"
+                      placeholder="slskd-api-key"
+                      value=""
+                    />
+                    <button
+                      class="config-action settings-field__menu-toggle"
+                      type="button"
+                      aria-label="Toggle slskd key visibility"
+                      data-slskd-secret-toggle
+                      tabindex="-1"
+                    >
+                      <span class="config-action__inner" aria-hidden="true">
+                        <svg
+                          viewBox="0 0 24 24"
+                          width="14"
+                          height="14"
+                          aria-hidden="true"
+                        >
+                          <path
+                            d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.6"
+                          />
+                          <circle
+                            cx="12"
+                            cy="12"
+                            r="3.5"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.6"
+                          />
+                        </svg>
+                      </span>
+                    </button>
+                  </div>
+                </div>
+                <div class="settings-field">
                   <label class="settings-field__label" for="limbo-url"
                     >Limbo URL</label
                   >
@@ -433,6 +544,9 @@
                 data-settings-panel="providers"
                 data-test-only
               >
+                <p class="settings-field__label settings-panel__heading">
+                  External Data Providers
+                </p>
                 <div
                   class="settings-list"
                   data-providers
@@ -473,6 +587,9 @@
                 data-settings-panel="metadata"
                 data-test-only
               >
+                <p class="settings-field__label settings-panel__heading">
+                  Metadata Priority
+                </p>
                 <div data-services-slot></div>
               </div>
               <div
@@ -480,6 +597,9 @@
                 data-settings-panel="artist_art"
                 data-test-only
               >
+                <p class="settings-field__label settings-panel__heading">
+                  Artist Art Priority
+                </p>
                 <div data-services-slot></div>
               </div>
               <div
@@ -487,6 +607,9 @@
                 data-settings-panel="album_art"
                 data-test-only
               >
+                <p class="settings-field__label settings-panel__heading">
+                  Album Art Priority
+                </p>
                 <div data-services-slot></div>
               </div>
               <div
@@ -494,6 +617,9 @@
                 data-settings-panel="fan_art"
                 data-test-only
               >
+                <p class="settings-field__label settings-panel__heading">
+                  Fan Art Priority
+                </p>
                 <div data-services-slot></div>
               </div>
               <div
@@ -1325,6 +1451,7 @@
                 href="__MUSICBRAINZ_UI_URL__"
                 target="_blank"
                 rel="noopener"
+                data-musicbrainz-ui-link
                 >Open MusicBrainz</a
               >
             </div>
@@ -1561,6 +1688,7 @@
         if (!modal) {
           return;
         }
+        modal.dataset.openedAt = String(Date.now());
         modal.classList.add("open");
         modal.setAttribute("aria-hidden", "false");
       };
@@ -1580,6 +1708,7 @@
         modal.classList.remove("open");
         modal.setAttribute("aria-hidden", "true");
       };
+      const MODAL_BACKDROP_GUARD_MS = 320;
 
       const setReplicationState = (running, started) => {
         if (replicationPill) {
@@ -1892,8 +2021,12 @@
 
       const tabRoot = document.querySelector("[data-tabs]");
       if (tabRoot) {
+        const tabButtonsWrap = tabRoot.querySelector(".tab-buttons");
         const tabButtons = tabRoot.querySelectorAll("[data-tab]");
         const tabPanels = tabRoot.querySelectorAll("[data-tab-panel]");
+        const tabSelectionLine = tabRoot.querySelector(
+          "[data-tab-selection-line]",
+        );
         let tabMinHeight = 0;
 
         const syncTabMinHeight = () => {
@@ -1931,17 +2064,73 @@
           tabPanels.forEach((panel) => {
             panel.classList.toggle("active", panel.dataset.tabPanel === name);
           });
+          requestAnimationFrame(syncTabSelectionLine);
+        };
+        const getVisibleButtons = () =>
+          Array.from(tabButtons).filter(
+            (button) => button.offsetParent !== null,
+          );
+        const getActiveTabButton = () => {
+          const visibleButtons = getVisibleButtons();
+          return (
+            visibleButtons.find((button) =>
+              button.classList.contains("active"),
+            ) ||
+            visibleButtons[0] ||
+            null
+          );
+        };
+        const placeTabSelectionLine = (button) => {
+          if (!tabButtonsWrap || !tabSelectionLine || !button) {
+            return;
+          }
+          const wrapRect = tabButtonsWrap.getBoundingClientRect();
+          const buttonRect = button.getBoundingClientRect();
+          if (buttonRect.width <= 0 || wrapRect.width <= 0) {
+            return;
+          }
+          const x = Math.round(buttonRect.left - wrapRect.left);
+          const width = Math.round(buttonRect.width);
+          tabSelectionLine.style.transform = `translateX(${x}px)`;
+          tabSelectionLine.style.width = `${width}px`;
+          tabButtonsWrap.classList.add("is-ready");
+        };
+        const syncTabSelectionLine = () => {
+          placeTabSelectionLine(getActiveTabButton());
         };
         tabButtons.forEach((button) => {
           button.addEventListener("click", () => {
             tabRoot.classList.add("tabs-animated");
             setActiveTab(button.dataset.tab);
           });
+          button.addEventListener("mouseenter", () => {
+            placeTabSelectionLine(button);
+          });
+          button.addEventListener("focus", () => {
+            placeTabSelectionLine(button);
+          });
+          button.addEventListener("mouseleave", () => {
+            syncTabSelectionLine();
+          });
+          button.addEventListener("blur", () => {
+            syncTabSelectionLine();
+          });
         });
+        if (tabButtonsWrap) {
+          tabButtonsWrap.addEventListener("mouseleave", () => {
+            syncTabSelectionLine();
+          });
+        }
 
-        requestAnimationFrame(syncTabMinHeight);
+        requestAnimationFrame(() => {
+          syncTabMinHeight();
+          syncTabSelectionLine();
+        });
         window.addEventListener("resize", () => {
-          requestAnimationFrame(syncTabMinHeight);
+          requestAnimationFrame(() => {
+            syncTabMinHeight();
+            syncTabSelectionLine();
+          });
         });
       }
 
@@ -2001,12 +2190,20 @@
       const limboUrlInput = document.querySelector("#limbo-url");
       const limboControl = document.querySelector("[data-limbo-control]");
       const limboChip = document.querySelector("[data-limbo-chip]");
+      const musicbrainzUiLink = document.querySelector(
+        "[data-musicbrainz-ui-link]",
+      );
       const lidarrUrlInput = document.querySelector("#lidarr-url");
       const lidarrApiKeyInput = document.querySelector("#lidarr-apikey");
+      const slskdUrlInput = document.querySelector("#slskd-url");
+      const slskdKeyInput = document.querySelector("#slskd-key");
       const lidarrTestButton = document.querySelector(
         "[data-lidarr-menu-toggle]",
       );
       const secretToggle = document.querySelector("[data-secret-toggle]");
+      const slskdSecretToggle = document.querySelector(
+        "[data-slskd-secret-toggle]",
+      );
       const lidarrSaveButton = document.querySelector("[data-lidarr-save]");
       const tidalClientIdInput = document.querySelector("#tidal-client-id");
       const tidalClientSecretInput = document.querySelector(
@@ -2118,6 +2315,14 @@
             }
           });
         }
+        if (slskdUrlInput) {
+          slskdUrlInput.addEventListener("blur", () => {
+            const sanitized = sanitizeHostPort(slskdUrlInput.value);
+            if (sanitized) {
+              slskdUrlInput.value = sanitized;
+            }
+          });
+        }
         if (limboUrlInput) {
           limboUrlInput.addEventListener("blur", () => {
             if (limboControl?.dataset.limboMode === "custom") {
@@ -2131,6 +2336,11 @@
         if (lidarrApiKeyInput) {
           lidarrApiKeyInput.addEventListener("input", () => {
             lidarrApiKeyInput.value = sanitizeApiKey(lidarrApiKeyInput.value);
+          });
+        }
+        if (slskdKeyInput) {
+          slskdKeyInput.addEventListener("input", () => {
+            slskdKeyInput.value = sanitizeApiKey(slskdKeyInput.value);
           });
         }
         [
@@ -2368,6 +2578,27 @@
         const prefix = scheme ? `${scheme}://` : "http://";
         return `${prefix}${host}${port ? `:${port}` : ""}`;
       };
+      const updateMusicbrainzUiLink = () => {
+        if (!musicbrainzUiLink) {
+          return;
+        }
+        const fallbackHref = musicbrainzUiLink.getAttribute("href") || "";
+        const raw = String(limboUrlInput?.value || "").trim();
+        const source =
+          sanitizeHostPort(raw) ||
+          (window.location?.origin ? `${window.location.origin}` : "");
+        try {
+          const parsed = new URL(source);
+          const protocol = parsed.protocol || "http:";
+          const hostname = parsed.hostname;
+          if (!hostname) {
+            return;
+          }
+          musicbrainzUiLink.href = `${protocol}//${hostname}:5000`;
+        } catch (error) {
+          musicbrainzUiLink.href = fallbackHref;
+        }
+      };
 
       if (secretToggle && lidarrApiKeyInput) {
         secretToggle.addEventListener("mousedown", (event) => {
@@ -2375,6 +2606,15 @@
           requestAnimationFrame(() => {
             lidarrApiKeyInput.focus({ preventScroll: true });
             lidarrApiKeyInput.setSelectionRange(0, 0);
+          });
+        });
+      }
+      if (slskdSecretToggle && slskdKeyInput) {
+        slskdSecretToggle.addEventListener("mousedown", (event) => {
+          event.preventDefault();
+          requestAnimationFrame(() => {
+            slskdKeyInput.focus({ preventScroll: true });
+            slskdKeyInput.setSelectionRange(0, 0);
           });
         });
       }
@@ -5697,7 +5937,7 @@
           if (!option) {
             return;
           }
-          setPriorityType(option.dataset.priorityType || "data");
+          setPriorityType(option.dataset.priorityType || "metadata");
           priorityTypeMenu.classList.remove("open");
           priorityTypeMenu.style.removeProperty("--menu-shift-x");
           priorityTypeMenu.style.removeProperty("--menu-shift-y");
@@ -5715,25 +5955,74 @@
         setCoverartSize(storedSize, { updateDataset: false });
       }
       const providerCatalog = [
-        { id: "apple", label: "APPLE MUSIC", modal: "apple-music-settings" },
+        {
+          id: "apple",
+          label: "APPLE MUSIC",
+          modal: "apple-music-settings",
+          services: ["artistart", "albumart"],
+        },
         {
           id: "coverart",
           label: "COVER ART ARCHIVE",
           modal: "coverart-settings",
+          services: ["albumart"],
         },
-        { id: "discogs", label: "DISCOGS", modal: "discogs-settings" },
-        { id: "fanart", label: "FANART.TV", modal: "fanart-settings" },
-        { id: "lastfm", label: "LAST.FM", modal: "lastfm-settings" },
+        {
+          id: "discogs_mirror",
+          label: "DISCOGS DATA MIRROR",
+          modal: "",
+          services: ["metadata"],
+        },
+        {
+          id: "discogs",
+          label: "DISCOGS.COM",
+          modal: "discogs-settings",
+          services: ["artistart", "albumart"],
+        },
+        {
+          id: "fanart",
+          label: "FANART.TV",
+          modal: "fanart-settings",
+          services: ["albumart", "artistart", "fanart"],
+        },
+        {
+          id: "lastfm",
+          label: "LAST.FM",
+          modal: "lastfm-settings",
+          services: ["metadata"],
+        },
         {
           id: "musicbrainz",
-          label: "MUSICBRAINZ",
+          label: "MUSICBRAINZ MIRROR",
           modal: "musicbrainz-settings",
+          services: ["metadata"],
         },
-        { id: "wikipedia", label: "WIKIPEDIA", modal: "wikipedia-settings" },
-        { id: "tadb", label: "THE AUDIODB", modal: "tadb-settings" },
-        { id: "plex", label: "PLEX", modal: "plex-settings" },
-        { id: "tidal", label: "TIDAL", modal: "tidal-settings" },
+        {
+          id: "wikipedia",
+          label: "WIKIPEDIA",
+          modal: "wikipedia-settings",
+          services: ["metadata"],
+        },
+        {
+          id: "tadb",
+          label: "THE AUDIODB",
+          modal: "tadb-settings",
+          services: ["artistart", "albumart", "fanart"],
+        },
+        {
+          id: "plex",
+          label: "PLEX",
+          modal: "plex-settings",
+          services: ["metadata"],
+        },
+        {
+          id: "tidal",
+          label: "TIDAL",
+          modal: "tidal-settings",
+          services: ["artistart", "albumart"],
+        },
       ];
+      const providersWithServices = providerCatalog;
       const providerOrderKey = "limbo-providers-order";
       const getProviderOrder = () => {
         try {
@@ -5758,6 +6047,8 @@
         settingsSnapshot = {
           lidarrUrl: lidarrUrlInput?.value || "",
           lidarrApiKey: lidarrApiKeyInput?.value || "",
+          slskdUrl: slskdUrlInput?.value || "",
+          slskdKey: slskdKeyInput?.value || "",
           limboMode: limboControl?.dataset.limboMode || "auto-referrer",
           limboValue: limboUrlInput?.value || "",
           limboReferrer: limboUrlInput?.dataset.limboReferrer || "",
@@ -5789,6 +6080,8 @@
         if (lidarrUrlInput) lidarrUrlInput.value = settingsSnapshot.lidarrUrl;
         if (lidarrApiKeyInput)
           lidarrApiKeyInput.value = settingsSnapshot.lidarrApiKey;
+        if (slskdUrlInput) slskdUrlInput.value = settingsSnapshot.slskdUrl;
+        if (slskdKeyInput) slskdKeyInput.value = settingsSnapshot.slskdKey;
         if (limboUrlInput) {
           limboUrlInput.dataset.limboReferrer = settingsSnapshot.limboReferrer;
           limboUrlInput.dataset.limboHost = settingsSnapshot.limboHost;
@@ -5910,6 +6203,9 @@
         if (id === "discogs") {
           return Boolean((discogsKeyInput?.value || "").trim());
         }
+        if (id === "discogs_mirror") {
+          return true;
+        }
         if (id === "lastfm") {
           return Boolean(
             (lastfmKeyInput?.value || "").trim() &&
@@ -6015,7 +6311,11 @@
             );
             row.classList.toggle("connection-error", nextShowError);
             row.classList.toggle("inactive", !nextEnabled || !nextConfigured);
-            if (!nextEnabled && !isLocalPreview) {
+            if (
+              !nextEnabled &&
+              !isLocalPreview &&
+              item.id !== "discogs_mirror"
+            ) {
               fetch("/config/provider-disable", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -6074,12 +6374,8 @@
             row.classList.add("is-selected");
           });
           row.addEventListener("dblclick", (event) => {
-            const rect = row.getBoundingClientRect();
-            const checkboxZone = 8 + 16 + 8;
-            if (event.clientX - rect.left <= checkboxZone) {
-              return;
-            }
-            openProviderModal(item.id);
+            event.preventDefault();
+            event.stopPropagation();
           });
           providersList.appendChild(row);
         });
@@ -6129,30 +6425,12 @@
 
       const priorityTypeStorageKey = "limbo-service-priority-type";
       const priorityTypeLabels = {
-        data: "Data Services",
-        artist_bio: "Artist Bio Photos",
-        artist_extras: "Artist Extras",
-        album_artwork: "Album Artwork",
+        metadata: "Metadata",
+        artistart: "Artist Art",
+        fanart: "Fan Art",
+        albumart: "Album Art",
       };
-      const priorityTypeCapabilityMap = {
-        data: [
-          "artist_metadata",
-          "album_metadata",
-          "artist_links",
-          "discography",
-          "series",
-          "id_redirects",
-          "spotify_mapping",
-          "charts",
-        ],
-        artist_bio: ["artist_images"],
-        artist_extras: ["artist_images", "album_art"],
-        album_artwork: ["album_art"],
-      };
-      const priorityTypeAllowList = {
-        data: ["discogs"],
-      };
-      let priorityType = "data";
+      let priorityType = "metadata";
       const getPriorityStorageKey = () =>
         `limbo-service-priority-${priorityType}`;
       const getServicePriorityOrder = () => {
@@ -6175,11 +6453,11 @@
         }
       };
       const setPriorityType = (value) => {
-        const next = priorityTypeLabels[value] ? value : "data";
+        const next = priorityTypeLabels[value] ? value : "metadata";
         priorityType = next;
         if (priorityTypeLabel) {
           priorityTypeLabel.textContent =
-            priorityTypeLabels[next] || "Data Services";
+            priorityTypeLabels[next] || "Metadata";
         }
         priorityTypeOptions.forEach((option) => {
           option.classList.toggle(
@@ -6205,7 +6483,7 @@
       }
       if (priorityTypeLabel) {
         priorityTypeLabel.textContent =
-          priorityTypeLabels[priorityType] || "Data Services";
+          priorityTypeLabels[priorityType] || "Metadata";
       }
       priorityTypeOptions.forEach((option) => {
         option.classList.toggle(
@@ -6219,22 +6497,17 @@
         }
         servicesPriorityList.innerHTML = "";
         let dragSuppressClick = false;
-        const supportedIds = providerCatalog
+        const serviceFlag = priorityType;
+        const supportedIds = providersWithServices
           .map((item) => item.id)
           .filter((id) => {
-            const requiredCaps = priorityTypeCapabilityMap[priorityType] || [];
-            const allowIds = priorityTypeAllowList[priorityType] || [];
-            const lookupId = resolveProviderId(id);
-            const provider =
-              providerCapabilities.find((entry) => entry.id === lookupId) ||
-              providerCapabilities.find((entry) => entry.id === id);
-            const caps = provider?.capabilities || [];
-            const supportsType = allowIds.includes(id)
-              ? true
-              : requiredCaps.length
-                ? requiredCaps.some((cap) => caps.includes(cap))
-                : true;
-            return supportsType;
+            const provider = providersWithServices.find(
+              (entry) => entry.id === id,
+            );
+            if (!provider) {
+              return false;
+            }
+            return serviceFlag ? provider.services.includes(serviceFlag) : true;
           });
         const order = getServicePriorityOrder();
         const orderedIds = order.filter((id) => supportedIds.includes(id));
@@ -6244,7 +6517,7 @@
           }
         });
         orderedIds.forEach((id) => {
-          const item = providerCatalog.find((entry) => entry.id === id);
+          const item = providersWithServices.find((entry) => entry.id === id);
           if (!item) {
             return;
           }
@@ -6268,6 +6541,9 @@
             if (event.button !== 0) {
               return;
             }
+            if (servicesPriorityList.classList.contains("dragging")) {
+              return;
+            }
             servicesPriorityList
               .querySelectorAll(".settings-list__item")
               .forEach((node) => node.classList.remove("selected"));
@@ -6276,6 +6552,9 @@
           row.addEventListener("click", () => {
             if (dragSuppressClick) {
               dragSuppressClick = false;
+              return;
+            }
+            if (servicesPriorityList.classList.contains("dragging")) {
               return;
             }
             servicesPriorityList
@@ -6334,9 +6613,6 @@
               serviceDragGhost = null;
             }
           });
-          row.addEventListener("dblclick", () => {
-            openProviderModal(item.id);
-          });
           servicesPriorityList.appendChild(row);
         });
         setServicePriorityOrder(orderedIds);
@@ -6347,25 +6623,15 @@
       };
       renderPriorityList();
       const filterPriorityMenuOptions = () => {
-        const requiredCaps = priorityTypeCapabilityMap[priorityType] || [];
-        const allowIds = priorityTypeAllowList[priorityType] || [];
-        const capabilityIdMap = {
-          coverart: "cover_art_archive",
-          apple: "apple_music",
-          tadb: "theaudiodb",
-        };
+        const serviceFlag = priorityType;
         priorityMenuOptions.forEach((option) => {
           const id = option.dataset.providerPriorityOption;
-          const lookupId = capabilityIdMap[id] || id;
-          const provider =
-            providerCapabilities.find((entry) => entry.id === lookupId) ||
-            providerCapabilities.find((entry) => entry.id === id);
-          const caps = provider?.capabilities || [];
-          const supportsType = allowIds.includes(id)
-            ? true
-            : requiredCaps.length
-              ? requiredCaps.some((cap) => caps.includes(cap))
-              : true;
+          const provider = providersWithServices.find(
+            (entry) => entry.id === id,
+          );
+          const supportsType = serviceFlag
+            ? Boolean(provider?.services.includes(serviceFlag))
+            : true;
           option.style.display = supportsType ? "" : "none";
         });
       };
@@ -6516,6 +6782,9 @@
         }
         if (!entry.modal) {
           return;
+        }
+        if (id === "musicbrainz") {
+          updateMusicbrainzUiLink();
         }
         const modal = getModalById(entry.modal);
         openModal(modal);
@@ -6946,6 +7215,14 @@
       document.querySelectorAll("[data-modal-backdrop]").forEach((backdrop) => {
         backdrop.addEventListener("click", () => {
           const modal = backdrop.closest("[data-modal]");
+          const openedAt = Number(modal?.dataset?.openedAt || 0);
+          if (
+            Number.isFinite(openedAt) &&
+            openedAt > 0 &&
+            Date.now() - openedAt < MODAL_BACKDROP_GUARD_MS
+          ) {
+            return;
+          }
           if (modal && modal.hasAttribute("data-modal-static")) {
             return;
           }
