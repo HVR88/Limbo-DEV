@@ -53,6 +53,53 @@ async def _fetch_json(session: aiohttp.ClientSession, url: str, *, headers: Opti
 
 
 async def _probe_slskd_connection(base_url: str, api_key: str) -> Tuple[bool, str, str]:
+    def _extract_slskd_version(payload: Dict[str, Any]) -> str:
+        if not isinstance(payload, dict):
+            return ""
+        version_data = payload.get("version")
+        if isinstance(version_data, dict):
+            for key in ("current", "full", "latest"):
+                value = version_data.get(key)
+                if value:
+                    return str(value).strip()
+        elif version_data:
+            return str(version_data).strip()
+
+        for key in ("appVersion", "packageVersion", "buildVersion"):
+            value = payload.get(key)
+            if value:
+                return str(value).strip()
+
+        app_data = payload.get("application")
+        if isinstance(app_data, dict):
+            nested = app_data.get("version")
+            if isinstance(nested, dict):
+                for key in ("current", "full", "latest"):
+                    value = nested.get(key)
+                    if value:
+                        return str(value).strip()
+            elif nested:
+                return str(nested).strip()
+        return ""
+
+    def _looks_like_lidarr_status(payload: Dict[str, Any]) -> bool:
+        if not isinstance(payload, dict):
+            return False
+        for key in ("appName", "instanceName", "applicationName"):
+            value = str(payload.get(key) or "").strip().lower()
+            if "lidarr" in value:
+                return True
+        # Lidarr /api/v1/system/status commonly includes these keys.
+        lidarr_shape_keys = {
+            "isDebug",
+            "isProduction",
+            "isAdmin",
+            "isUserInteractive",
+            "startupPath",
+            "appData",
+        }
+        return bool(lidarr_shape_keys.intersection(payload.keys()))
+
     if not base_url or not api_key:
         return False, "SLSKD URL or API key is missing.", ""
     headers = {"X-Api-Key": api_key}
@@ -76,18 +123,9 @@ async def _probe_slskd_connection(base_url: str, api_key: str) -> Tuple[bool, st
                     data = await resp.json(content_type=None)
                     if not isinstance(data, dict):
                         data = {}
-                    version = ""
-                    for key in ("version", "appVersion", "packageVersion", "buildVersion"):
-                        value = data.get(key)
-                        if value:
-                            version = str(value).strip()
-                            break
-                    if not version:
-                        app_data = data.get("application")
-                        if isinstance(app_data, dict):
-                            nested = app_data.get("version")
-                            if nested:
-                                version = str(nested).strip()
+                    if _looks_like_lidarr_status(data):
+                        return False, "You entered the Lidarr URL. Please enter a working SLSKD URL.", ""
+                    version = _extract_slskd_version(data)
                     return True, "", version
     except Exception:
         return False, "Unable to connect to SLSKD.", ""

@@ -76,10 +76,10 @@
             </button>
             <button
               class="tab-button"
-              data-tab="releasesplitting"
+              data-tab="multireleases"
               data-test-only
             >
-              Release Splitting
+              Multi Releases
             </button>
             <button class="tab-button" data-tab="downloader" data-test-only>
               Downloader
@@ -117,7 +117,7 @@
           </div>
           <div
             class="tab-panel"
-            data-tab-panel="releasesplitting"
+            data-tab-panel="multireleases"
             data-test-only
           >
             <div class="filters_box">
@@ -2783,8 +2783,10 @@
       };
 
       const testLidarrConnection = async () => {
-        const baseUrl = sanitizeHostPort(lidarrUrlInput?.value || "");
-        if (lidarrUrlInput) {
+        const rawBaseUrl = String(lidarrUrlInput?.value || "").trim();
+        const sanitizedBaseUrl = sanitizeHostPort(rawBaseUrl);
+        const baseUrl = sanitizedBaseUrl || rawBaseUrl;
+        if (lidarrUrlInput && sanitizedBaseUrl) {
           lidarrUrlInput.value = baseUrl;
         }
         const apiKey = sanitizeApiKey(lidarrApiKeyInput?.value || "");
