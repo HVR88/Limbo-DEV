@@ -1657,15 +1657,24 @@
           }
           return { el, type: "contenteditable", value: el.textContent || "" };
         });
-        modalSnapshots.set(modalId, fields);
+        let providersDataset = null;
+        if (
+          providersList &&
+          (modal.classList.contains("provider-modal") ||
+            modal.classList.contains("tidal-modal"))
+        ) {
+          providersDataset = { ...providersList.dataset };
+        }
+        modalSnapshots.set(modalId, { fields, providersDataset });
         modalRestoreEnabled.set(modalId, true);
       };
       const restoreModalSnapshot = (modal) => {
         const modalId = modal?.getAttribute("data-modal") || "";
-        const fields = modalSnapshots.get(modalId);
-        if (!fields) {
+        const snapshot = modalSnapshots.get(modalId);
+        if (!snapshot) {
           return;
         }
+        const fields = Array.isArray(snapshot) ? snapshot : snapshot.fields || [];
         fields.forEach((item) => {
           if (!item?.el) {
             return;
@@ -1682,6 +1691,31 @@
             item.el.textContent = item.value;
           }
         });
+        if (
+          providersList &&
+          !Array.isArray(snapshot) &&
+          snapshot.providersDataset &&
+          typeof snapshot.providersDataset === "object"
+        ) {
+          Object.keys(providersList.dataset).forEach((key) => {
+            if (key.startsWith("provider")) {
+              delete providersList.dataset[key];
+            }
+          });
+          Object.entries(snapshot.providersDataset).forEach(([key, value]) => {
+            if (key.startsWith("provider")) {
+              providersList.dataset[key] = value;
+            }
+          });
+          if (typeof setCoverartSize === "function") {
+            setCoverartSize(providersList.dataset.providerCoverartSize || "", {
+              updateDataset: false,
+            });
+          }
+          if (typeof renderProviderList === "function") {
+            renderProviderList();
+          }
+        }
       };
       const disableModalRestore = (modalId) => {
         if (!modalId) {
@@ -3573,6 +3607,41 @@
           // ignore persistence failures
         }
       };
+      const hydrateRefreshSettings = async () => {
+        if (isLocalPreview) {
+          return;
+        }
+        try {
+          const response = await fetch("/config/refresh-settings");
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok || !payload || typeof payload !== "object") {
+            return;
+          }
+          if (
+            refreshResolveToggle &&
+            Object.prototype.hasOwnProperty.call(payload, "resolve_names")
+          ) {
+            refreshResolveToggle.checked = Boolean(payload.resolve_names);
+          }
+          if (Object.prototype.hasOwnProperty.call(payload, "auto_refresh")) {
+            setRefreshAutoRefreshEnabled(Boolean(payload.auto_refresh), {
+              persist: false,
+            });
+          }
+          if (
+            Object.prototype.hasOwnProperty.call(
+              payload,
+              "switch_release_mode",
+            )
+          ) {
+            setRefreshAutoReleaseSwitchingMode(payload.switch_release_mode, {
+              persist: false,
+            });
+          }
+        } catch (error) {
+          // ignore hydration failures
+        }
+      };
 
       const setRefreshAutoRefreshEnabled = (value, { persist = true } = {}) => {
         refreshAutoRefreshEnabled = Boolean(value);
@@ -4294,30 +4363,6 @@
           if (slskdKeyInput && typeof payload.slskd_api_key === "string") {
             slskdKeyInput.value = payload.slskd_api_key;
           }
-          if (
-            refreshResolveToggle &&
-            Object.prototype.hasOwnProperty.call(payload, "refresh_resolve_names")
-          ) {
-            refreshResolveToggle.checked = Boolean(payload.refresh_resolve_names);
-          }
-          if (
-            Object.prototype.hasOwnProperty.call(payload, "refresh_auto_refresh")
-          ) {
-            setRefreshAutoRefreshEnabled(Boolean(payload.refresh_auto_refresh), {
-              persist: false,
-            });
-          }
-          if (
-            Object.prototype.hasOwnProperty.call(
-              payload,
-              "refresh_switch_release_mode",
-            )
-          ) {
-            setRefreshAutoReleaseSwitchingMode(
-              payload.refresh_switch_release_mode,
-              { persist: false },
-            );
-          }
           if (providersList && payload.provider_states) {
             Object.entries(payload.provider_states).forEach(([id, enabled]) => {
               if (!id) {
@@ -4345,7 +4390,7 @@
           // ignore hydration failures
         }
       };
-      void hydrateConnectionSettings();
+      void hydrateRefreshSettings();
       let lidarrSaveTimer = null;
       const scheduleLidarrSave = (options = {}) => {
         if (lidarrSaveTimer) {
@@ -7247,6 +7292,7 @@
             void hydrateConnectionSettings();
           }
           if (target === "refresh-modal") {
+            void hydrateRefreshSettings();
             const editor = document.querySelector("[data-refresh-editor]");
             if (editor) {
               requestAnimationFrame(() => editor.focus());

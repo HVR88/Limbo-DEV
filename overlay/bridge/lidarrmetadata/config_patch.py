@@ -335,13 +335,14 @@ def register_config_routes() -> None:
                     metadata_update_ok, metadata_update_error = await _update_lidarr_metadata_source(
                         base_url, api_key, limbo_url
                     )
+            # Persist slskd settings independently from Lidarr connectivity checks.
+            if "slskd_base_url" in payload:
+                root_patch.set_slskd_base_url(slskd_base_url)
+            if "slskd_api_key" in payload:
+                root_patch.set_slskd_api_key(slskd_api_key)
             if connection_ok and metadata_update_ok:
                 root_patch.set_lidarr_base_url(base_url)
                 root_patch.set_lidarr_api_key(api_key)
-                if "slskd_base_url" in payload:
-                    root_patch.set_slskd_base_url(slskd_base_url)
-                if "slskd_api_key" in payload:
-                    root_patch.set_slskd_api_key(slskd_api_key)
                 root_patch.set_limbo_url_mode(limbo_url_mode)
                 if limbo_url_mode == "custom":
                     root_patch.set_limbo_url_custom(limbo_url_custom)
@@ -473,8 +474,17 @@ def register_config_routes() -> None:
             return jsonify({"ok": True})
 
     if "/config/refresh-settings" not in existing_rules:
-        @upstream_app.app.route("/config/refresh-settings", methods=["POST"])
+        @upstream_app.app.route("/config/refresh-settings", methods=["GET", "POST"])
         async def _limbo_refresh_settings():
+            if request.method == "GET":
+                return jsonify(
+                    {
+                        "ok": True,
+                        "resolve_names": root_patch.get_refresh_resolve_names(),
+                        "auto_refresh": root_patch.get_refresh_auto_refresh(),
+                        "switch_release_mode": root_patch.get_refresh_switch_release_mode(),
+                    }
+                )
             payload = await request.get_json(silent=True) or {}
             if not isinstance(payload, dict):
                 payload = {}

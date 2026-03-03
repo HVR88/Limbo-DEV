@@ -316,7 +316,7 @@ def _load_lidarr_settings() -> None:
         _DISCOGS_MIRROR_ENABLED = True
         _APPLE_MUSIC_ENABLED = True
         _PLEX_ENABLED = bool(plex_url_env or plex_token_env)
-        _APPLE_MUSIC_MAX_IMAGE_SIZE = "2500"
+        _APPLE_MUSIC_MAX_IMAGE_SIZE = "1000"
         _APPLE_MUSIC_ALLOW_UPSCALE = False
         _COVERART_ENABLED = True
         _COVERART_SIZE = "original"
@@ -428,7 +428,7 @@ def _load_lidarr_settings() -> None:
     if not refresh_present:
         _persist_lidarr_settings()
     if _APPLE_MUSIC_ENABLED and not _APPLE_MUSIC_MAX_IMAGE_SIZE:
-        _APPLE_MUSIC_MAX_IMAGE_SIZE = "2500"
+        _APPLE_MUSIC_MAX_IMAGE_SIZE = "1000"
     if _COVERART_ENABLED and not _COVERART_SIZE:
         _COVERART_SIZE = "original"
     if _FANART_ENABLED and not _FANART_KEY:
