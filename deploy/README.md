@@ -2,11 +2,11 @@
   <img src="https://raw.githubusercontent.com/HVR88/Limbo_Bridge_DEV/main/assets/limbo-icon.png" alt="Limbo" width="300" />
 </p>
 
-# <p align="center">**Limbo**<br><sub>**Lidarr, but _Working_**</sub></p>
+# <p align="center">**Limbo Bridge**<br><sub>**Tools and Data Bridge for Lidarr\_**</sub></p>
 
 ## Introduction
 
-This is a stand-alone _Limbo_ release for existing MusicBrainz mirror installations. It should be installed onto the same host or docker network as the MusicBrainz mirror. Lidarr setup is detailed below.
+This is a stand-alone _Limbo Bridge_ release, part of the full [Limbo project](https://github.com/HVR88/Limbo). This stand-alone bridge component is for people with an existing MusicBrainz mirror installation only. It should be installed onto the same host or docker network as the MusicBrainz mirror. Lidarr setup is detailed below. If you don't yet host your own MusicBrainz mirror, [get the full Limbo release](https://github.com/HVR88/Limbo).
 
 **Limbo Features**
 
@@ -19,7 +19,7 @@ This is a stand-alone _Limbo_ release for existing MusicBrainz mirror installati
 
 > [!IMPORTANT]
 >
-> I highly recommend [**MBMS PLUS**](https://github.com/HVR88/MBMS_PLUS), our automated MusicBrainz installation with Limbo built-in instead of a manual mirror setup.
+> I highly recommend the full [**Limbo**](https://github.com/HVR88/Limbo) release, our automated MusicBrainz installation with Limbo Bridge built-in. It's the fastest, easiest and cleanest way to deploy MusicBrainz.
 
 ## Quick start
 
@@ -27,7 +27,7 @@ This is a stand-alone _Limbo_ release for existing MusicBrainz mirror installati
 
 You should already be running a _nightly_ branch [Lidarr](https://hub.docker.com/r/linuxserver/lidarr) release plus [MusicBrainz Mirror](https://github.com/metabrainz/musicbrainz-docker) server _(with materialized tables AND fully indexed db)_
 
-### 2. Download Limbo project
+### 2. Download Limbo Bridge
 
 **Limbo needs to be installed on the same host as MusicBrainz, whether that be a physical machine, VM or LXC.**
 
