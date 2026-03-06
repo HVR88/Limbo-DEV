@@ -2,7 +2,7 @@
   <img src="https://raw.githubusercontent.com/HVR88/Limbo_Bridge_DEV/main/assets/limbo-icon.png" alt="Limbo" width="300" />
 </p>
 
-# <p align="center">**Limbo Bridge**<br><sub>**Tools and Data Bridge for Lidarr\_**</sub></p>
+# <p align="center">**Limbo Bridge**<br><sub>**_Tools and Data Bridge for Lidarr_**</sub></p>
 
 ## Introduction
 
