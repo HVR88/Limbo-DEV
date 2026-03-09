@@ -3152,6 +3152,26 @@
         );
       };
 
+      const getRefreshEditorRawText = () => {
+        if (!refreshEditor) {
+          return "";
+        }
+        return Array.from(refreshEditor.childNodes)
+          .map((node) => {
+            if (
+              node.nodeType === Node.ELEMENT_NODE &&
+              node.classList.contains("token")
+            ) {
+              return node.dataset.token || "";
+            }
+            if (node.nodeType === Node.TEXT_NODE) {
+              return (node.textContent || "").replace(/\u200B/g, " ");
+            }
+            return "";
+          })
+          .join("");
+      };
+
       const getTokenSets = () => {
         const mbids = new Set();
         const lidarrIds = new Set();
@@ -3590,7 +3610,7 @@
         refreshAutoSubmitKeys.clear();
         refreshAutoSubmitPending = false;
         const caret = getCaretOffset(refreshEditor);
-        const text = refreshEditor.textContent || "";
+        const text = getRefreshEditorRawText();
         rebuildEditorFromText(text, caret);
         updateRefreshState();
       };
@@ -3973,11 +3993,6 @@
           }
           return false;
         }
-        refreshValidationActive = false;
-        if (refreshValidateController) {
-          refreshValidateController.abort();
-        }
-        closeModal(refreshModal);
         const totalIds = mbidsAllowed.length + lidarrIdsAllowed.length;
         if (confirmLarge && totalIds >= 10) {
           const parts = [];
@@ -4118,6 +4133,8 @@
           const missing = payload.missing_mbids?.length || 0;
           const errors = payload.errors?.length || 0;
           recordRefreshHistory(mbids, lidarrIds);
+          updateTokenClasses();
+          updateRefreshStatus();
           suppressHover();
           openInfo(
             `Queued ${queued} refresh request(s).` +
@@ -4146,14 +4163,14 @@
         });
         requestAnimationFrame(() => {
           const caret = getCaretOffset(refreshEditor);
-          rebuildEditorFromText(refreshEditor.textContent || "", caret);
+          rebuildEditorFromText(getRefreshEditorRawText(), caret);
           updateRefreshState();
         });
 
         refreshButton.addEventListener("click", () => {
           if (refreshEditor) {
             const caret = getCaretOffset(refreshEditor);
-            rebuildEditorFromText(refreshEditor.textContent || "", caret);
+            rebuildEditorFromText(getRefreshEditorRawText(), caret);
             updateRefreshState();
           }
           const { mbids, lidarrIds } = extractIds();
