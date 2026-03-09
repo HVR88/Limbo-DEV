@@ -1666,6 +1666,7 @@ body[data-theme="dark"] .action-button--refresh-all .action-button__inner {
   white-space: pre-wrap;
   word-break: break-word;
   overflow: auto;
+  caret-color: transparent;
 }
 .refresh-editor:empty::before {
   content: attr(data-placeholder);
@@ -1674,7 +1675,7 @@ body[data-theme="dark"] .action-button--refresh-all .action-button__inner {
 }
 .refresh-editor:focus-visible {
   outline: none;
-  box-shadow: inset 0 1px 2px rgba(26, 38, 45, 0.08);
+  box-shadow: var(--soft-shadow);
 }
 .refresh-editor::-webkit-scrollbar {
   width: 10px;

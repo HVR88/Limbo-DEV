@@ -3629,6 +3629,28 @@
         updateRefreshState();
       };
 
+      const getTopmostOpenModal = () => {
+        return Array.from(document.querySelectorAll("[data-modal].open"))
+          .sort((a, b) => {
+            const aOpenedAt = Number(a?.dataset?.openedAt || 0);
+            const bOpenedAt = Number(b?.dataset?.openedAt || 0);
+            return bOpenedAt - aOpenedAt;
+          })[0];
+      };
+
+      const handleRefreshModalPaste = (event) => {
+        if (!refreshModal?.classList.contains("open") || !refreshEditor) {
+          return;
+        }
+        if (getTopmostOpenModal() !== refreshModal) {
+          return;
+        }
+        if (refreshEditor.contains(event.target)) {
+          return;
+        }
+        handleRefreshPaste(event);
+      };
+
       const getAdjacentToken = (range, direction) => {
         if (!refreshEditor) {
           return null;
@@ -4198,6 +4220,7 @@
           });
         });
       }
+      document.addEventListener("paste", handleRefreshModalPaste);
       if (refreshAllButton) {
         refreshAllButton.addEventListener("click", () => {
           openConfirm(
@@ -7692,14 +7715,7 @@
         if (event.key !== "Escape") {
           return;
         }
-        const openModals = Array.from(
-          document.querySelectorAll("[data-modal].open"),
-        );
-        const modal = openModals.sort((a, b) => {
-          const aOpenedAt = Number(a?.dataset?.openedAt || 0);
-          const bOpenedAt = Number(b?.dataset?.openedAt || 0);
-          return bOpenedAt - aOpenedAt;
-        })[0];
+        const modal = getTopmostOpenModal();
         if (!modal) {
           return;
         }
