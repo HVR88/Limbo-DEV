@@ -915,26 +915,6 @@
               </div>
             </div>
             <div class="refresh-side">
-              <div class="refresh-status" data-refresh-status>
-                <span class="refresh-status__item">
-                  <span class="refresh-status__label">Artists:</span>
-                  <span class="refresh-status__count" data-refresh-count-artist
-                    >0</span
-                  >
-                </span>
-                <span class="refresh-status__item">
-                  <span class="refresh-status__label">Releases:</span>
-                  <span class="refresh-status__count" data-refresh-count-release
-                    >0</span
-                  >
-                </span>
-                <span class="refresh-status__item">
-                  <span class="refresh-status__label">Invalid:</span>
-                  <span class="refresh-status__count" data-refresh-count-invalid
-                    >0</span
-                  >
-                </span>
-              </div>
               <button
                 class="action-button refresh-submit-inline"
                 type="button"
@@ -953,6 +933,37 @@
                   <span class="action-button__label">REFRESH&nbsp;ALL</span>
                 </span>
               </button>
+              <div class="refresh-side__bottom">
+                <div class="refresh-status" data-refresh-status>
+                  <span class="refresh-status__item">
+                    <span class="refresh-status__label">Artists:</span>
+                    <span class="refresh-status__count" data-refresh-count-artist
+                      >0</span
+                    >
+                  </span>
+                  <span class="refresh-status__item">
+                    <span class="refresh-status__label">Releases:</span>
+                    <span class="refresh-status__count" data-refresh-count-release
+                      >0</span
+                    >
+                  </span>
+                  <span class="refresh-status__item">
+                    <span class="refresh-status__label">Invalid:</span>
+                    <span class="refresh-status__count" data-refresh-count-invalid
+                      >0</span
+                    >
+                  </span>
+                </div>
+                <button
+                  class="action-button refresh-submit-inline refresh-clear-inline"
+                  type="button"
+                  data-refresh-clear-button
+                >
+                  <span class="action-button__inner">
+                    <span class="action-button__label">CLEAR</span>
+                  </span>
+                </button>
+              </div>
             </div>
           </div>
           <div class="refresh-modal__actions">
@@ -2183,6 +2194,9 @@
 
       const refreshEditor = document.querySelector("[data-refresh-editor]");
       const refreshButton = document.querySelector("[data-refresh-button]");
+      const refreshClearButton = document.querySelector(
+        "[data-refresh-clear-button]",
+      );
       const refreshAllButton = document.querySelector(
         "[data-refresh-all-button]",
       );
@@ -4388,17 +4402,28 @@
         });
       }
 
+      const clearRefreshEditor = () => {
+        if (!refreshEditor) {
+          return;
+        }
+        refreshEditor.textContent = "";
+        refreshAutoSubmitKeys.clear();
+        refreshAutoSubmitPending = false;
+        updateRefreshState();
+      };
+
+      if (refreshClearButton) {
+        refreshClearButton.addEventListener("click", () => {
+          clearRefreshEditor();
+        });
+      }
+
       const refreshCancelButton = document.querySelector(
         "[data-refresh-cancel]",
       );
       if (refreshCancelButton) {
         refreshCancelButton.addEventListener("click", () => {
-          if (refreshEditor) {
-            refreshEditor.textContent = "";
-            refreshAutoSubmitKeys.clear();
-            refreshAutoSubmitPending = false;
-            updateRefreshState();
-          }
+          clearRefreshEditor();
         });
       }
 
@@ -7670,25 +7695,31 @@
         const openModals = Array.from(
           document.querySelectorAll("[data-modal].open"),
         );
-        for (const modal of openModals) {
-          if (modal?.getAttribute("data-modal") === "settings") {
-            const canClose = await validateSettingsForBackdropClose();
-            if (!canClose) {
-              continue;
-            }
-          }
-          clearPendingProviderEnable(modal);
-          if (modal?.getAttribute("data-modal") === "refresh-modal") {
-            refreshAutoSubmitKeys.clear();
-            refreshAutoSubmitPending = false;
-            refreshAutoSubmitInFlight = false;
-            refreshValidationActive = false;
-            if (refreshValidateController) {
-              refreshValidateController.abort();
-            }
-          }
-          closeModal(modal);
+        const modal = openModals.sort((a, b) => {
+          const aOpenedAt = Number(a?.dataset?.openedAt || 0);
+          const bOpenedAt = Number(b?.dataset?.openedAt || 0);
+          return bOpenedAt - aOpenedAt;
+        })[0];
+        if (!modal) {
+          return;
         }
+        if (modal.getAttribute("data-modal") === "settings") {
+          const canClose = await validateSettingsForBackdropClose();
+          if (!canClose) {
+            return;
+          }
+        }
+        clearPendingProviderEnable(modal);
+        if (modal.getAttribute("data-modal") === "refresh-modal") {
+          refreshAutoSubmitKeys.clear();
+          refreshAutoSubmitPending = false;
+          refreshAutoSubmitInFlight = false;
+          refreshValidationActive = false;
+          if (refreshValidateController) {
+            refreshValidateController.abort();
+          }
+        }
+        closeModal(modal);
       });
 
       if (!refreshWarmupOnLoadDone) {
